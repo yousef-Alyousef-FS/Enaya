@@ -1,0 +1,17 @@
+{
+  "login": "Login",
+  "welcome_back": "Welcome Back",
+  "login_description": "Access your medical services securely and easily.",
+  "username_or_email": "Username or Email",
+  "password": "Password",
+  "forgot_password": "Forgot Password?",
+  "dont_have_account": "Don't have an account?",
+  "sign_up": "Sign Up",
+  "enter_username_or_email": "Enter your username or email",
+  "enter_password": "Enter your password",
+  "patient_name": "Patient Name",
+  "add_appointment": "Add Appointment",
+  "save": "Save",
+  "cancel": "Cancel",
+  "error_occurred": "Something went wrong, please try again"
+}

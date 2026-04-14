@@ -1,0 +1,17 @@
+{
+  "login": "تسجيل الدخول",
+  "welcome_back": "مرحباً بك مجدداً",
+  "login_description": "الوصول إلى خدماتك الطبية بأمان وسهولة.",
+  "username_or_email": "اسم المستخدم أو البريد الإلكتروني",
+  "password": "كلمة المرور",
+  "forgot_password": "نسيت كلمة المرور؟",
+  "dont_have_account": "ليس لديك حساب؟",
+  "sign_up": "إنشاء حساب",
+  "enter_username_or_email": "أدخل اسم المستخدم أو البريد الإلكتروني",
+  "enter_password": "أدخل كلمة المرور",
+  "patient_name": "اسم المريض",
+  "add_appointment": "إضافة موعد",
+  "save": "حفظ",
+  "cancel": "إلغاء",
+  "error_occurred": "حدث خطأ ما، يرجى المحاولة لاحقاً"
+}

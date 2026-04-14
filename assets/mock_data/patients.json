@@ -1,0 +1,92 @@
+{
+  "patients": [
+    {
+      "id": 101,
+      "name": "أحمد محمد",
+      "email": "ahmed@example.com",
+      "phone": "+966501111111",
+      "age": 35,
+      "gender": "ذكر",
+      "nationalId": "1234567890",
+      "address": "الرياض",
+      "medicalHistory": [
+        {
+          "id": 1,
+          "condition": "ارتفاع ضغط الدم",
+          "diagnosis": "2023-06-15",
+          "status": "تحت العلاج"
+        }
+      ],
+      "appointments": [
+        {
+          "id": 201,
+          "doctorId": 2,
+          "doctorName": "د. سارة أحمد",
+          "date": "2024-04-20T10:00:00Z",
+          "type": "استشارة عامة"
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "name": "فاطمة علي",
+      "email": "fatima@example.com",
+      "phone": "+966501111112",
+      "age": 28,
+      "gender": "أنثى",
+      "nationalId": "1234567891",
+      "address": "جدة",
+      "medicalHistory": [
+        {
+          "id": 2,
+          "condition": "السكري من النوع الثاني",
+          "diagnosis": "2023-01-10",
+          "status": "تحت العلاج"
+        }
+      ],
+      "appointments": []
+    },
+    {
+      "id": 103,
+      "name": "محمود خالد",
+      "email": "mahmoud@example.com",
+      "phone": "+966501111113",
+      "age": 45,
+      "gender": "ذكر",
+      "nationalId": "1234567892",
+      "address": "الدمام",
+      "medicalHistory": [],
+      "appointments": [
+        {
+          "id": 202,
+          "doctorId": 2,
+          "doctorName": "د. سارة أحمد",
+          "date": "2024-04-22T14:30:00Z",
+          "type": "متابعة"
+        }
+      ]
+    }
+  ],
+  "doctors": [
+    {
+      "id": 200,
+      "name": "د. سارة أحمد",
+      "email": "sarah@enaya.com",
+      "phone": "+966501234500",
+      "specialization": "أمراض عامة",
+      "yearsOfExperience": 8,
+      "rating": 4.8,
+      "consultationFee": 150
+    },
+    {
+      "id": 201,
+      "name": "د. محمد علي",
+      "email": "ali@enaya.com",
+      "phone": "+966501234501",
+      "specialization": "القلب والأوعية الدموية",
+      "yearsOfExperience": 12,
+      "rating": 4.9,
+      "consultationFee": 200
+    }
+  ]
+}
