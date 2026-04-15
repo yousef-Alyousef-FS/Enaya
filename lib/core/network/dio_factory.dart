@@ -1,7 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
-
-import '../cache/cache_helper.dart';
 import '../constants/api_constants.dart';
 import '../di/injection.dart';
 import '../services/token_manager.dart';
@@ -14,7 +12,7 @@ class DioFactory {
     if (_dio == null) {
       _dio = Dio(
         BaseOptions(
-          baseUrl: 'https://your-api-url.com/api/',
+          baseUrl: ApiConstants.baseUrl,
           receiveDataWhenStatusError: true,
           connectTimeout: const Duration(seconds: 30),
           receiveTimeout: const Duration(seconds: 30),
@@ -29,7 +27,7 @@ class DioFactory {
         InterceptorsWrapper(
           onRequest: (options, handler) async {
             try {
-              // الحصول على التوكن من TokenManager
+
               final tokenManager = getIt<TokenManager>();
               final authHeader = await tokenManager.getAuthorizationHeader();
               

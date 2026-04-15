@@ -1,23 +1,34 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/usecases/usecase.dart';
 import '../entities/user_entity.dart';
 import '../repositories/auth_repository.dart';
 
-class SignupUsecase {
+class SignupParams {
+  final String email;
+  final String password;
+  final String username;
+  final String phone;
+
+  SignupParams({
+    required this.email,
+    required this.password,
+    required this.username,
+    required this.phone,
+  });
+}
+
+class SignupUsecase implements UseCase<User, SignupParams> {
   final IAuthRepository repository;
   SignupUsecase(this.repository);
 
-  Future<Either<Failure, User>> call({
-    required String email,
-    required String password,
-    required String username,
-    required String phone,
-  }) {
+  @override
+  Future<Either<Failure, User>> call(SignupParams params) {
     return repository.signup(
-      email: email,
-      password: password,
-      username: username,
-      phone: phone,
+      email: params.email,
+      password: params.password,
+      username: params.username,
+      phone: params.phone,
     );
   }
 }
