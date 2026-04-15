@@ -13,5 +13,17 @@
   "add_appointment": "إضافة موعد",
   "save": "حفظ",
   "cancel": "إلغاء",
-  "error_occurred": "حدث خطأ ما، يرجى المحاولة لاحقاً"
+  "error_occurred": "حدث خطأ ما، يرجى المحاولة لاحقاً",
+  "create_account": "إنشاء حساب",
+  "join_enaya": "انضم إلى عناية",
+  "signup_description":"أنشئ حسابك لمتابعة مواعيدك",
+  "full_name": "الاسم الكامل",
+  "email_address": "البريد الإلكتروني",
+  "phone_number": "رقم الهاتف",
+  "enter_your_name": "أدخل اسمك",
+  "enter_valid_email": "أدخل بريدًا إلكترونيًا صالحًا",
+  "enter_phone_number": "أدخل رقم الهاتف",
+  "password_too_short": "كلمة المرور قصيرة جدًا",
+  "already_have_account": "هل لديك حساب بالفعل؟",
+  "confirm_password": "تأكيد كلمة المرور"
 }
