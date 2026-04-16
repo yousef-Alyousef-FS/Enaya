@@ -1,97 +1,241 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:equatable/equatable.dart';
 import '../../domain/entities/forgot_password_entity.dart';
 
-part 'auth_responses.freezed.dart';
-part 'auth_responses.g.dart';
+class LoginResponse extends Equatable {
+  const LoginResponse({
+    required this.success,
+    this.data,
+    this.error,
+    this.errorCode,
+  });
 
-@freezed
-class LoginResponse with _$LoginResponse {
-  const factory LoginResponse({
-    required bool success,
-    LoginResponseData? data,
-    String? error,
-    int? errorCode,
-  }) = _LoginResponse;
+  final bool success;
+  final LoginResponseData? data;
+  final String? error;
+  final int? errorCode;
 
-  factory LoginResponse.fromJson(Map<String, dynamic> json) =>
-      _$LoginResponseFromJson(json);
+  @override
+  List<Object?> get props => [success, data, error, errorCode];
+
+  factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    return LoginResponse(
+      success: json['success'] as bool,
+      data: json['data'] != null
+          ? LoginResponseData.fromJson(json['data'] as Map<String, dynamic>)
+          : null,
+      error: json['error'] as String?,
+      errorCode: json['errorCode'] as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      'data': data?.toJson(),
+      'error': error,
+      'errorCode': errorCode,
+    };
+  }
 }
 
-@freezed
-class LoginResponseData with _$LoginResponseData {
-  const factory LoginResponseData({
-    required UserResponse user,
-    required String token,
-    required String expiresAt,
-  }) = _LoginResponseData;
+class LoginResponseData extends Equatable {
+  const LoginResponseData({
+    required this.user,
+    required this.token,
+    required this.expiresAt,
+  });
 
-  factory LoginResponseData.fromJson(Map<String, dynamic> json) =>
-      _$LoginResponseDataFromJson(json);
+  final UserResponse user;
+  final String token;
+  final String expiresAt;
+
+  @override
+  List<Object?> get props => [user, token, expiresAt];
+
+  factory LoginResponseData.fromJson(Map<String, dynamic> json) {
+    return LoginResponseData(
+      user: UserResponse.fromJson(json['user'] as Map<String, dynamic>),
+      token: json['token'] as String,
+      expiresAt: json['expiresAt'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'user': user.toJson(), 'token': token, 'expiresAt': expiresAt};
+  }
 }
 
-@freezed
-class SignupResponse with _$SignupResponse {
-  const factory SignupResponse({
-    required bool success,
-    SignupResponseData? data,
-    String? error,
-    int? errorCode,
-  }) = _SignupResponse;
+class SignupResponse extends Equatable {
+  const SignupResponse({
+    required this.success,
+    this.data,
+    this.error,
+    this.errorCode,
+  });
 
-  factory SignupResponse.fromJson(Map<String, dynamic> json) =>
-      _$SignupResponseFromJson(json);
+  final bool success;
+  final SignupResponseData? data;
+  final String? error;
+  final int? errorCode;
+
+  @override
+  List<Object?> get props => [success, data, error, errorCode];
+
+  factory SignupResponse.fromJson(Map<String, dynamic> json) {
+    return SignupResponse(
+      success: json['success'] as bool,
+      data: json['data'] != null
+          ? SignupResponseData.fromJson(json['data'] as Map<String, dynamic>)
+          : null,
+      error: json['error'] as String?,
+      errorCode: json['errorCode'] as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      'data': data?.toJson(),
+      'error': error,
+      'errorCode': errorCode,
+    };
+  }
 }
 
-@freezed
-class SignupResponseData with _$SignupResponseData {
-  const factory SignupResponseData({
-    required UserResponse user,
-    required String token,
-    required String expiresAt,
-  }) = _SignupResponseData;
+class SignupResponseData extends Equatable {
+  const SignupResponseData({
+    required this.user,
+    required this.token,
+    required this.expiresAt,
+  });
 
-  factory SignupResponseData.fromJson(Map<String, dynamic> json) =>
-      _$SignupResponseDataFromJson(json);
+  final UserResponse user;
+  final String token;
+  final String expiresAt;
+
+  @override
+  List<Object?> get props => [user, token, expiresAt];
+
+  factory SignupResponseData.fromJson(Map<String, dynamic> json) {
+    return SignupResponseData(
+      user: UserResponse.fromJson(json['user'] as Map<String, dynamic>),
+      token: json['token'] as String,
+      expiresAt: json['expiresAt'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'user': user.toJson(), 'token': token, 'expiresAt': expiresAt};
+  }
 }
 
-@freezed
-class UserResponse with _$UserResponse {
-  const factory UserResponse({
-    required int id,
-    required String email,
-    required String userName,
-    required String phone,
-    required int roleId,
-  }) = _UserResponse;
+class UserResponse extends Equatable {
+  const UserResponse({
+    required this.id,
+    required this.email,
+    required this.userName,
+    required this.phone,
+    required this.roleId,
+  });
 
-  factory UserResponse.fromJson(Map<String, dynamic> json) =>
-      _$UserResponseFromJson(json);
+  final int id;
+  final String email;
+  final String userName;
+  final String phone;
+  final int roleId;
+
+  @override
+  List<Object?> get props => [id, email, userName, phone, roleId];
+
+  factory UserResponse.fromJson(Map<String, dynamic> json) {
+    return UserResponse(
+      id: json['id'] as int,
+      email: json['email'] as String,
+      userName: json['userName'] as String,
+      phone: json['phone'] as String,
+      roleId: json['roleId'] as int,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'email': email,
+      'userName': userName,
+      'phone': phone,
+      'roleId': roleId,
+    };
+  }
 }
 
-@freezed
-class LogoutResponse with _$LogoutResponse {
-  const factory LogoutResponse({
-    required bool success,
-    String? message,
-    String? error,
-    int? errorCode,
-  }) = _LogoutResponse;
+class LogoutResponse extends Equatable {
+  const LogoutResponse({
+    required this.success,
+    this.message,
+    this.error,
+    this.errorCode,
+  });
 
-  factory LogoutResponse.fromJson(Map<String, dynamic> json) =>
-      _$LogoutResponseFromJson(json);
+  final bool success;
+  final String? message;
+  final String? error;
+  final int? errorCode;
+
+  @override
+  List<Object?> get props => [success, message, error, errorCode];
+
+  factory LogoutResponse.fromJson(Map<String, dynamic> json) {
+    return LogoutResponse(
+      success: json['success'] as bool,
+      message: json['message'] as String?,
+      error: json['error'] as String?,
+      errorCode: json['errorCode'] as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      'message': message,
+      'error': error,
+      'errorCode': errorCode,
+    };
+  }
 }
 
-@freezed
-class ForgotPasswordResponse with _$ForgotPasswordResponse {
-  const factory ForgotPasswordResponse({
-    required bool success,
-    String? message,
-    String? error,
-    int? errorCode,
-  }) = _ForgotPasswordResponse;
+class ForgotPasswordResponse extends Equatable {
+  const ForgotPasswordResponse({
+    required this.success,
+    this.message,
+    this.error,
+    this.errorCode,
+  });
 
-  factory ForgotPasswordResponse.fromJson(Map<String, dynamic> json) =>
-      _$ForgotPasswordResponseFromJson(json);
+  final bool success;
+  final String? message;
+  final String? error;
+  final int? errorCode;
+
+  @override
+  List<Object?> get props => [success, message, error, errorCode];
+
+  factory ForgotPasswordResponse.fromJson(Map<String, dynamic> json) {
+    return ForgotPasswordResponse(
+      success: json['success'] as bool,
+      message: json['message'] as String?,
+      error: json['error'] as String?,
+      errorCode: json['errorCode'] as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      'message': message,
+      'error': error,
+      'errorCode': errorCode,
+    };
+  }
 }
 
 extension ForgotPasswordResponseMapper on ForgotPasswordResponse {
@@ -103,16 +247,41 @@ extension ForgotPasswordResponseMapper on ForgotPasswordResponse {
   }
 }
 
-@freezed
-class RefreshTokenResponse with _$RefreshTokenResponse {
-  const factory RefreshTokenResponse({
-    required bool success,
-    String? token,
-    String? expiresAt,
-    String? error,
-    int? errorCode,
-  }) = _RefreshTokenResponse;
+class RefreshTokenResponse extends Equatable {
+  const RefreshTokenResponse({
+    required this.success,
+    this.token,
+    this.expiresAt,
+    this.error,
+    this.errorCode,
+  });
 
-  factory RefreshTokenResponse.fromJson(Map<String, dynamic> json) =>
-      _$RefreshTokenResponseFromJson(json);
+  final bool success;
+  final String? token;
+  final String? expiresAt;
+  final String? error;
+  final int? errorCode;
+
+  @override
+  List<Object?> get props => [success, token, expiresAt, error, errorCode];
+
+  factory RefreshTokenResponse.fromJson(Map<String, dynamic> json) {
+    return RefreshTokenResponse(
+      success: json['success'] as bool,
+      token: json['token'] as String?,
+      expiresAt: json['expiresAt'] as String?,
+      error: json['error'] as String?,
+      errorCode: json['errorCode'] as int?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'success': success,
+      'token': token,
+      'expiresAt': expiresAt,
+      'error': error,
+      'errorCode': errorCode,
+    };
+  }
 }

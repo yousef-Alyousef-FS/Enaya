@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-
 import '../../domain/entities/user_entity.dart';
 
 part 'user_model.freezed.dart';
@@ -7,6 +6,8 @@ part 'user_model.g.dart';
 
 @freezed
 class UserModel with _$UserModel {
+  const UserModel._(); // ضروري لاستخدام الـ extensions أو الـ methods
+
   const factory UserModel({
     required int id,
     required String email,
@@ -17,9 +18,7 @@ class UserModel with _$UserModel {
 
   factory UserModel.fromJson(Map<String, dynamic> json) =>
       _$UserModelFromJson(json);
-}
 
-extension UserModelMapper on UserModel {
   User toEntity() {
     return User(
       id: id,
