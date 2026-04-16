@@ -1,16 +1,6 @@
 {
   "users": [
     {
-      "id": 2,
-      "username": "doctor",
-      "email": "doctor@enaya.com",
-      "password": "doctor123",
-      "phone": "+966501234568",
-      "roleId": 2,
-      "token": "mock_token_doctor_123",
-      "createdAt": "2024-01-02T00:00:00Z"
-    },
-    {
       "id": 1,
       "username": "receptionist",
       "email": "receptionist@enaya.com",
@@ -20,6 +10,18 @@
       "token": "mock_token_receptionist_456",
       "createdAt": "2024-01-03T00:00:00Z"
     },
+
+    {
+      "id": 2,
+      "username": "doctor",
+      "email": "doctor@enaya.com",
+      "password": "doctor123",
+      "phone": "+966501234568",
+      "roleId": 2,
+      "token": "mock_token_doctor_123",
+      "createdAt": "2024-01-02T00:00:00Z"
+    },
+
     {
       "id": 3,
       "username": "patient",
@@ -33,17 +35,19 @@
   ],
   "roles": [
     {
+      "id": 1,
+      "name": "Receptionist",
+      "nameAr": "موظف استقبال"
+    },
+
+    {
       "id": 2,
       "name": "Doctor",
       "nameAr": "طبيب"
     },
+
     {
       "id": 3,
-      "name": "Receptionist",
-      "nameAr": "موظف استقبال"
-    },
-    {
-      "id": 4,
       "name": "Patient",
       "nameAr": "مريض"
     }

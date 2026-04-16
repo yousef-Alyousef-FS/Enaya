@@ -36,6 +36,7 @@ dependencies:
   # Data Modeling
   freezed_annotation: ^2.4.0
   json_annotation: ^4.9.0
+  equatable: ^2.0.5
 
   # Responsive Design
   flutter_screenutil: ^5.9.0
@@ -91,5 +92,4 @@ flutter:
   assets:
     - assets/translations/
     - assets/images/
-    - assets/animation/
     - assets/mock_data/

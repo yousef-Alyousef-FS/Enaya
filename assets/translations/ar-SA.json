@@ -25,5 +25,19 @@
   "enter_phone_number": "أدخل رقم الهاتف",
   "password_too_short": "كلمة المرور قصيرة جدًا",
   "already_have_account": "هل لديك حساب بالفعل؟",
-  "confirm_password": "تأكيد كلمة المرور"
+  "confirm_password": "تأكيد كلمة المرور",
+  "error_connection_timeout": "انتهت مهلة الاتصال بالخادم",
+  "error_send_timeout": "انتهت مهلة إرسال البيانات",
+  "error_receive_timeout": "انتهت مهلة استقبال البيانات",
+  "error_request_cancelled": "تم إلغاء الطلب",
+  "error_something_went_wrong": "حدث خطأ ما، يرجى المحاولة لاحقاً",
+  "error_unexpected": "حدث خطأ غير متوقع",
+  "error_unauthorized": "غير مصرح لك بالوصول، يرجى تسجيل الدخول",
+  "error_bad_request": "طلب غير صالح",
+  "error_forbidden": "ليس لديك صلاحية للوصول",
+  "error_not_found": "العنصر المطلوب غير موجود",
+  "error_conflict": "حدث تعارض في البيانات",
+  "error_internal_server": "خطأ داخلي في الخادم",
+  "error_service_unavailable": "الخدمة غير متوفرة حالياً",
+  "error_bad_certificate": "شهادة الأمان غير صالحة"
 }
