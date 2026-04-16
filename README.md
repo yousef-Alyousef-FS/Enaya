@@ -1,45 +1,74 @@
-# Enaya (عناية) - Medical Center Management System
+# 🏥 Enaya (عناية) - Smart Medical Center System
 
-**Enaya** هو نظام متكامل لإدارة المراكز الطبية، مصمم لتقديم تجربة سلسة للأطباء، المرضى، وموظفي الاستقبال. يعتمد التطبيق على بنية برمجية قوية تضمن القابلية للتوسع والأداء العالي.
+**Enaya** is a comprehensive healthcare management solution designed to streamline the interaction between medical staff and patients. Built with a focus on efficiency, security, and scalability, the application provides tailored experiences for Doctors, Patients, and Receptionists.
 
-## 🚀 الرؤية البرمجية
-تم بناء المشروع باستخدام **Clean Architecture** مع اتباع نمط **Feature-first Layering** لضمان فصل الاهتمامات (Separation of Concerns) وسهولة الاختبار.
+---
 
-## 🛠 التقنيات المستخدمة (Tech Stack)
-- **Framework:** Flutter (Latest Stable)
-- **State Management:** Provider
-- **Navigation:** GoRouter
-- **Dependency Injection:** GetIt & Injectable
-- **Networking:** Dio
-- **Local Storage:** Shared Preferences & Secure Storage
-- **Functional Programming:** Dartz (Either)
-- **UI & UX:** Flutter ScreenUtil, Shimmer, Awesome Dialog
-- **Localization:** Easy Localization (العربية والانجليزية)
+## ✨ Key Features
+- **Role-Based Access Control (RBAC):** Specialized dashboards for three distinct user roles (Doctor, Receptionist, Patient).
+- **Modern Authentication:** Secure Login and Signup flows with integrated Token management and Refresh Token logic.
+- **Multilingual Support:** Full support for Arabic and English with right-to-left (RTL) layout optimization.
+- **Responsive Design:** A fluid UI that adapts seamlessly to various screen sizes and orientations.
+- **Clean Architecture:** A robust structural foundation that ensures maintainability and high code quality.
 
-## 📁 هيكلية المشروع (Project Structure)
+---
+
+## 🛠 Tech Stack & Architecture
+The project follows **Clean Architecture** principles, separating the application into three main layers:
+- **Domain Layer:** Contains pure business logic (Entities and UseCases).
+- **Data Layer:** Handles data fetching from APIs or Local storage, implementing the Repository pattern.
+- **Presentation Layer:** Manages the UI state using the **Provider** pattern and **ViewModel** approach.
+
+### Core Technologies:
+- **Navigation:** [GoRouter](https://pub.dev/packages/go_router) for declarative routing.
+- **Dependency Injection:** [GetIt](https://pub.dev/packages/get_it) for decoupled service management.
+- **Networking:** [Dio](https://pub.dev/packages/dio) with advanced Interceptors for automated header injection.
+- **Code Generation:** [Freezed](https://pub.dev/packages/freezed) & [JsonSerializable] for type-safe data modeling.
+- **Functional Programming:** [Dartz](https://pub.dev/packages/dartz) for elegant error handling (Either type).
+
+---
+
+## 📁 Project Structure
 ```text
 lib/
-├── core/            # المكونات المشتركة، الثيمات، والخدمات المركزية
-├── features/        # الميزات الوظيفية (كل ميزة تحتوي على Data, Domain, Presentation)
-│   ├── auth/        # نظام الهوية والتحقق
-│   ├── dashboard/   # لوحات التحكم (طبيب، مريض، استقبال)
-│   ├── appointments/# إدارة المواعيد (قيد التطوير)
-│   ├── patients/    # سجلات المرضى (قيد التطوير)
-│   └── ...          # ميزات أخرى
-└── main.dart        # نقطة انطلاق التطبيق
+├── core/            # Common utils, theme, networking, and base classes.
+├── features/        # Functional modules (Feature-driven).
+│   ├── auth/        # Identity management and verification.
+│   ├── dashboard/   # Specialized screens for each user role.
+│   └── ...          # Future modules (Appointments, Records, etc.)
+└── main.dart        # Application entry point and global configurations.
 ```
 
-## 🏁 الميزات الحالية
-- [x] نظام تسجيل الدخول وإنشاء الحساب (Auth System).
-- [x] دعم تعدد اللغات (العربية/الإنجليزية).
-- [x] واجهات مستخدم متجاوبة (Responsive UI) للجوال والتابلت.
-- [x] لوحات تحكم مخصصة لكل دور (Doctor, Patient, Receptionist).
-- [ ] إدارة المواعيد والجدولة (قادم قريباً).
-- [ ] الوصفات الطبية الإلكترونية (قادم قريباً).
+---
 
-## 📥 التنصيب والتشغيل
-1. قم بتحميل المستودع: `git clone https://github.com/your-repo/enaya.git`
-2. تحميل المكتبات: `flutter pub get`
-3. توليد الملفات البرمجية (Freezed/JSON): 
-   `flutter pub run build_runner build --delete-conflicting-outputs`
-4. تشغيل التطبيق: `flutter run`
+## 🚀 Getting Started
+
+### Prerequisites:
+- Flutter SDK (Latest Stable)
+- Dart SDK
+
+### Installation:
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/your-username/enaya.git
+   ```
+2. **Install dependencies:**
+   ```bash
+   flutter pub get
+   ```
+3. **Generate required files (Models/JSON):**
+   ```bash
+   flutter pub run build_runner build --delete-conflicting-outputs
+   ```
+4. **Run the application:**
+   ```bash
+   flutter run
+   ```
+
+---
+
+## 🛡 License
+This project is proprietary and confidential. Unauthorized copying of this file via any medium is strictly prohibited.
+
+---
+*Developed with ❤️ for a better healthcare experience.*
