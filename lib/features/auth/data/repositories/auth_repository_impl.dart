@@ -4,6 +4,8 @@ import '../../../../core/network/network_info.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
+import '../models/auth_responses.dart';
+import '../../domain/entities/forgot_password_entity.dart';
 import '../models/user_model.dart';
 
 class AuthRepositoryImpl implements IAuthRepository {
@@ -51,6 +53,22 @@ class AuthRepositoryImpl implements IAuthRepository {
           phone: phone,
         );
         return Right(remoteUser.toEntity());
+      } catch (e) {
+        return Left(ServerFailure(e.toString()));
+      }
+    } else {
+      return Left(NetworkFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, ForgotPasswordEntity>> forgotPassword({
+    required String email,
+  }) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final response = await remoteDataSource.forgotPassword(email: email);
+        return Right(response.toEntity());
       } catch (e) {
         return Left(ServerFailure(e.toString()));
       }

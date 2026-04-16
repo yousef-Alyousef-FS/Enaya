@@ -36,6 +36,7 @@ dependencies:
   # Data Modeling
   freezed_annotation: ^2.4.0
   json_annotation: ^4.9.0
+  equatable: ^2.0.5
 
   # Responsive Design
   flutter_screenutil: ^5.9.0
@@ -44,6 +45,8 @@ dependencies:
   shimmer: ^3.0.0
   awesome_dialog: ^3.2.1
   flutter_spinkit: ^5.2.1
+  flutter_svg: ^2.0.10+1
+  lottie: ^2.7.0
 
   # Navigation
   go_router: ^13.2.0
@@ -70,21 +73,23 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo.png"
-  adaptive_icon_background: "#2A7703"
+  image_path: "assets/images/icon.png"
+  adaptive_icon_background: "#FFFFFF"
   min_sdk_android: 21
 
 flutter_native_splash:
-  color: "#2A7703"
-  image: assets/images/splash.png
+  color: "#242442"
+  image: assets/images/logo.png
   android: true
   ios: true
-  fullscreen: true
+
   android_12:
-    color: "#2A7703"
+    color: "#242442"
     image: assets/images/logo.png
 
 flutter:
   uses-material-design: true
   assets:
     - assets/translations/
+    - assets/images/
+    - assets/mock_data/

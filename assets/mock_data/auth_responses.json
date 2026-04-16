@@ -1,18 +1,16 @@
 {
   "users": [
-
     {
-      "id": 3,
-      "username": "receptionist",
-      "email": "receptionist@enaya.com",
-      "password": "12345678",
-      "phone": "+966501234569",
+      "id": 1,
+      "username": "admin",
+      "email": "admin@enaya.com",
+      "password": "admin",
+      "phone": "+966501234567",
       "roleId": 1,
-      "role": "استقبال",
-      "token": "mock_token_nurse_eyJ1c2VySWQiOiAzLCJleHAiOiAxNjc3NjI1MjAwfQ==",
-      "createdAt": "2024-01-03T00:00:00Z"
+      "role": "مدير النظام",
+      "token": "mock_token_admin_eyJ1c2VySWQiOiAxLCJleHAiOiAxNjc3NjI1MjAwfQ==",
+      "createdAt": "2024-01-01T00:00:00Z"
     },
-
     {
       "id": 2,
       "username": "doctor",
@@ -24,14 +22,24 @@
       "token": "mock_token_doctor_eyJ1c2VySWQiOiAyLCJleHAiOiAxNjc3NjI1MjAwfQ==",
       "createdAt": "2024-01-02T00:00:00Z"
     },
-
+    {
+      "id": 3,
+      "username": "nurse",
+      "email": "nurse@enaya.com",
+      "password": "nurse123",
+      "phone": "+966501234569",
+      "roleId": 3,
+      "role": "ممرضة",
+      "token": "mock_token_nurse_eyJ1c2VySWQiOiAzLCJleHAiOiAxNjc3NjI1MjAwfQ==",
+      "createdAt": "2024-01-03T00:00:00Z"
+    },
     {
       "id": 4,
       "username": "patient",
       "email": "patient@enaya.com",
       "password": "patient123",
       "phone": "+966501234570",
-      "roleId": 3,
+      "roleId": 4,
       "role": "مريض",
       "token": "mock_token_patient_eyJ1c2VySWQiOiA0LCJleHAiOiAxNjc3NjI1MjAwfQ==",
       "createdAt": "2024-01-04T00:00:00Z"
@@ -40,20 +48,24 @@
   "roles": [
     {
       "id": 1,
-      "name": "Receptionist",
-      "nameAr": "استقبال",
-      "permissions": ["read", "write", "view_patients", "update_records"]
+      "name": "Admin",
+      "nameAr": "مدير النظام",
+      "permissions": ["read", "write", "delete", "manage_users"]
     },
-
     {
       "id": 2,
       "name": "Doctor",
       "nameAr": "طبيب",
       "permissions": ["read", "write", "view_patients"]
     },
-
     {
       "id": 3,
+      "name": "Nurse",
+      "nameAr": "ممرضة",
+      "permissions": ["read", "write", "view_patients", "update_records"]
+    },
+    {
+      "id": 4,
       "name": "Patient",
       "nameAr": "مريض",
       "permissions": ["read", "view_own_data"]

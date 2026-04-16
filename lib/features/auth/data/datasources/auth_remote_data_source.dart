@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:enaya/core/constants/api_constants.dart';
-
+import '../models/auth_responses.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
@@ -15,6 +15,8 @@ abstract class AuthRemoteDataSource {
     required String password,
     required String phone,
   });
+
+  Future<ForgotPasswordResponse> forgotPassword({required String email});
 
   Future<void> logout();
 }
@@ -53,8 +55,16 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'phone': phone,
       },
     );
-
     return UserModel.fromJson(response.data['user']);
+  }
+
+  @override
+  Future<ForgotPasswordResponse> forgotPassword({required String email}) async {
+    final response = await dio.post(
+      ApiConstants.forgotPassword,
+      data: {'email': email},
+    );
+    return ForgotPasswordResponse.fromJson(response.data);
   }
 
   @override
