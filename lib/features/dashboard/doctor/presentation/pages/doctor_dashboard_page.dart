@@ -1,34 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-class PatientHomeScreen extends StatelessWidget {
-  const PatientHomeScreen({super.key});
+class DoctorDashboardPage extends StatelessWidget {
+  const DoctorDashboardPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Patient Dashboard')),
+      appBar: AppBar(title: const Text('Doctor Dashboard')),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.person,
+              Icons.medical_services,
               size: 100.sp,
               color: Theme.of(context).primaryColor,
             ),
             SizedBox(height: 20.h),
             Text(
-              'Welcome, Patient!',
+              'Welcome, Doctor!',
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             SizedBox(height: 10.h),
             Text(
-              'View your medical records, appointments, and health information.',
+              'View patient records, manage appointments, and provide care.',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyLarge,
             ),
-            // TODO: Add patient-specific features
           ],
         ),
       ),
