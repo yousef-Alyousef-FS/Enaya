@@ -8,12 +8,77 @@ class CustomDataTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: DataTable(
-        headingRowColor: WidgetStateProperty.all(Theme.of(context).primaryColor.withOpacity(0.1)),
-        columns: columns.map((col) => DataColumn(label: Text(col, style: const TextStyle(fontWeight: FontWeight.bold)))).toList(),
-        rows: rows.map((row) => DataRow(cells: row.map((cell) => DataCell(Text(cell))).toList())).toList(),
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? theme.colorScheme.outline.withOpacity(0.3)
+              : theme.dividerColor,
+        ),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: DataTable(
+            headingRowColor: WidgetStateProperty.all(
+              theme.colorScheme.primary.withOpacity(0.08),
+            ),
+            dataRowColor: WidgetStateProperty.resolveWith(
+              (states) => states.contains(WidgetState.hovered)
+                  ? theme.colorScheme.primary.withOpacity(0.05)
+                  : null,
+            ),
+            headingTextStyle: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.primary,
+            ),
+            dataTextStyle: theme.textTheme.bodyMedium,
+            columnSpacing: 32,
+            horizontalMargin: 24,
+            dividerThickness: 0.8,
+            columns: columns
+                .map((col) => DataColumn(label: Text(col)))
+                .toList(),
+            rows: rows.isEmpty
+                ? [
+                    DataRow(
+                      cells: [
+                        DataCell(
+                          Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Text(
+                              "لا توجد بيانات",
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.error,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        ...List.generate(
+                          columns.length - 1,
+                          (_) => const DataCell(Text("")),
+                        ),
+                      ],
+                    ),
+                  ]
+                : rows
+                      .map(
+                        (row) => DataRow(
+                          cells: row
+                              .map((cell) => DataCell(Text(cell)))
+                              .toList(),
+                        ),
+                      )
+                      .toList(),
+          ),
+        ),
       ),
     );
   }

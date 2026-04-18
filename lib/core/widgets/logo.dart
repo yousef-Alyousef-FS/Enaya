@@ -26,7 +26,7 @@ class LogoIcon extends StatelessWidget {
         color ?? AppColors.primary,
         BlendMode.srcIn,
       ),
-      placeholderBuilder: (context) => AppLoaders.splashLoader(),
+      placeholderBuilder: (context) => AppLoaders.splash(),
     );
   }
 }

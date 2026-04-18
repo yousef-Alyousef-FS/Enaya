@@ -3,25 +3,29 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'app_colors.dart';
 
 class AppTheme {
+  // ---------------------------------------------------------------------------
+  // 🌞 LIGHT THEME
+  // ---------------------------------------------------------------------------
   static ThemeData get lightTheme {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      brightness: Brightness.light,
+    ).copyWith(
+      primary: AppColors.primary,
+      secondary: AppColors.secondary,
+      surface: AppColors.surface,
+      error: AppColors.error,
+      onSurface: AppColors.gray700,
+    );
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
-      primaryColor: AppColors.primary,
+      colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.background,
       dividerColor: AppColors.divider,
-      
-      colorScheme: const ColorScheme.light(
-        primary: AppColors.primary,
-        onPrimary: Colors.white,
-        secondary: AppColors.secondary,
-        onSecondary: Colors.white,
-        surface: AppColors.surface,
-        error: AppColors.error,
-        onSurface: AppColors.gray700,
-      ),
 
-      // --- Cards & Surfaces ---
+      // Cards
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
@@ -32,7 +36,7 @@ class AppTheme {
         ),
       ),
 
-      // --- Navigation (Sidebar & Dock) ---
+      // Drawer
       drawerTheme: DrawerThemeData(
         backgroundColor: AppColors.surface,
         elevation: 0,
@@ -43,19 +47,21 @@ class AppTheme {
           ),
         ),
       ),
+
+      // Bottom Navigation
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.gray400,
-        selectedLabelStyle: TextStyle(fontSize: 12.sp, fontWeight: FontWeight.bold),
-        unselectedLabelStyle: TextStyle(fontSize: 12.sp),
+        selectedLabelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        unselectedLabelStyle: TextStyle(fontSize: 12),
         type: BottomNavigationBarType.fixed,
-        elevation: 20,
+        elevation: 0,
       ),
 
-      // --- Selection & Menus ---
+      // Dropdown
       dropdownMenuTheme: DropdownMenuThemeData(
-        textStyle: TextStyle(fontSize: 14.sp, color: AppColors.secondary),
+        textStyle: TextStyle(fontSize: 14, color: AppColors.secondary),
         menuStyle: MenuStyle(
           backgroundColor: WidgetStateProperty.all(AppColors.surface),
           elevation: WidgetStateProperty.all(10),
@@ -65,63 +71,72 @@ class AppTheme {
         ),
       ),
 
-      // --- Data Display (Tables) ---
+      // DataTable
       dataTableTheme: DataTableThemeData(
         headingRowColor: WidgetStateProperty.all(AppColors.gray100),
         headingTextStyle: TextStyle(
           color: AppColors.secondary,
           fontWeight: FontWeight.bold,
-          fontSize: 14.sp,
+          fontSize: 14,
         ),
-        dataTextStyle: TextStyle(color: AppColors.gray700, fontSize: 13.sp),
+        dataTextStyle: TextStyle(color: AppColors.gray700, fontSize: 13),
         dividerThickness: 1,
         horizontalMargin: 20,
       ),
 
-      // --- Form Elements ---
+      // Chips
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.primaryExtraLight,
         selectedColor: AppColors.primary,
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-        labelStyle: TextStyle(color: AppColors.primary, fontSize: 12.sp, fontWeight: FontWeight.w600),
-        secondaryLabelStyle: const TextStyle(color: Colors.white),
+        labelStyle: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
       ),
 
+      // Dialog
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
         elevation: 5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
-        titleTextStyle: TextStyle(color: AppColors.secondary, fontSize: 20.sp, fontWeight: FontWeight.bold),
+        titleTextStyle: TextStyle(color: AppColors.secondary, fontSize: 20, fontWeight: FontWeight.bold),
       ),
 
-      // --- Buttons ---
+      // Buttons
       elevatedButtonTheme: _elevatedButtonTheme,
       outlinedButtonTheme: _outlinedButtonTheme,
       textButtonTheme: _textButtonTheme,
 
-      // --- Common Settings ---
+      // AppBar
       appBarTheme: _appBarTheme(isDark: false),
+
+      // Inputs
       inputDecorationTheme: _inputDecorationTheme(isDark: false),
+
+      // Text
       textTheme: _textTheme(isDark: false),
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // 🌙 DARK THEME
+  // ---------------------------------------------------------------------------
   static ThemeData get darkTheme {
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      brightness: Brightness.dark,
+    ).copyWith(
+      primary: AppColors.primary,
+      secondary: AppColors.primaryLight,
+      surface: AppColors.darkSurface,
+      error: AppColors.error,
+      onSurface: AppColors.darkTextPrimary,
+    );
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.dark,
-      primaryColor: AppColors.primary,
+      colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.darkBackground,
-      
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.primary,
-        onPrimary: Colors.white,
-        secondary: AppColors.primaryLight,
-        surface: AppColors.darkSurface,
-        error: AppColors.error,
-        onSurface: AppColors.darkTextPrimary,
-      ),
 
       cardTheme: CardThemeData(
         color: AppColors.darkSurface,
@@ -147,9 +162,9 @@ class AppTheme {
         headingTextStyle: TextStyle(
           color: AppColors.darkTextPrimary,
           fontWeight: FontWeight.bold,
-          fontSize: 14.sp,
+          fontSize: 14,
         ),
-        dataTextStyle: TextStyle(color: AppColors.darkTextSecondary, fontSize: 13.sp),
+        dataTextStyle: TextStyle(color: AppColors.darkTextSecondary, fontSize: 13),
       ),
 
       appBarTheme: _appBarTheme(isDark: true),
@@ -161,7 +176,9 @@ class AppTheme {
     );
   }
 
-  // --- Helpers ---
+  // ---------------------------------------------------------------------------
+  // 🔧 HELPERS
+  // ---------------------------------------------------------------------------
 
   static AppBarTheme _appBarTheme({required bool isDark}) {
     return AppBarTheme(
@@ -171,7 +188,7 @@ class AppTheme {
       iconTheme: IconThemeData(color: isDark ? AppColors.darkTextPrimary : AppColors.secondary),
       titleTextStyle: TextStyle(
         color: isDark ? AppColors.darkTextPrimary : AppColors.secondary,
-        fontSize: 18.sp,
+        fontSize: 18,
         fontWeight: FontWeight.bold,
       ),
     );
@@ -180,14 +197,14 @@ class AppTheme {
   static TextTheme _textTheme({required bool isDark}) {
     final primaryColor = isDark ? AppColors.darkTextPrimary : AppColors.secondary;
     final secondaryColor = isDark ? AppColors.darkTextSecondary : AppColors.gray700;
-    
+
     return TextTheme(
-      displayLarge: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 28.sp),
-      displayMedium: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 24.sp),
-      titleLarge: TextStyle(color: primaryColor, fontWeight: FontWeight.w600, fontSize: 18.sp),
-      bodyLarge: TextStyle(color: primaryColor, fontSize: 16.sp),
-      bodyMedium: TextStyle(color: secondaryColor, fontSize: 14.sp),
-      labelSmall: TextStyle(color: AppColors.gray400, fontSize: 12.sp),
+      headlineLarge: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 28),
+      headlineMedium: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 24),
+      titleLarge: TextStyle(color: primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
+      bodyLarge: TextStyle(color: primaryColor, fontSize: 16),
+      bodyMedium: TextStyle(color: secondaryColor, fontSize: 14),
+      labelSmall: TextStyle(color: AppColors.gray400, fontSize: 12),
     );
   }
 
@@ -200,8 +217,12 @@ class AppTheme {
       enabledBorder: _buildBorder(isDark ? AppColors.darkSurfaceLight : AppColors.gray200),
       focusedBorder: _buildBorder(AppColors.primary, width: 1.5),
       errorBorder: _buildBorder(AppColors.error),
-      labelStyle: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.gray400, fontSize: 14.sp),
-      hintStyle: TextStyle(color: AppColors.gray400, fontSize: 14.sp),
+      floatingLabelStyle: TextStyle(color: AppColors.primary),
+      prefixIconColor: isDark ? AppColors.darkTextSecondary : AppColors.gray400,
+      suffixIconColor: isDark ? AppColors.darkTextSecondary : AppColors.gray400,
+      errorStyle: TextStyle(color: AppColors.error, fontSize: 12),
+      labelStyle: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.gray400, fontSize: 14),
+      hintStyle: TextStyle(color: AppColors.gray400, fontSize: 14),
     );
   }
 
@@ -220,7 +241,7 @@ class AppTheme {
         elevation: 0,
         minimumSize: Size(double.infinity, 56.h),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        textStyle: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.bold),
+        textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -232,7 +253,7 @@ class AppTheme {
         side: const BorderSide(color: AppColors.primary, width: 1.5),
         minimumSize: Size(double.infinity, 56.h),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        textStyle: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w600),
+        textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -241,7 +262,7 @@ class AppTheme {
     return TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: AppColors.primary,
-        textStyle: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.bold),
+        textStyle: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
       ),
     );
   }

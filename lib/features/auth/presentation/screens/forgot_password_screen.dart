@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+
 import '../../../../core/di/injection.dart';
 import '../../../../core/mixins/responsive_layout_mixin.dart';
 import '../../../../core/view_models/base_view_model.dart';
@@ -19,16 +20,44 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
-    with ResponsiveLayoutMixin {
+    with ResponsiveLayoutMixin, TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
+
   String? _message;
   bool _isSuccess = false;
+
+  late final AnimationController _fadeController;
+  late final Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
+  }
 
   @override
   void dispose() {
     _emailController.dispose();
+    _fadeController.dispose();
     super.dispose();
+  }
+
+  void _triggerMessage(String msg, bool success) {
+    setState(() {
+      _message = msg;
+      _isSuccess = success;
+    });
+    _fadeController.forward(from: 0);
   }
 
   @override
@@ -68,99 +97,107 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                     ),
                   ),
                   SizedBox(height: config.isPortrait ? 30.h : 20.h),
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      children: [
-                        AuthTextField(
-                          labelText: 'email_address'.tr(),
-                          hintText: 'email_address'.tr(),
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          prefixIcon: Icons.email_outlined,
-                          semanticLabel: 'email_address'.tr(),
-                          validator: (value) => !value!.contains('@')
-                              ? 'enter_valid_email'.tr()
-                              : null,
-                        ),
-                        SizedBox(height: config.isPortrait ? 18.h : 12.h),
-                        Consumer<AuthViewModel>(
-                          builder: (context, viewModel, child) {
-                            if (viewModel.state == ViewState.error) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                setState(() {
-                                  _isSuccess = false;
-                                  _message = viewModel.errorMessage ??
-                                      'error_occurred'.tr();
-                                });
-                                viewModel.resetState();
-                              });
-                            }
 
-                            if (viewModel.state == ViewState.success) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                setState(() {
-                                  _isSuccess = true;
-                                  _message = 'reset_email_sent'.tr();
-                                });
-                                viewModel.resetState();
-                              });
-                            }
-
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                ElevatedButton(
-                                  onPressed: viewModel.isLoading
-                                      ? null
-                                      : () {
-                                          if (_formKey.currentState!
-                                              .validate()) {
-                                            setState(() {
-                                              _message = null;
-                                            });
-                                            viewModel.forgotPassword(
-                                              _emailController.text,
-                                            );
-                                          }
-                                        },
-                                  child: viewModel.isLoading
-                                      ? AppLoaders.buttonLoader()
-                                      : Text(
-                                          'send_reset_link'.tr(),
-                                          style: TextStyle(
-                                            fontSize: config.buttonFontSize,
-                                          ),
-                                        ),
-                                ),
-                                if (_message != null)
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 8.h),
-                                    child: Text(
-                                      _message!,
-                                      style: TextStyle(
-                                        color: _isSuccess
-                                            ? Colors.green
-                                            : Theme.of(context)
-                                                .colorScheme
-                                                .error,
-                                        fontSize: 14,
-                                      ),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                              ],
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
+                  _buildForm(config),
                 ],
               );
             },
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildForm(config) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          AuthTextField(
+            labelText: 'email_address'.tr(),
+            hintText: 'email_address'.tr(),
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            prefixIcon: Icons.email_outlined,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'enter_valid_email'.tr();
+              }
+              final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+              if (!emailRegex.hasMatch(value.trim())) {
+                return 'enter_valid_email'.tr();
+              }
+              return null;
+            },
+          ),
+          SizedBox(height: config.isPortrait ? 18.h : 12.h),
+
+          Consumer<AuthViewModel>(
+            builder: (context, viewModel, _) {
+              // Handle error
+              if (viewModel.state == ViewState.error) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _triggerMessage(
+                    viewModel.errorMessage ?? 'error_occurred'.tr(),
+                    false,
+                  );
+                  viewModel.resetState();
+                });
+              }
+
+              // Handle success
+              if (viewModel.state == ViewState.success) {
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _triggerMessage('reset_email_sent'.tr(), true);
+                  viewModel.resetState();
+                });
+              }
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  ElevatedButton(
+                    onPressed: viewModel.isLoading
+                        ? null
+                        : () {
+                      if (_formKey.currentState!.validate()) {
+                        setState(() => _message = null);
+                        viewModel.forgotPassword(
+                          _emailController.text.trim(),
+                        );
+                      }
+                    },
+                    child: viewModel.isLoading
+                        ? AppLoaders.inline()
+                        : Text(
+                      'send_reset_link'.tr(),
+                      style: TextStyle(fontSize: config.buttonFontSize),
+                    ),
+                  ),
+
+                  if (_message != null)
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Padding(
+                        padding: EdgeInsets.only(top: 12.h),
+                        child: Text(
+                          _message!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: _isSuccess
+                                ? Colors.green
+                                : Theme.of(context).colorScheme.error,
+                            fontSize: config.bodyFontSize,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ],
       ),
     );
   }

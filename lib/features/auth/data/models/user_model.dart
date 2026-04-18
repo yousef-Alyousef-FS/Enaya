@@ -6,7 +6,7 @@ part 'user_model.g.dart';
 
 @freezed
 class UserModel with _$UserModel {
-  const UserModel._(); // ضروري لاستخدام الـ extensions أو الـ methods
+  const UserModel._();
 
   const factory UserModel({
     required int id,

@@ -1,58 +1,52 @@
 import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 mixin ResponsiveLayoutMixin {
   ResponsiveLayoutConfig getResponsiveConfig(BuildContext context) {
     final media = MediaQuery.of(context);
-    final orientation = MediaQuery.of(context).orientation;
+    final orientation = media.orientation;
     final isPortrait = orientation == Orientation.portrait;
+
     final screenWidth = media.size.width;
     final screenHeight = media.size.height;
     final isCompactHeight = screenHeight < 620;
 
     return ResponsiveLayoutConfig(
       isPortrait: isPortrait,
+
       cardMaxWidth: math.min(
-        isPortrait ? 520.w : 600.w,
+        isPortrait ? 520 : 600,
         screenWidth * (isPortrait ? 0.94 : 0.88),
       ),
+
       cardHorizontalPadding: isPortrait ? 24.w : 20.w,
       cardVerticalPadding: isPortrait ? 30.h : (isCompactHeight ? 18.h : 22.h),
-      scrollVerticalPadding: isPortrait
-          ? 20.h
-          : (isCompactHeight ? 12.h : 16.h),
-      titleFontSize: responsiveFontSize(
-        screenWidth,
-        small: 26,
-        medium: 28,
-        large: 32,
-      ),
-      bodyFontSize: responsiveFontSize(
-        screenWidth,
-        small: 14,
-        medium: 15,
-        large: 16,
-      ),
-      buttonFontSize: responsiveFontSize(
-        screenWidth,
-        small: 14,
-        medium: 15,
-        large: 16,
-      ),
+      scrollVerticalPadding: isPortrait ? 20.h : (isCompactHeight ? 12.h : 16.h),
+
+
+      titleFontSize: _getTitleFontSize(screenWidth),
+      bodyFontSize: _getBodyFontSize(screenWidth),
+      buttonFontSize: _getButtonFontSize(screenWidth),
     );
   }
 
-  double responsiveFontSize(
-    double screenWidth, {
-    required double small,
-    required double medium,
-    required double large,
-  }) {
-    if (screenWidth >= 900) return large;
-    if (screenWidth >= 700) return medium;
-    return small;
+  double _getTitleFontSize(double width) {
+    if (width > 1200) return 28; // Desktop
+    if (width > 800) return 27;  // Tablet
+    return 26;                   // Mobile
+  }
+
+  double _getBodyFontSize(double width) {
+    if (width > 1200) return 15;
+    if (width > 800) return 14.5;
+    return 14;
+  }
+
+  double _getButtonFontSize(double width) {
+    if (width > 1200) return 15;
+    if (width > 800) return 14.5;
+    return 14;
   }
 }
 
@@ -66,7 +60,7 @@ class ResponsiveLayoutConfig {
   final double bodyFontSize;
   final double buttonFontSize;
 
-  ResponsiveLayoutConfig({
+  const ResponsiveLayoutConfig({
     required this.isPortrait,
     required this.cardMaxWidth,
     required this.cardHorizontalPadding,

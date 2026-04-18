@@ -39,5 +39,9 @@
   "error_conflict": "Conflict occurred",
   "error_internal_server": "Internal server error",
   "error_service_unavailable": "Service temporarily unavailable",
-  "error_bad_certificate": "Invalid security certificate"
+  "error_bad_certificate": "Invalid security certificate",
+  "no_internet_connection": "No Internet Connection",
+  "reset_password": "Reset Password",
+  "enter_email_reset": "Enter your email to reset your password",
+  "send_reset_link": "Send Reset Link"
 }

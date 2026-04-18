@@ -1,8 +1,8 @@
+import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../cache/cache_helper.dart';
 import '../constants/api_constants.dart';
 
-/// إدارة التوكن وتخزينه بشكل آمن
 class TokenManager {
   final FlutterSecureStorage _secureStorage;
   final CacheHelper _cacheHelper;
@@ -13,7 +13,9 @@ class TokenManager {
   })  : _secureStorage = secureStorage,
         _cacheHelper = cacheHelper;
 
-  /// حفظ التوكن بشكل آمن
+  // ---------------------------------------------------------------------------
+  // 🔐 Access Token
+  // ---------------------------------------------------------------------------
   Future<void> saveToken(String token) async {
     try {
       await _secureStorage.write(
@@ -25,7 +27,6 @@ class TokenManager {
     }
   }
 
-  /// الحصول على التوكن المحفوظ
   Future<String?> getToken() async {
     try {
       return await _secureStorage.read(key: ApiConstants.tokenKey);
@@ -34,7 +35,6 @@ class TokenManager {
     }
   }
 
-  /// حذف التوكن (عند Logout)
   Future<void> deleteToken() async {
     try {
       await _secureStorage.delete(key: ApiConstants.tokenKey);
@@ -43,65 +43,107 @@ class TokenManager {
     }
   }
 
-  /// التحقق من وجود توكن صحيح
-  Future<bool> hasValidToken() async {
+  // ---------------------------------------------------------------------------
+  // 🔄 Refresh Token
+  // ---------------------------------------------------------------------------
+  Future<void> saveRefreshToken(String token) async {
     try {
-      final token = await getToken();
-      return token != null && token.isNotEmpty;
-    } catch (_) {
-      return false;
+      await _secureStorage.write(
+        key: ApiConstants.refreshTokenKey,
+        value: token,
+      );
+    } catch (e) {
+      throw TokenException('Failed to save refresh token: $e');
     }
   }
 
-  /// الحصول على Authorization Header
-  Future<String?> getAuthorizationHeader() async {
+  Future<String?> getRefreshToken() async {
     try {
-      final token = await getToken();
-      if (token != null) {
-        return 'Bearer $token';
-      }
-      return null;
+      return await _secureStorage.read(key: ApiConstants.refreshTokenKey);
+    } catch (e) {
+      throw TokenException('Failed to retrieve refresh token: $e');
+    }
+  }
+
+  Future<void> deleteRefreshToken() async {
+    try {
+      await _secureStorage.delete(key: ApiConstants.refreshTokenKey);
+    } catch (e) {
+      throw TokenException('Failed to delete refresh token: $e');
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // ⏳ Token Expiry
+  // ---------------------------------------------------------------------------
+  Future<void> saveTokenExpiry(DateTime expiry) async {
+    try {
+      await _cacheHelper.setData(
+        key: ApiConstants.tokenExpiryKey,
+        value: expiry.toIso8601String(),
+      );
+    } catch (e) {
+      throw TokenException('Failed to save token expiry: $e');
+    }
+  }
+
+  DateTime? getTokenExpiry() {
+    try {
+      final value = _cacheHelper.getData(key: ApiConstants.tokenExpiryKey);
+      if (value == null) return null;
+      return DateTime.parse(value);
     } catch (_) {
       return null;
     }
   }
 
-  /// حفظ بيانات المستخدم
-  Future<void> saveUserData(String userData) async {
+  bool isTokenExpired() {
+    final expiry = getTokenExpiry();
+    if (expiry == null) return true;
+    return DateTime.now().isAfter(expiry);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 👤 User Data (JSON)
+  // ---------------------------------------------------------------------------
+  Future<void> saveUserData(Map<String, dynamic> user) async {
     try {
       await _cacheHelper.setData(
         key: ApiConstants.userDataKey,
-        value: userData,
+        value: jsonEncode(user),
       );
     } catch (e) {
       throw TokenException('Failed to save user data: $e');
     }
   }
 
-  /// الحصول على بيانات المستخدم
-  String? getUserData() {
+  Map<String, dynamic>? getUserData() {
     try {
-      return _cacheHelper.getData(key: ApiConstants.userDataKey);
-    } catch (e) {
+      final jsonString = _cacheHelper.getData(key: ApiConstants.userDataKey);
+      if (jsonString == null) return null;
+      return jsonDecode(jsonString);
+    } catch (_) {
       return null;
     }
   }
 
-  /// مسح كل البيانات (عند Logout)
+  // ---------------------------------------------------------------------------
+  // 🧹 Clear All
+  // ---------------------------------------------------------------------------
   Future<void> clearAll() async {
     try {
       await deleteToken();
+      await deleteRefreshToken();
       await _cacheHelper.removeData(key: ApiConstants.userDataKey);
+      await _cacheHelper.removeData(key: ApiConstants.tokenExpiryKey);
     } catch (e) {
       throw TokenException('Failed to clear authentication data: $e');
     }
   }
 }
 
-/// استثناء مخصص لمشاكل التوكن
 class TokenException implements Exception {
   final String message;
-
   TokenException(this.message);
 
   @override

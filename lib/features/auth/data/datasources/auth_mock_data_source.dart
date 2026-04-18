@@ -1,9 +1,9 @@
 import 'package:logger/logger.dart';
 
+import '../../../../core/network/base_response.dart';
 import '../../../../core/services/mock_data_service.dart';
 import '../../../../core/services/token_manager.dart';
 import '../models/auth_responses.dart';
-import '../models/user_model.dart';
 import 'auth_remote_data_source.dart';
 
 class AuthMockDataSourceImpl implements AuthRemoteDataSource {
@@ -16,136 +16,118 @@ class AuthMockDataSourceImpl implements AuthRemoteDataSource {
     required this.tokenManager,
   });
 
-  @override
-  Future<UserModel> login({
-    required String usernameOrEmail,
-    required String password,
+  // ---------------------------------------------------------------------------
+  // 🔥 Helper: Execute mock request with unified logging + error handling
+  // ---------------------------------------------------------------------------
+  Future<T> _execute<T>({
+    required String actionName,
+    required Future<T> Function() request,
+    void Function(T response)? onSuccess,
+    void Function(T response)? onFailure,
   }) async {
     try {
-      _logger.i('🔐 بدء عملية تسجيل الدخول: $usernameOrEmail');
+      _logger.i('🚀 بدء عملية $actionName (Mock)');
 
-      final response = await mockDataService.mockLogin(
-        usernameOrEmail: usernameOrEmail,
-        password: password,
-      );
+      final response = await request();
 
-      if (response.success && response.data != null) {
-        final userData = response.data!.user;
-        final token = response.data!.token;
-
-        if (token.isNotEmpty) {
-          // حفظ التوكن بشكل آمن
-          await tokenManager.saveToken(token);
-          _logger.i('✅ تم حفظ التوكن بنجاح');
+      // Handle success/failure
+      if (response is BaseResponse) {
+        if (response.success) {
+          _logger.i('✅ نجاح عملية $actionName');
+          onSuccess?.call(response);
+        } else {
+          _logger.e('❌ فشل عملية $actionName: ${response.error}');
+          onFailure?.call(response);
         }
-
-        final userModel = UserModel(
-          id: userData.id,
-          email: userData.email,
-          userName: userData.userName,
-          phone: userData.phone,
-          roleId: userData.roleId,
-        );
-
-        _logger.i('✅ تم تسجيل الدخول بنجاح: ${userModel.userName}');
-        return userModel;
-      } else {
-        final error = response.error ?? 'خطأ في التحقق من البيانات';
-        _logger.e('❌ فشل تسجيل الدخول: $error');
-        throw Exception(error);
       }
-    } catch (e) {
-      _logger.e('❌ خطأ في عملية تسجيل الدخول: $e');
-      throw Exception('فشل تسجيل الدخول: $e');
+
+      return response;
+    } catch (e, stack) {
+      _logger.e('💥 خطأ أثناء $actionName: $e', stackTrace: stack);
+      throw Exception('فشل $actionName: $e');
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // 🔐 Login
+  // ---------------------------------------------------------------------------
   @override
-  Future<UserModel> signup({
+  Future<LoginResponse> login({
+    required String usernameOrEmail,
+    required String password,
+  }) async {
+    return _execute<LoginResponse>(
+      actionName: 'تسجيل الدخول',
+      request: () => mockDataService.auth.login(usernameOrEmail, password),
+      onSuccess: (response) async {
+        final token = response.data?.token ?? '';
+        if (token.isNotEmpty) {
+          await tokenManager.saveToken(token);
+          _logger.i('🔑 تم حفظ التوكن بنجاح');
+        }
+        _logger.i('👤 المستخدم: ${response.data?.user.userName}');
+      },
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 📝 Signup
+  // ---------------------------------------------------------------------------
+  @override
+  Future<SignupResponse> signup({
     required String userName,
     required String email,
     required String password,
     required String phone,
   }) async {
-    try {
-      _logger.i('📝 بدء عملية التسجيل: $email');
-
-      final response = await mockDataService.mockSignup(
+    return _execute<SignupResponse>(
+      actionName: 'التسجيل',
+      request: () => mockDataService.auth.signup(
         username: userName,
         email: email,
         password: password,
         phone: phone,
-      );
-
-      if (response.success && response.data != null) {
-        final userData = response.data!.user;
-        final token = response.data!.token;
-
+      ),
+      onSuccess: (response) async {
+        final token = response.data?.token ?? '';
         if (token.isNotEmpty) {
-          // حفظ التوكن للمستخدم الجديد
           await tokenManager.saveToken(token);
-          _logger.i('✅ تم حفظ التوكن بنجاح');
+          _logger.i('🔑 تم حفظ التوكن بنجاح');
         }
-
-        final userModel = UserModel(
-          id: userData.id,
-          email: userData.email,
-          userName: userData.userName,
-          phone: userData.phone,
-          roleId: userData.roleId,
-        );
-
-        _logger.i('✅ تم التسجيل بنجاح: ${userModel.userName}');
-        return userModel;
-      } else {
-        final error = response.error ?? 'فشل التسجيل';
-        _logger.e('❌ فشل التسجيل: $error');
-        throw Exception(error);
-      }
-    } catch (e) {
-      _logger.e('❌ خطأ في عملية التسجيل: $e');
-      throw Exception('فشل التسجيل: $e');
-    }
+        _logger.i('👤 المستخدم: ${response.data?.user.userName}');
+      },
+    );
   }
 
+  // ---------------------------------------------------------------------------
+  // 🚪 Logout
+  // ---------------------------------------------------------------------------
   @override
   Future<void> logout() async {
-    try {
-      _logger.i('🚪 بدء عملية تسجيل الخروج');
-
-      final response = await mockDataService.mockLogout();
-
-      if (response.success) {
-        // حذف جميع بيانات المستخدم والتوكن
+    await _execute<BaseResponse>(
+      actionName: 'تسجيل الخروج',
+      request: () => mockDataService.auth.logout(),
+      onSuccess: (_) async {
         await tokenManager.clearAll();
-        _logger.i('✅ تم تسجيل الخروج بنجاح');
-      } else {
-        throw Exception(response.error ?? 'فشل تسجيل الخروج');
-      }
-    } catch (e) {
-      _logger.e('❌ خطأ في عملية تسجيل الخروج: $e');
-      throw Exception('فشل تسجيل الخروج: $e');
-    }
+        _logger.i('🧹 تم مسح التوكن والبيانات بنجاح');
+      },
+    );
   }
 
+  // ---------------------------------------------------------------------------
+  // 🔑 Forgot Password
+  // ---------------------------------------------------------------------------
   @override
-  Future<ForgotPasswordResponse> forgotPassword({required String email}) async {
-    try {
-      _logger.i('🔑 بدء عملية إعادة تعيين كلمة المرور: $email');
-      final response = await mockDataService.mockForgotPassword(email: email);
-      if (!response.success) {
-        _logger.e('❌ خطأ في إعادة التعيين: ${response.error}');
-      } else {
-        _logger.i('✅ طلب إعادة التعيين ناجح');
-      }
-      return response;
-    } catch (e) {
-      _logger.e('❌ خطأ في عملية إعادة التعيين: $e');
-      return ForgotPasswordResponse(
-        success: false,
-        error: 'فشل إعادة تعيين كلمة المرور: $e',
-        errorCode: 500,
-      );
-    }
+  Future<ForgotPasswordResponse> forgotPassword({
+    required String email,
+  }) async {
+    return _execute<ForgotPasswordResponse>(
+      actionName: 'إعادة تعيين كلمة المرور',
+      request: () => mockDataService.auth.forgotPassword( email),
+      onSuccess: (_) {
+        _logger.i('📩 تم إرسال رابط إعادة التعيين');
+      },
+    );
   }
 }
+

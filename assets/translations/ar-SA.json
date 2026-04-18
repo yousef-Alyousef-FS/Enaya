@@ -39,5 +39,9 @@
   "error_conflict": "حدث تعارض في البيانات",
   "error_internal_server": "خطأ داخلي في الخادم",
   "error_service_unavailable": "الخدمة غير متوفرة حالياً",
-  "error_bad_certificate": "شهادة الأمان غير صالحة"
+  "error_bad_certificate": "شهادة الأمان غير صالحة",
+  "no_internet_connection": "لا يوجد اتصال بالإنترنت",
+  "reset_password": "تغيير ملكة المرور",
+  "enter_email_reset": "ادخل البريد الإلكتروني لإعادة ضبط كلمة المرور",
+  "send_reset_link": "ارسل رابط اعادة ضبط كلمة المرور"
 }

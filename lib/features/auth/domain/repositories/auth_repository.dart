@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../entities/forgot_password_entity.dart';
 import '../entities/user_entity.dart';
 
 abstract class IAuthRepository {
@@ -16,9 +15,9 @@ abstract class IAuthRepository {
     required String phone,
   });
 
-  Future<Either<Failure, ForgotPasswordEntity>> forgotPassword({
+  Future<Either<Failure, Unit>> forgotPassword({
     required String email,
   });
 
-  Future<Either<Failure, void>> logout();
+  Future<Either<Failure, Unit>> logout();
 }

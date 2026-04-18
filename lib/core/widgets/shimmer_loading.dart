@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
+import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
+
 class SkeletonLoader extends StatelessWidget {
   final double width;
   final double height;
@@ -15,14 +18,26 @@ class SkeletonLoader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final baseColor = isDark
+        ? theme.colorScheme.surfaceVariant.withOpacity(0.3)
+        : Colors.grey.shade300;
+
+    final highlightColor = isDark
+        ? theme.colorScheme.surfaceVariant.withOpacity(0.15)
+        : Colors.grey.shade100;
+
     return Shimmer.fromColors(
-      baseColor: Colors.grey[300]!,
-      highlightColor: Colors.grey[100]!,
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      period: const Duration(milliseconds: 1200),
       child: Container(
         width: width,
         height: height,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: baseColor,
           borderRadius: BorderRadius.circular(borderRadius),
         ),
       ),
@@ -37,14 +52,16 @@ class TableRowSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          const SkeletonLoader(width: 50, height: 20),
+          const SkeletonLoader(width: 60, height: 18),
           const SizedBox(width: 20),
-          Expanded(child: const SkeletonLoader(width: double.infinity, height: 20)),
+          const Expanded(
+            child: SkeletonLoader(width: double.infinity, height: 18),
+          ),
           const SizedBox(width: 20),
-          const SkeletonLoader(width: 100, height: 20),
+          const SkeletonLoader(width: 80, height: 18),
         ],
       ),
     );

@@ -3,26 +3,65 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import '../theme/app_colors.dart';
 
 class AppLoaders {
-  static Widget buttonLoader({Color color = Colors.white, double size = 25.0}) {
+  /// Loader for buttons
+  static Widget button({
+    Color? color,
+    double size = 22.0,
+  }) {
     return SpinKitThreeBounce(
       color: color,
       size: size,
     );
   }
 
-  static Widget screenLoader() {
-    return const Center(
+  /// Loader centered on screen
+  static Widget screen({
+    Color? color,
+    double size = 45.0,
+  }) {
+    return Center(
       child: SpinKitDoubleBounce(
-        color: AppColors.primary,
-        size: 50.0,
+        color: color ?? AppColors.primary,
+        size: size,
       ),
     );
   }
 
-  static Widget splashLoader() {
-    return const SpinKitFoldingCube(
-      color: Colors.white,
-      size: 40.0,
+  /// Loader for splash screen
+  static Widget splash({
+    Color color = Colors.white,
+    double size = 40.0,
+  }) {
+    return SpinKitFoldingCube(
+      color: color,
+      size: size,
+    );
+  }
+
+  /// Overlay loader (full screen blur)
+  static Widget overlay({
+    Color background = Colors.black54,
+    Color loaderColor = AppColors.primary,
+  }) {
+    return Container(
+      color: background,
+      child: Center(
+        child: SpinKitCircle(
+          color: loaderColor,
+          size: 55,
+        ),
+      ),
+    );
+  }
+
+  /// Loader for small UI elements (cards, list tiles, textfields)
+  static Widget inline({
+    Color? color,
+    double size = 18,
+  }) {
+    return SpinKitPulse(
+      color: color,
+      size: size,
     );
   }
 }

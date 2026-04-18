@@ -1,3 +1,5 @@
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../../../core/view_models/base_view_model.dart';
 import '../../domain/entities/user_entity.dart';
@@ -15,71 +17,100 @@ class AuthViewModel extends BaseViewModel {
   User? _currentUser;
 
   AuthViewModel({
-    required LoginUseCase loginUseCase,
-    required SignupUsecase signupUseCase,
-    required ForgotPasswordUseCase forgotPasswordUseCase,
-    required LogoutUseCase logoutUseCase,
-  }) : _loginUseCase = loginUseCase,
-       _signupUseCase = signupUseCase,
-       _forgotPasswordUseCase = forgotPasswordUseCase,
-       _logoutUseCase = logoutUseCase;
+        required LoginUseCase loginUseCase,
+        required SignupUsecase signupUseCase,
+        required ForgotPasswordUseCase forgotPasswordUseCase,
+        required LogoutUseCase logoutUseCase,
+  })  : _loginUseCase = loginUseCase,
+        _signupUseCase = signupUseCase,
+        _forgotPasswordUseCase = forgotPasswordUseCase,
+        _logoutUseCase = logoutUseCase;
+
 
   User? get currentUser => _currentUser;
+  bool get isLoggedIn => _currentUser != null;
 
-  Future<void> forgotPassword(String email) async {
+  // ---------------------------------------------------------------------------
+  // 🔥 Helper: توحيد التعامل مع النتائج
+  // ---------------------------------------------------------------------------
+  Future<void> _handleResult<T>(
+      Future<Either<Failure, T>> call, {
+        required Function(T data) onSuccess,
+      }) async
+  {
     setState(ViewState.loading);
-    final result = await _forgotPasswordUseCase(email);
 
-    result.fold((failure) => setError(failure.message), (response) {
-      if (response.success) {
+    final result = await call;
+
+    result.fold(
+          (failure) => setError(failure.message),
+          (data) {
+        onSuccess(data);
         setState(ViewState.success);
-      } else {
-        setError(response.message);
-      }
-    });
+      },
+    );
   }
 
+  // ---------------------------------------------------------------------------
+  // 🔐 Login
+  // ---------------------------------------------------------------------------
   Future<void> login(String usernameOrEmail, String password) async {
-    setState(ViewState.loading);
-    final result = await _loginUseCase(
-      LoginParams(usernameOrEmail: usernameOrEmail, password: password),
-    );
-
-    result.fold((failure) => setError(failure.message), (user) {
-      _currentUser = user;
-      setState(ViewState.success);
-    });
-  }
-
-  Future<void> signup(
-    String email,
-    String password,
-    String username,
-    String phone,
-  ) async {
-    setState(ViewState.loading);
-    final result = await _signupUseCase(
-      SignupParams(
-        email: email,
-        password: password,
-        username: username,
-        phone: phone,
+    await _handleResult<User>(
+      _loginUseCase(
+        LoginParams(usernameOrEmail: usernameOrEmail, password: password),
       ),
+      onSuccess: (user) => _currentUser = user,
     );
-
-    result.fold((failure) => setError(failure.message), (user) {
-      _currentUser = user;
-      setState(ViewState.success);
-    });
   }
 
-  Future<void> logout() async {
-    setState(ViewState.loading);
-    final result = await _logoutUseCase(NoParams());
+  // ---------------------------------------------------------------------------
+  // 📝 Signup
+  // ---------------------------------------------------------------------------
+  Future<void> signup(
+      String email,
+      String password,
+      String username,
+      String phone,
+      ) async
+  {
+    await _handleResult<User>(
+      _signupUseCase(
+        SignupParams(
+          email: email,
+          password: password,
+          username: username,
+          phone: phone,
+        ),
+      ),
+      onSuccess: (user) => _currentUser = user,
+    );
+  }
 
-    result.fold((failure) => setError(failure.message), (_) {
-      _currentUser = null;
-      setState(ViewState.success);
-    });
+  // ---------------------------------------------------------------------------
+  // 🔑 Forgot Password
+  // ---------------------------------------------------------------------------
+  Future<void> forgotPassword(String email) async {
+    await _handleResult<void>(
+      _forgotPasswordUseCase(email),
+      onSuccess: (_) {},
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 🚪 Logout
+  // ---------------------------------------------------------------------------
+  Future<void> logout() async {
+    await _handleResult<void>(
+      _logoutUseCase(NoParams()),
+      onSuccess: (_) => _currentUser = null,
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // 🧹 Reset user manually (optional)
+  // ---------------------------------------------------------------------------
+  void resetUser() {
+    _currentUser = null;
+    notifyListeners();
   }
 }

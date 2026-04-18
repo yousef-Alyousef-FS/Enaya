@@ -23,22 +23,11 @@ class AppRouter {
       GoRoute(path: splash, builder: (context, state) => const SplashScreen()),
       GoRoute(path: login, builder: (context, state) => const LoginScreen()),
       GoRoute(path: signup, builder: (context, state) => const SignupScreen()),
-      GoRoute(
-        path: forgotPassword,
-        builder: (context, state) => const ForgotPasswordScreen(),
-      ),
-      GoRoute(
-        path: receptionistHome,
-        builder: (context, state) => const ReceptionistHomeScreen(),
-      ),
-      GoRoute(
-        path: doctorHome,
-        builder: (context, state) => const DoctorHomeScreen(),
-      ),
-      GoRoute(
-        path: patientHome,
-        builder: (context, state) => const PatientHomeScreen(),
-      ),
+      GoRoute(path: forgotPassword, builder: (context, state) => const ForgotPasswordScreen()),
+      GoRoute(path: receptionistHome, builder: (context, state) => const ReceptionistHomeScreen()),
+      GoRoute(path: doctorHome, builder: (context, state) => const DoctorHomeScreen()),
+      GoRoute(path: patientHome, builder: (context, state) => const PatientHomeScreen()),
+
     ],
   );
 }

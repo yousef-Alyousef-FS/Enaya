@@ -55,3 +55,55 @@ class SignupRequest extends Equatable {
     };
   }
 }
+
+class ForgotPasswordRequest extends Equatable {
+  const ForgotPasswordRequest({required this.email});
+
+  final String email;
+
+  @override
+  List<Object?> get props => [email];
+
+  factory ForgotPasswordRequest.fromJson(Map<String, dynamic> json) {
+    return ForgotPasswordRequest(email: json['email'] as String);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {'email': email};
+  }
+}
+
+class ResetPasswordRequest extends Equatable {
+  const ResetPasswordRequest({
+    required this.token,
+    required this.email,
+    required this.password,
+    required this.passwordConfirmation,
+  });
+
+  final String token;
+  final String email;
+  final String password;
+  final String passwordConfirmation;
+
+  @override
+  List<Object?> get props => [token, email, password, passwordConfirmation];
+
+  factory ResetPasswordRequest.fromJson(Map<String, dynamic> json) {
+    return ResetPasswordRequest(
+      token: json['token'] as String,
+      email: json['email'] as String,
+      password: json['password'] as String,
+      passwordConfirmation: json['passwordConfirmation'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'token': token,
+      'email': email,
+      'password': password,
+      'password_confirmation': passwordConfirmation,
+    };
+  }
+}

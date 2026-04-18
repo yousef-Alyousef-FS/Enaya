@@ -31,62 +31,44 @@ class _AuthTextFieldState extends State<AuthTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return TextFormField(
       controller: widget.controller,
       obscureText: widget.isPassword ? _obscureText : false,
       validator: widget.validator,
       keyboardType: widget.keyboardType,
-      style: Theme.of(context).textTheme.bodyLarge,
+      style: theme.textTheme.bodyLarge,
+
       autofillHints: widget.isPassword
-          ? [AutofillHints.password]
+          ? const [AutofillHints.password]
           : widget.keyboardType == TextInputType.emailAddress
-          ? [AutofillHints.email]
+          ? const [AutofillHints.email]
           : widget.keyboardType == TextInputType.phone
-          ? [AutofillHints.telephoneNumber]
+          ? const [AutofillHints.telephoneNumber]
           : null,
+
       decoration: InputDecoration(
         labelText: widget.labelText,
         hintText: widget.hintText,
+
         prefixIcon: Icon(widget.prefixIcon),
+
         suffixIcon: widget.isPassword
             ? IconButton(
-                icon: Icon(
-                  _obscureText ? Icons.visibility_off : Icons.visibility,
-                  color: Theme.of(
-                    context,
-                  ).iconTheme.color?.withValues(alpha: 0.6),
-                ),
-                onPressed: () {
-                  setState(() {
-                    _obscureText = !_obscureText;
-                  });
-                },
-                tooltip: _obscureText ? 'Show password' : 'Hide password',
-              )
+          icon: Icon(
+            _obscureText
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
+            color: theme.iconTheme.color?.withOpacity(0.6),
+          ),
+          onPressed: () {
+            setState(() => _obscureText = !_obscureText);
+          },
+          tooltip: _obscureText ? 'Show password' : 'Hide password',
+        )
             : null,
         floatingLabelBehavior: FloatingLabelBehavior.auto,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: Theme.of(context).primaryColor,
-            width: 2,
-          ),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.error,
-            width: 1,
-          ),
-        ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.error,
-            width: 2,
-          ),
-        ),
       ),
     );
   }

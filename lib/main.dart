@@ -30,7 +30,7 @@ class EnayaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScreenUtilInit(
       designSize: const Size(375, 812),
-      minTextAdapt: true,
+      minTextAdapt: false,
       splitScreenMode: true,
       builder: (context, child) {
         return MaterialApp.router(
@@ -43,7 +43,8 @@ class EnayaApp extends StatelessWidget {
           localizationsDelegates: context.localizationDelegates,
           supportedLocales: context.supportedLocales,
           locale: context.locale,
-          
+
+
           routerConfig: AppRouter.router,
         );
       },

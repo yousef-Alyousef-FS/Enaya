@@ -16,55 +16,78 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
   late AnimationController _fadeController;
+  late AnimationController _scaleController;
+
   late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
+
+    // Fade animation
     _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
+      duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeInOut),
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
     );
+
+    // Scale animation
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 900),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 0.85, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeOutBack),
+    );
+
     _fadeController.forward();
+    _scaleController.forward();
+
     _navigateToNext();
   }
 
   @override
   void dispose() {
     _fadeController.dispose();
+    _scaleController.dispose();
     super.dispose();
   }
 
-  void _navigateToNext() async {
-    await Future.delayed(const Duration(seconds: 3));
-    if (mounted) {
-      context.go(AppRouter.login);
-    }
+  Future<void> _navigateToNext() async {
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    context.go(AppRouter.login);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final backgroundColor = isDark ? AppColors.darkBackground : Colors.white;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: backgroundColor,
+      backgroundColor: isDark ? AppColors.darkBackground : Colors.white,
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnimation,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const LogoIcon(width: 200),
-              SizedBox(height: 20.h),
-              SpinKitFadingCircle(
-                color: Theme.of(context).primaryColor,
-                size: 30.w,
-              ),
-            ],
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                LogoIcon(width: 160.w, height: 160.w),
+                SizedBox(height: 24.h),
+                SpinKitFadingCircle(
+                  color: theme.colorScheme.primary,
+                  size: 32.w,
+                ),
+              ],
+            ),
           ),
         ),
       ),

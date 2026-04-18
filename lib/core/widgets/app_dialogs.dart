@@ -3,58 +3,109 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
 class AppDialogs {
-  static void showError(BuildContext context, {required String message}) {
-    AwesomeDialog(
+  // -----------------------------
+  // 🔥 Base Dialog Builder
+  // -----------------------------
+  static AwesomeDialog _baseDialog(
+      BuildContext context, {
+        required DialogType type,
+        required String title,
+        required String message,
+        VoidCallback? onOk,
+        Color? okColor,
+        bool showCancel = false,
+        VoidCallback? onCancel,
+        bool dismissible = true,
+      }) {
+    return AwesomeDialog(
       context: context,
-      dialogType: DialogType.error,
-      animType: AnimType.bottomSlide,
-      title: 'error'.tr(),
-      desc: message,
-      btnOkText: 'ok'.tr(),
-      btnOkOnPress: () {},
-      btnOkColor: Colors.red,
-    ).show();
-  }
-
-  static void showSuccess(BuildContext context, {required String message, VoidCallback? onConfirm}) {
-    AwesomeDialog(
-      context: context,
-      dialogType: DialogType.success,
-      animType: AnimType.bottomSlide,
-      title: 'success'.tr(),
-      desc: message,
-      btnOkText: 'ok'.tr(),
-      btnOkOnPress: onConfirm,
-    ).show();
-  }
-
-  static void showWarning(BuildContext context, {required String message}) {
-    AwesomeDialog(
-      context: context,
-      dialogType: DialogType.warning,
-      animType: AnimType.bottomSlide,
-      title: 'warning'.tr(),
-      desc: message,
-      btnOkText: 'ok'.tr(),
-      btnOkOnPress: () {},
-    ).show();
-  }
-
-  static void showConfirm(BuildContext context, {
-    required String title,
-    required String message,
-    required VoidCallback onConfirm,
-  }) {
-    AwesomeDialog(
-      context: context,
-      dialogType: DialogType.question,
+      dialogType: type,
       animType: AnimType.bottomSlide,
       title: title,
       desc: message,
-      btnCancelText: 'cancel'.tr(),
-      btnOkText: 'confirm'.tr(),
-      btnCancelOnPress: () {},
-      btnOkOnPress: onConfirm,
+      dismissOnTouchOutside: dismissible,
+      btnOkText: 'ok'.tr(),
+      btnOkOnPress: onOk,
+      btnOkColor: okColor,
+      btnCancelText: showCancel ? 'cancel'.tr() : null,
+      btnCancelOnPress: showCancel ? onCancel : null,
+    );
+  }
+
+  // -----------------------------
+  // ❌ Error Dialog
+  // -----------------------------
+  static Future<void> showError(
+      BuildContext context, {
+        required String message,
+        bool dismissible = true,
+      }) {
+    return _baseDialog(
+      context,
+      type: DialogType.error,
+      title: 'error'.tr(),
+      message: message,
+      okColor: Colors.red,
+      dismissible: dismissible,
+    ).show();
+  }
+
+  // -----------------------------
+  // ✅ Success Dialog
+  // -----------------------------
+  static Future<void> showSuccess(
+      BuildContext context, {
+        required String message,
+        VoidCallback? onConfirm,
+        bool dismissible = true,
+      }) {
+    return _baseDialog(
+      context,
+      type: DialogType.success,
+      title: 'success'.tr(),
+      message: message,
+      onOk: onConfirm,
+      dismissible: dismissible,
+    ).show();
+  }
+
+  // -----------------------------
+  // ⚠️ Warning Dialog
+  // -----------------------------
+  static Future<void> showWarning(
+      BuildContext context, {
+        required String message,
+        bool dismissible = true,
+      }) {
+    return _baseDialog(
+      context,
+      type: DialogType.warning,
+      title: 'warning'.tr(),
+      message: message,
+      dismissible: dismissible,
+    ).show();
+  }
+
+  // -----------------------------
+  // ❓ Confirm Dialog
+  // -----------------------------
+  static Future<void> showConfirm(
+      BuildContext context, {
+        required String title,
+        required String message,
+        required VoidCallback onConfirm,
+        VoidCallback? onCancel,
+        bool dismissible = false,
+      }) {
+    return _baseDialog(
+      context,
+      type: DialogType.question,
+      title: title,
+      message: message,
+      showCancel: true,
+      onOk: onConfirm,
+      onCancel: onCancel,
+      dismissible: dismissible,
     ).show();
   }
 }

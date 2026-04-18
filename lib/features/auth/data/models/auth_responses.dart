@@ -1,18 +1,22 @@
 import 'package:equatable/equatable.dart';
-import '../../domain/entities/forgot_password_entity.dart';
+import '../../../../core/network/base_response.dart';
+import '../../domain/entities/user_entity.dart';
 
-class LoginResponse extends Equatable {
+class LoginResponse extends Equatable with BaseResponse {
+  @override
+  final bool success;
+  @override
+  final String? error;
+  @override
+  final int? errorCode;
+  final LoginResponseData? data;
+
   const LoginResponse({
     required this.success,
     this.data,
     this.error,
     this.errorCode,
   });
-
-  final bool success;
-  final LoginResponseData? data;
-  final String? error;
-  final int? errorCode;
 
   @override
   List<Object?> get props => [success, data, error, errorCode];
@@ -38,7 +42,7 @@ class LoginResponse extends Equatable {
   }
 }
 
-class LoginResponseData extends Equatable {
+class LoginResponseData extends Equatable  {
   const LoginResponseData({
     required this.user,
     required this.token,
@@ -65,18 +69,24 @@ class LoginResponseData extends Equatable {
   }
 }
 
-class SignupResponse extends Equatable {
+class SignupResponse extends Equatable with BaseResponse {
+  @override
+  final bool success;
+
+  @override
+  final String? error;
+
+  @override
+  final int? errorCode;
+
+  final SignupResponseData? data;
+
   const SignupResponse({
     required this.success,
     this.data,
     this.error,
     this.errorCode,
   });
-
-  final bool success;
-  final SignupResponseData? data;
-  final String? error;
-  final int? errorCode;
 
   @override
   List<Object?> get props => [success, data, error, errorCode];
@@ -168,18 +178,37 @@ class UserResponse extends Equatable {
   }
 }
 
-class LogoutResponse extends Equatable {
+extension UserResponseMapper on UserResponse {
+  User toEntity() {
+    return User(
+      id: id,
+      email: email,
+      userName: userName,
+      phone: phone,
+      roleId: roleId,
+    );
+  }
+}
+
+class LogoutResponse extends Equatable with BaseResponse {
+
+  @override
+  final bool success;
+
+  @override
+  final String? error;
+
+  @override
+  final int? errorCode;
+
+  final String? message;
+
   const LogoutResponse({
     required this.success,
     this.message,
     this.error,
     this.errorCode,
   });
-
-  final bool success;
-  final String? message;
-  final String? error;
-  final int? errorCode;
 
   @override
   List<Object?> get props => [success, message, error, errorCode];
@@ -203,18 +232,24 @@ class LogoutResponse extends Equatable {
   }
 }
 
-class ForgotPasswordResponse extends Equatable {
+class ForgotPasswordResponse extends Equatable with  BaseResponse{
+  @override
+  final bool success;
+
+  @override
+  final String? error;
+
+  @override
+  final int? errorCode;
+
+  final String? message;
+
   const ForgotPasswordResponse({
     required this.success,
     this.message,
     this.error,
     this.errorCode,
   });
-
-  final bool success;
-  final String? message;
-  final String? error;
-  final int? errorCode;
 
   @override
   List<Object?> get props => [success, message, error, errorCode];
@@ -238,16 +273,19 @@ class ForgotPasswordResponse extends Equatable {
   }
 }
 
-extension ForgotPasswordResponseMapper on ForgotPasswordResponse {
-  ForgotPasswordEntity toEntity() {
-    return ForgotPasswordEntity(
-      success: success,
-      message: message ?? error ?? "Unknown error occurred",
-    );
-  }
-}
+class RefreshTokenResponse extends Equatable with BaseResponse{
+  @override
+  final bool success;
 
-class RefreshTokenResponse extends Equatable {
+  @override
+  final String? error;
+
+  @override
+  final int? errorCode;
+
+  final String? token;
+  final String? expiresAt;
+
   const RefreshTokenResponse({
     required this.success,
     this.token,
@@ -255,12 +293,6 @@ class RefreshTokenResponse extends Equatable {
     this.error,
     this.errorCode,
   });
-
-  final bool success;
-  final String? token;
-  final String? expiresAt;
-  final String? error;
-  final int? errorCode;
 
   @override
   List<Object?> get props => [success, token, expiresAt, error, errorCode];

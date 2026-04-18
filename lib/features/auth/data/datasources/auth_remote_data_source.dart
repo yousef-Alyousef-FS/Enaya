@@ -1,15 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:enaya/core/constants/api_constants.dart';
 import '../models/auth_responses.dart';
-import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<UserModel> login({
+  Future<LoginResponse> login({
     required String usernameOrEmail,
     required String password,
   });
 
-  Future<UserModel> signup({
+  Future<SignupResponse> signup({
     required String userName,
     required String email,
     required String password,
@@ -27,7 +26,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   AuthRemoteDataSourceImpl(this.dio);
 
   @override
-  Future<UserModel> login({
+  Future<LoginResponse> login({
     required String usernameOrEmail,
     required String password,
   }) async {
@@ -36,11 +35,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       data: {'usernameOrEmail': usernameOrEmail, 'password': password},
     );
 
-    return UserModel.fromJson(response.data['user']);
+    return LoginResponse.fromJson(response.data);
   }
 
   @override
-  Future<UserModel> signup({
+  Future<SignupResponse> signup({
     required String userName,
     required String email,
     required String password,
@@ -55,7 +54,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         'phone': phone,
       },
     );
-    return UserModel.fromJson(response.data['user']);
+    return SignupResponse.fromJson(response.data);
   }
 
   @override
@@ -68,7 +67,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<void> logout() {
-    throw UnimplementedError();
+  Future<void> logout() async {
+    await dio.post(ApiConstants.logout);
   }
 }
