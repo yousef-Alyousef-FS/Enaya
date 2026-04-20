@@ -3,6 +3,7 @@ import 'package:enaya/features/auth/presentation/screens/signup_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/appointments/presentation/screens/appointments_overview_screen.dart';
 import '../../features/dashboard/doctor/presentation/pages/doctor_dashboard_page.dart';
 import '../../features/dashboard/patient/presentation/pages/patient_dashboard_page.dart';
 import '../../features/dashboard/reception/presentation/pages/reception_dashboard_page.dart';
@@ -12,6 +13,7 @@ class AppRouter {
   static const String login = '/login';
   static const String signup = '/signup';
   static const String forgotPassword = '/forgot-password';
+  static const String appointmentsOverview = '/appointments';
   static const String receptionistHome = '/receptionist';
   static const String doctorHome = '/doctor';
   static const String patientHome = '/patient';
@@ -22,8 +24,18 @@ class AppRouter {
       GoRoute(path: splash, builder: (context, state) => const SplashScreen()),
       GoRoute(path: login, builder: (context, state) => const LoginScreen()),
       GoRoute(path: signup, builder: (context, state) => const SignupScreen()),
-      GoRoute(path: forgotPassword, builder: (context, state) => const ForgotPasswordScreen()),
-      GoRoute(path: receptionistHome, builder: (context, state) => const ReceptionDashboardPage()),
+      GoRoute(
+        path: forgotPassword,
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: appointmentsOverview,
+        builder: (context, state) => const AppointmentsOverviewScreen(),
+      ),
+      GoRoute(
+        path: receptionistHome,
+        builder: (context, state) => const ReceptionDashboardPage(),
+      ),
       //TODO:
       //GoRoute(path: doctorHome, builder: (context, state) => const DoctorDashboardPage()),
       //GoRoute(path: patientHome, builder: (context, state) => const PatientDashboardPage()),
