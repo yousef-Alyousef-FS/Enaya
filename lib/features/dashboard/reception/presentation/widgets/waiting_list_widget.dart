@@ -31,7 +31,7 @@ class WaitingListWidget extends StatelessWidget {
           margin: EdgeInsets.only(bottom: 8.h),
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8.r),
+            borderRadius: BorderRadius.circular(8),
             side: BorderSide(color: Colors.grey[200]!),
           ),
           child: ListTile(
@@ -47,20 +47,20 @@ class WaitingListWidget extends StatelessWidget {
             ),
             title: Text(
               patient.patientName,
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             subtitle: Text('Dr. ${patient.doctorName}'),
             trailing: Container(
               padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
               decoration: BoxDecoration(
                 color: Colors.blue[50],
-                borderRadius: BorderRadius.circular(4.r),
+                borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 'Waiting',
                 style: TextStyle(
                   color: Colors.blue[700],
-                  fontSize: 10.sp,
+                  fontSize: 10,
                   fontWeight: FontWeight.bold,
                 ),
               ),

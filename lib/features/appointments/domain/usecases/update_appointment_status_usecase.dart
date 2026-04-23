@@ -1,9 +1,10 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/network/api_error_handler.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../entities/appointment_entity.dart';
 import '../entities/appointment_status.dart';
-import '../repositories/appointment_repository.dart';
+import '../repositories/appointment_management_repository.dart';
 
 class UpdateAppointmentStatusParams {
   final String appointmentId;
@@ -12,8 +13,9 @@ class UpdateAppointmentStatusParams {
   UpdateAppointmentStatusParams({required this.appointmentId, required this.status});
 }
 
-class UpdateAppointmentStatusUseCase implements UseCase<AppointmentEntity, UpdateAppointmentStatusParams> {
-  final AppointmentRepository repository;
+class UpdateAppointmentStatusUseCase
+    implements UseCase<AppointmentEntity, UpdateAppointmentStatusParams> {
+  final AppointmentManagementRepository repository;
 
   UpdateAppointmentStatusUseCase(this.repository);
 
@@ -23,7 +25,7 @@ class UpdateAppointmentStatusUseCase implements UseCase<AppointmentEntity, Updat
       final result = await repository.updateAppointmentStatus(params.appointmentId, params.status);
       return Right(result);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ApiErrorHandler.handle(e));
     }
   }
 }

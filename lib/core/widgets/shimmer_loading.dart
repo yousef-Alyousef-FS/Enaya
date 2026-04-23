@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import 'package:flutter/material.dart';
-import 'package:shimmer/shimmer.dart';
+
 
 class SkeletonLoader extends StatelessWidget {
   final double width;
@@ -22,11 +21,13 @@ class SkeletonLoader extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
 
     final baseColor = isDark
-        ? theme.colorScheme.surfaceVariant.withOpacity(0.3)
+        // ignore: deprecated_member_use
+        ? theme.colorScheme.surfaceContainerHighest.withOpacity(0.3)
         : Colors.grey.shade300;
 
     final highlightColor = isDark
-        ? theme.colorScheme.surfaceVariant.withOpacity(0.15)
+        // ignore: deprecated_member_use
+        ? theme.colorScheme.surfaceContainerHighest.withOpacity(0.15)
         : Colors.grey.shade100;
 
     return Shimmer.fromColors(

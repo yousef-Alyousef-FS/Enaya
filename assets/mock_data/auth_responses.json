@@ -1,0 +1,57 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "يوسف اليوسف",
+      "email": "yousef@enaya.com",
+      "password": "12345678",
+      "phone": "+966501234569",
+      "roleId": 1,
+      "role": "موظف استقبال",
+      "token": "mock_token_nurse_eyJ1c2VySWQiOiAzLCJleHAiOiAxNjc3NjI1MjAwfQ==",
+      "createdAt": "2024-01-03T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "username": "doctor",
+      "email": "doctor@enaya.com",
+      "password": "doctor123",
+      "phone": "+966501234568",
+      "roleId": 2,
+      "role": "طبيب",
+      "token": "mock_token_doctor_eyJ1c2VySWQiOiAyLCJleHAiOiAxNjc3NjI1MjAwfQ==",
+      "createdAt": "2024-01-02T00:00:00Z"
+    },
+    {
+      "id": 4,
+      "username": "patient",
+      "email": "patient@enaya.com",
+      "password": "patient123",
+      "phone": "+966501234570",
+      "roleId": 3,
+      "role": "مريض",
+      "token": "mock_token_patient_eyJ1c2VySWQiOiA0LCJleHAiOiAxNjc3NjI1MjAwfQ==",
+      "createdAt": "2024-01-04T00:00:00Z"
+    }
+  ],
+  "roles": [
+    {
+      "id": 1,
+      "name": "Receptionist",
+      "nameAr": "موظف استقبال",
+      "permissions": ["read", "write", "view_patients", "update_records"]
+    },
+    {
+      "id": 2,
+      "name": "Doctor",
+      "nameAr": "طبيب",
+      "permissions": ["read", "write", "view_patients"]
+    },
+    {
+      "id": 3,
+      "name": "Patient",
+      "nameAr": "مريض",
+      "permissions": ["read", "view_own_data"]
+    }
+  ]
+}

@@ -60,7 +60,7 @@ class AppLoaders {
     double size = 18,
   }) {
     return SpinKitPulse(
-      color: color,
+      color: color ?? AppColors.primary,
       size: size,
     );
   }

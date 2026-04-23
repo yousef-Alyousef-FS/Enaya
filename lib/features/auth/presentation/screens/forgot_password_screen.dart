@@ -1,15 +1,16 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/mixins/responsive_layout_mixin.dart';
-import '../../../../core/view_models/base_view_model.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/app_loaders.dart';
 import '../../../../core/widgets/auth_card_container.dart';
-import '../state/auth_view_model.dart';
+import '../cubit/auth_cubit.dart';
+import '../cubit/auth_state.dart';
 import '../widgets/auth_text_field.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -34,15 +35,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
   void initState() {
     super.initState();
 
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 350),
-    );
+    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
 
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeOut,
-    );
+    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
   }
 
   @override
@@ -62,8 +57,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => getIt<AuthViewModel>(),
+    return BlocProvider(
+      create: (_) => getIt<AuthCubit>(),
       child: Scaffold(
         appBar: AppBar(
           title: Text('forgot_password'.tr()),
@@ -84,17 +79,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                   Text(
                     'reset_password'.tr(),
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      fontSize: config.titleFontSize,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
                   ),
                   SizedBox(height: config.isPortrait ? 10.h : 8.h),
                   Text(
                     'enter_email_reset'.tr(),
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontSize: config.bodyFontSize,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
                   ),
                   SizedBox(height: config.isPortrait ? 30.h : 20.h),
 
@@ -132,50 +127,49 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
           ),
           SizedBox(height: config.isPortrait ? 18.h : 12.h),
 
-          Consumer<AuthViewModel>(
-            builder: (context, viewModel, _) {
-              // Handle error
-              if (viewModel.state == ViewState.error) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _triggerMessage(
-                    viewModel.errorMessage ?? 'error_occurred'.tr(),
-                    false,
-                  );
-                  viewModel.resetState();
-                });
+          BlocConsumer<AuthCubit, AuthState>(
+            listener: (context, state) {
+              final cubit = context.read<AuthCubit>();
+
+              if (state.isError) {
+                _triggerMessage(state.errorMessage ?? 'error_occurred'.tr(), false);
+                cubit.clearStatus();
+                return;
               }
 
-              // Handle success
-              if (viewModel.state == ViewState.success) {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _triggerMessage('reset_email_sent'.tr(), true);
-                  viewModel.resetState();
-                });
+              if (state.isSuccess) {
+                _triggerMessage('reset_email_sent'.tr(), true);
+                context.push(
+                  '${AppRouter.resetPassword}?email=${Uri.encodeComponent(_emailController.text.trim())}',
+                );
+                // No clearStatus here to keep the success message until we navigate
               }
+            },
+            builder: (context, state) {
+              final cubit = context.read<AuthCubit>();
+              final isButtonDisabled = state.isLoading || state.isSuccess;
 
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ElevatedButton(
-                    onPressed: viewModel.isLoading
+                    onPressed: isButtonDisabled
                         ? null
                         : () {
-                      if (_formKey.currentState!.validate()) {
-                        setState(() => _message = null);
-                        viewModel.forgotPassword(
-                          _emailController.text.trim(),
-                        );
-                      }
-                    },
-                    child: viewModel.isLoading
+                            if (_formKey.currentState!.validate()) {
+                              setState(() => _message = null);
+                              cubit.forgotPassword(_emailController.text.trim());
+                            }
+                          },
+                    child: state.isLoading
                         ? AppLoaders.inline()
                         : Text(
-                      'send_reset_link'.tr(),
-                      style: TextStyle(fontSize: config.buttonFontSize),
-                    ),
+                            'send_reset_link'.tr(),
+                            style: TextStyle(fontSize: config.buttonFontSize),
+                          ),
                   ),
 
-                  if (_message != null)
+                  if (_message != null && !state.isSuccess)
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: Padding(
@@ -184,9 +178,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                           _message!,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: _isSuccess
-                                ? Colors.green
-                                : Theme.of(context).colorScheme.error,
+                            color: _isSuccess ? Colors.green : Theme.of(context).colorScheme.error,
                             fontSize: config.bodyFontSize,
                             fontWeight: FontWeight.w600,
                           ),

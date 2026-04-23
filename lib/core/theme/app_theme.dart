@@ -25,13 +25,17 @@ class AppTheme {
       scaffoldBackgroundColor: AppColors.background,
       dividerColor: AppColors.divider,
 
+      // Icons
+      iconTheme: const IconThemeData(color: AppColors.secondary, size: 24),
+      primaryIconTheme: const IconThemeData(color: AppColors.primary, size: 24),
+
       // Cards
       cardTheme: CardThemeData(
         color: AppColors.surface,
         elevation: 0,
         shadowColor: AppColors.shadow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppColors.gray200, width: 1),
         ),
       ),
@@ -40,10 +44,10 @@ class AppTheme {
       drawerTheme: DrawerThemeData(
         backgroundColor: AppColors.surface,
         elevation: 0,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
-            topRight: Radius.circular(32.r),
-            bottomRight: Radius.circular(32.r),
+            topRight: Radius.circular(24),
+            bottomRight: Radius.circular(24),
           ),
         ),
       ),
@@ -61,19 +65,19 @@ class AppTheme {
 
       // Dropdown
       dropdownMenuTheme: DropdownMenuThemeData(
-        textStyle: TextStyle(fontSize: 14, color: AppColors.secondary),
+        textStyle: const TextStyle(fontSize: 14, color: AppColors.secondary),
         menuStyle: MenuStyle(
           backgroundColor: WidgetStateProperty.all(AppColors.surface),
           elevation: WidgetStateProperty.all(10),
           shape: WidgetStateProperty.all(
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ),
 
       // DataTable
-      dataTableTheme: DataTableThemeData(
-        headingRowColor: WidgetStateProperty.all(AppColors.gray100),
+      dataTableTheme: const DataTableThemeData(
+        headingRowColor: WidgetStatePropertyAll(AppColors.gray100),
         headingTextStyle: TextStyle(
           color: AppColors.secondary,
           fontWeight: FontWeight.bold,
@@ -89,16 +93,16 @@ class AppTheme {
         backgroundColor: AppColors.primaryExtraLight,
         selectedColor: AppColors.primary,
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-        labelStyle: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+        labelStyle: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
 
       // Dialog
       dialogTheme: DialogThemeData(
         backgroundColor: AppColors.surface,
         elevation: 5,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
-        titleTextStyle: TextStyle(color: AppColors.secondary, fontSize: 20, fontWeight: FontWeight.bold),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        titleTextStyle: const TextStyle(color: AppColors.secondary, fontSize: 20, fontWeight: FontWeight.bold),
       ),
 
       // Buttons
@@ -138,21 +142,25 @@ class AppTheme {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.darkBackground,
 
+      // Icons
+      iconTheme: const IconThemeData(color: AppColors.darkTextPrimary, size: 24),
+      primaryIconTheme: const IconThemeData(color: AppColors.primary, size: 24),
+
       cardTheme: CardThemeData(
         color: AppColors.darkSurface,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20.r),
+          borderRadius: BorderRadius.circular(16),
           side: const BorderSide(color: AppColors.darkSurfaceLight, width: 1),
         ),
       ),
 
       drawerTheme: DrawerThemeData(
         backgroundColor: AppColors.darkSurface,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
-            topRight: Radius.circular(32.r),
-            bottomRight: Radius.circular(32.r),
+            topRight: Radius.circular(24),
+            bottomRight: Radius.circular(24),
           ),
         ),
       ),
@@ -199,12 +207,21 @@ class AppTheme {
     final secondaryColor = isDark ? AppColors.darkTextSecondary : AppColors.gray700;
 
     return TextTheme(
+      displayLarge: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 28),
+      displayMedium: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 24),
+      displaySmall: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 20),
       headlineLarge: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 28),
       headlineMedium: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 24),
+      headlineSmall: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 20),
       titleLarge: TextStyle(color: primaryColor, fontWeight: FontWeight.w600, fontSize: 18),
+      titleMedium: TextStyle(color: primaryColor, fontWeight: FontWeight.w600, fontSize: 16),
+      titleSmall: TextStyle(color: primaryColor, fontWeight: FontWeight.w600, fontSize: 14),
       bodyLarge: TextStyle(color: primaryColor, fontSize: 16),
       bodyMedium: TextStyle(color: secondaryColor, fontSize: 14),
-      labelSmall: TextStyle(color: AppColors.gray400, fontSize: 12),
+      bodySmall: TextStyle(color: secondaryColor, fontSize: 12),
+      labelLarge: TextStyle(color: primaryColor, fontWeight: FontWeight.w600, fontSize: 14),
+      labelMedium: TextStyle(color: secondaryColor, fontSize: 12),
+      labelSmall: TextStyle(color: AppColors.gray400, fontSize: 10),
     );
   }
 
@@ -212,23 +229,23 @@ class AppTheme {
     return InputDecorationTheme(
       filled: true,
       fillColor: isDark ? AppColors.darkSurface : Colors.white,
-      contentPadding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: _buildBorder(isDark ? AppColors.darkSurfaceLight : AppColors.gray200),
       enabledBorder: _buildBorder(isDark ? AppColors.darkSurfaceLight : AppColors.gray200),
       focusedBorder: _buildBorder(AppColors.primary, width: 1.5),
       errorBorder: _buildBorder(AppColors.error),
-      floatingLabelStyle: TextStyle(color: AppColors.primary),
+      floatingLabelStyle: const TextStyle(color: AppColors.primary),
       prefixIconColor: isDark ? AppColors.darkTextSecondary : AppColors.gray400,
       suffixIconColor: isDark ? AppColors.darkTextSecondary : AppColors.gray400,
-      errorStyle: TextStyle(color: AppColors.error, fontSize: 12),
+      errorStyle: const TextStyle(color: AppColors.error, fontSize: 12),
       labelStyle: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.gray400, fontSize: 14),
-      hintStyle: TextStyle(color: AppColors.gray400, fontSize: 14),
+      hintStyle: const TextStyle(color: AppColors.gray400, fontSize: 14),
     );
   }
 
   static OutlineInputBorder _buildBorder(Color color, {double width = 1.0}) {
     return OutlineInputBorder(
-      borderRadius: BorderRadius.circular(16.r),
+      borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(color: color, width: width),
     );
   }
@@ -239,9 +256,9 @@ class AppTheme {
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         elevation: 0,
-        minimumSize: Size(double.infinity, 56.h),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        minimumSize: const Size(double.infinity, 54),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -251,9 +268,9 @@ class AppTheme {
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.primary,
         side: const BorderSide(color: AppColors.primary, width: 1.5),
-        minimumSize: Size(double.infinity, 56.h),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-        textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        minimumSize: const Size(double.infinity, 54),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
       ),
     );
   }

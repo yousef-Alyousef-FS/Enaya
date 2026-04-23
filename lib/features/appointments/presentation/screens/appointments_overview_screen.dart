@@ -1,15 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:enaya/core/di/injection.dart';
 import 'package:enaya/core/theme/app_colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../domain/entities/appointment_entity.dart';
 import '../../domain/entities/appointment_status.dart';
-import '../state/appointment_state.dart';
+import '../cubit/appointments_cubit_imports.dart';
 
 enum AppointmentsOverviewMode { generic, receptionist, doctor, patient }
 
@@ -38,15 +38,12 @@ class AppointmentsOverviewConfig {
 class AppointmentsOverviewScreen extends StatelessWidget {
   final AppointmentsOverviewConfig config;
 
-  const AppointmentsOverviewScreen({
-    super.key,
-    this.config = const AppointmentsOverviewConfig(),
-  });
+  const AppointmentsOverviewScreen({super.key, this.config = const AppointmentsOverviewConfig()});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => getIt<AppointmentState>(),
+    return BlocProvider(
+      create: (_) => getIt<AppointmentsOverviewCubit>()..loadInitialData(pageSize: config.pageSize),
       child: _AppointmentsOverviewBody(config: config),
     );
   }
@@ -58,112 +55,58 @@ class _AppointmentsOverviewBody extends StatefulWidget {
   const _AppointmentsOverviewBody({required this.config});
 
   @override
-  State<_AppointmentsOverviewBody> createState() =>
-      _AppointmentsOverviewBodyState();
+  State<_AppointmentsOverviewBody> createState() => _AppointmentsOverviewBodyState();
 }
 
 class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _loadInitialData(context.read<AppointmentState>());
-      }
-    });
-  }
-
-  bool _isToday(DateTime date) {
-    final now = DateTime.now();
-    return date.year == now.year &&
-        date.month == now.month &&
-        date.day == now.day;
-  }
-
-  Future<void> _loadInitialData(AppointmentState state) async {
-    if (_isToday(state.selectedDate)) {
-      await state.fetchTodayAppointments(
-        page: 1,
-        limit: widget.config.pageSize,
-      );
-    } else {
-      await state.fetchAppointmentsByDate(
-        state.selectedDate,
-        page: 1,
-        limit: widget.config.pageSize,
-      );
-    }
-  }
-
-  Future<void> _pickDate(BuildContext context, AppointmentState state) async {
+  Future<void> _pickDate(BuildContext context, AppointmentsOverviewCubit cubit) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: state.selectedDate,
+      initialDate: cubit.state.selectedDate,
       firstDate: DateTime.now().subtract(const Duration(days: 365)),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
 
     if (picked != null) {
-      state.updateSelectedDate(picked);
-      await state.fetchAppointmentsByDate(
-        picked,
-        page: 1,
-        limit: widget.config.pageSize,
-      );
+      await cubit.updateSelectedDate(picked, pageSize: widget.config.pageSize);
     }
   }
 
   String _formatDate(BuildContext context, DateTime date) {
-    return DateFormat(
-      'EEE, dd MMM yyyy',
-      context.locale.toString(),
-    ).format(date);
+    return DateFormat('EEE, dd MMM yyyy', context.locale.toString()).format(date);
   }
 
   String _formatLongDate(BuildContext context, DateTime date) {
-    return DateFormat(
-      'EEEE, d MMMM yyyy',
-      context.locale.toString(),
-    ).format(date);
+    return DateFormat('EEEE, d MMMM yyyy', context.locale.toString()).format(date);
   }
 
-  void _refreshCurrentView(AppointmentState state) {
-    if (_isToday(state.selectedDate)) {
-      state.fetchTodayAppointments(
-        page: state.currentPage,
-        limit: widget.config.pageSize,
-      );
-    } else {
-      state.fetchAppointmentsByDate(
-        state.selectedDate,
-        page: state.currentPage,
-        limit: widget.config.pageSize,
-      );
-    }
+  void _refreshCurrentView(AppointmentsOverviewCubit cubit) {
+    cubit.refreshCurrentView();
   }
 
   @override
   Widget build(BuildContext context) {
+    final cubit = context.read<AppointmentsOverviewCubit>();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.config.titleKey.tr()),
         actions: [
           if (widget.config.showRefreshAction)
             IconButton(
-              onPressed: () =>
-                  _refreshCurrentView(context.read<AppointmentState>()),
+              onPressed: () => _refreshCurrentView(cubit),
               icon: const Icon(Icons.refresh),
               tooltip: 'refresh'.tr(),
             ),
         ],
       ),
-      body: Consumer<AppointmentState>(
-        builder: (context, state, child) {
+      body: BlocBuilder<AppointmentsOverviewCubit, AppointmentsOverviewState>(
+        builder: (context, state) {
           if (state.isLoading && state.appointments.isEmpty) {
             return _buildLoadingShimmer();
           }
 
-          if (state.isError && state.appointments.isEmpty) {
+          if (state.hasError && state.appointments.isEmpty) {
             return _buildEmptyState(
               title: 'error_occurred'.tr(),
               message: state.errorMessage,
@@ -178,31 +121,24 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                 padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 8.h),
                 child: _buildHeader(state),
               ),
-              if (widget.config.showDateFilter ||
-                  widget.config.showTodayShortcut)
+              if (widget.config.showDateFilter || widget.config.showTodayShortcut)
                 Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 16.w,
-                    vertical: 8.h,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   child: Row(
                     children: [
                       if (widget.config.showDateFilter)
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () => _pickDate(context, state),
+                            onPressed: () => _pickDate(context, cubit),
                             icon: const Icon(Icons.calendar_month),
-                            label: Text(
-                              _formatDate(context, state.selectedDate),
-                            ),
+                            label: Text(_formatDate(context, state.selectedDate)),
                           ),
                         ),
-                      if (widget.config.showDateFilter &&
-                          widget.config.showTodayShortcut)
+                      if (widget.config.showDateFilter && widget.config.showTodayShortcut)
                         SizedBox(width: 12.w),
                       if (widget.config.showTodayShortcut)
                         FilledButton.tonalIcon(
-                          onPressed: () => _loadInitialData(state),
+                          onPressed: () => cubit.loadInitialData(pageSize: widget.config.pageSize),
                           icon: const Icon(Icons.today),
                           label: Text('today'.tr()),
                         ),
@@ -217,9 +153,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                     children: [
                       IconButton(
                         onPressed: state.currentPage > 1 && !state.isPageLoading
-                            ? () => _isToday(state.selectedDate)
-                                  ? state.loadPreviousTodayAppointmentsPage()
-                                  : state.loadPreviousAppointmentsByDatePage()
+                            ? () => cubit.loadPreviousPage()
                             : null,
                         icon: const Icon(Icons.chevron_left),
                         tooltip: 'previous_page'.tr(),
@@ -227,9 +161,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                       Text('${'page'.tr()} ${state.currentPage}'),
                       IconButton(
                         onPressed: state.hasMore && !state.isPageLoading
-                            ? () => _isToday(state.selectedDate)
-                                  ? state.loadNextTodayAppointmentsPage()
-                                  : state.loadNextAppointmentsByDatePage()
+                            ? () => cubit.loadNextPage()
                             : null,
                         icon: const Icon(Icons.chevron_right),
                         tooltip: 'next_page'.tr(),
@@ -239,7 +171,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                 ),
               Expanded(
                 child: RefreshIndicator(
-                  onRefresh: () async => _refreshCurrentView(state),
+                  onRefresh: () async => _refreshCurrentView(cubit),
                   child: state.appointments.isEmpty
                       ? _buildEmptyState(
                           title: widget.config.emptyStateKey.tr(),
@@ -247,34 +179,26 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                           icon: Icons.event_busy,
                         )
                       : ListView.separated(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16.w,
-                            vertical: 8.h,
-                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                           itemCount: state.appointments.length,
-                          separatorBuilder: (_, __) => SizedBox(height: 12.h),
+                          separatorBuilder: (context, index) => SizedBox(height: 12.h),
                           itemBuilder: (context, index) {
                             final appointment = state.appointments[index];
                             return Card(
                               elevation: 0,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(18.r),
-                                side: BorderSide(color: AppColors.gray200),
+                                borderRadius: BorderRadius.circular(12),
+                                side: const BorderSide(color: AppColors.gray200),
                               ),
                               child: ListTile(
-                                onTap: () => _showAppointmentDetails(
-                                  context,
-                                  appointment,
-                                ),
+                                onTap: () => _showAppointmentDetails(context, appointment),
                                 contentPadding: EdgeInsets.all(16.w),
                                 leading: CircleAvatar(
                                   backgroundColor: AppColors.primaryExtraLight,
                                   child: Text(
-                                    DateFormat(
-                                      'HH:mm',
-                                    ).format(appointment.dateTime),
-                                    style: TextStyle(
-                                      fontSize: 11.sp,
+                                    DateFormat('HH:mm').format(appointment.dateTime),
+                                    style: const TextStyle(
+                                      fontSize: 11,
                                       fontWeight: FontWeight.w700,
                                       color: AppColors.primaryDark,
                                     ),
@@ -307,7 +231,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
     );
   }
 
-  Widget _buildHeader(AppointmentState state) {
+  Widget _buildHeader(AppointmentsOverviewState state) {
     final subtitle = _formatLongDate(context, state.selectedDate);
 
     return Container(
@@ -319,7 +243,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20.r),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
         children: [
@@ -327,7 +251,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: Colors.white.withAlpha(25),
-              borderRadius: BorderRadius.circular(14.r),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.event_note, color: Colors.white),
           ),
@@ -338,19 +262,16 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
               children: [
                 Text(
                   widget.config.titleKey.tr(),
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 18.sp,
+                    fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: 4.h),
                 Text(
                   subtitle,
-                  style: TextStyle(
-                    color: Colors.white.withAlpha(220),
-                    fontSize: 13.sp,
-                  ),
+                  style: TextStyle(color: Colors.white.withAlpha(220), fontSize: 13),
                 ),
               ],
             ),
@@ -359,15 +280,11 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
               color: Colors.white.withAlpha(25),
-              borderRadius: BorderRadius.circular(999.r),
+              borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               '${state.appointments.length}',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 14.sp,
-                fontWeight: FontWeight.w700,
-              ),
+              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -387,11 +304,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
     }
   }
 
-  String _buildSubtitle(
-    String doctorName,
-    String patientName,
-    DateTime dateTime,
-  ) {
+  String _buildSubtitle(String doctorName, String patientName, DateTime dateTime) {
     final timeText = DateFormat('HH:mm').format(dateTime);
     switch (widget.config.mode) {
       case AppointmentsOverviewMode.doctor:
@@ -405,15 +318,12 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
     }
   }
 
-  void _showAppointmentDetails(
-    BuildContext context,
-    AppointmentEntity appointment,
-  ) {
+  void _showAppointmentDetails(BuildContext context, AppointmentEntity appointment) {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
         return Padding(
@@ -423,12 +333,9 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                _buildPrimaryTitle(
-                  appointment.patientName,
-                  appointment.doctorName,
-                ),
-                style: TextStyle(
-                  fontSize: 18.sp,
+                _buildPrimaryTitle(appointment.patientName, appointment.doctorName),
+                style: const TextStyle(
+                  fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: AppColors.secondary,
                 ),
@@ -445,11 +352,8 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                 ).format(appointment.dateTime),
               ),
               SizedBox(height: 6.h),
-              Text(
-                '${'status'.tr()}: ${_buildStatusLabel(appointment.status)}',
-              ),
-              if (appointment.reason != null &&
-                  appointment.reason!.isNotEmpty) ...[
+              Text('${'status'.tr()}: ${_buildStatusLabel(appointment.status)}'),
+              if (appointment.reason != null && appointment.reason!.isNotEmpty) ...[
                 SizedBox(height: 6.h),
                 Text('${'reason'.tr()}: ${appointment.reason}'),
               ],
@@ -468,36 +372,12 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
         AppColors.primaryDark,
         'scheduled'.tr(),
       ),
-      AppointmentStatus.confirmed => (
-        const Color(0xFFE8F7EF),
-        AppColors.success,
-        'confirmed'.tr(),
-      ),
-      AppointmentStatus.arrived => (
-        const Color(0xFFFFF4E5),
-        AppColors.warning,
-        'arrived'.tr(),
-      ),
-      AppointmentStatus.inProgress => (
-        const Color(0xFFEAF2FF),
-        AppColors.info,
-        'in_progress'.tr(),
-      ),
-      AppointmentStatus.completed => (
-        const Color(0xFFE8F7EF),
-        AppColors.success,
-        'completed'.tr(),
-      ),
-      AppointmentStatus.cancelled => (
-        const Color(0xFFFFEBEE),
-        AppColors.error,
-        'cancelled'.tr(),
-      ),
-      AppointmentStatus.noShow => (
-        AppColors.gray100,
-        AppColors.gray600,
-        'no_show'.tr(),
-      ),
+      AppointmentStatus.confirmed => (const Color(0xFFE8F7EF), AppColors.success, 'confirmed'.tr()),
+      AppointmentStatus.arrived => (const Color(0xFFFFF4E5), AppColors.warning, 'arrived'.tr()),
+      AppointmentStatus.inProgress => (const Color(0xFFEAF2FF), AppColors.info, 'in_progress'.tr()),
+      AppointmentStatus.completed => (const Color(0xFFE8F7EF), AppColors.success, 'completed'.tr()),
+      AppointmentStatus.cancelled => (const Color(0xFFFFEBEE), AppColors.error, 'cancelled'.tr()),
+      AppointmentStatus.noShow => (AppColors.gray100, AppColors.gray600, 'no_show'.tr()),
       AppointmentStatus.rescheduled => (
         const Color(0xFFF0ECFF),
         AppColors.accent,
@@ -508,11 +388,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
     return Chip(
       label: Text(
         label,
-        style: TextStyle(
-          color: foreground,
-          fontSize: 12.sp,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(color: foreground, fontSize: 12, fontWeight: FontWeight.w600),
       ),
       backgroundColor: background,
       side: BorderSide.none,
@@ -549,14 +425,12 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
             Container(
               padding: EdgeInsets.all(18.w),
               decoration: BoxDecoration(
-                color: isError
-                    ? AppColors.error.withAlpha(15)
-                    : AppColors.primaryExtraLight,
+                color: isError ? AppColors.error.withAlpha(15) : AppColors.primaryExtraLight,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                size: 34.sp,
+                size: 34,
                 color: isError ? AppColors.error : AppColors.primaryDark,
               ),
             ),
@@ -564,8 +438,8 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16.sp,
+              style: const TextStyle(
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: AppColors.secondary,
               ),
@@ -575,7 +449,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13.sp, color: AppColors.gray600),
+                style: const TextStyle(fontSize: 13, color: AppColors.gray600),
               ),
             ],
           ],
@@ -588,7 +462,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
     return ListView.separated(
       padding: EdgeInsets.all(16.w),
       itemCount: 5,
-      separatorBuilder: (_, __) => SizedBox(height: 12.h),
+      separatorBuilder: (context, index) => SizedBox(height: 12.h),
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
           baseColor: AppColors.gray200,
@@ -597,34 +471,23 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16.r),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               children: [
                 Container(
                   width: 52.w,
                   height: 52.w,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
                 ),
                 SizedBox(width: 16.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        height: 14.h,
-                        width: double.infinity,
-                        color: Colors.white,
-                      ),
+                      Container(height: 14.h, width: double.infinity, color: Colors.white),
                       SizedBox(height: 10.h),
-                      Container(
-                        height: 12.h,
-                        width: 160.w,
-                        color: Colors.white,
-                      ),
+                      Container(height: 12.h, width: 160.w, color: Colors.white),
                     ],
                   ),
                 ),
@@ -634,7 +497,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                   height: 28.h,
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(999.r),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
               ],

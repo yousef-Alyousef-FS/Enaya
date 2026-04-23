@@ -35,7 +35,7 @@ class AppointmentsListWidget extends StatelessWidget {
           padding: EdgeInsets.all(12.w),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(8.r),
+            borderRadius: BorderRadius.circular(8),
             border: Border.all(color: Colors.grey[200]!),
           ),
           child: Row(
@@ -51,7 +51,7 @@ class AppointmentsListWidget extends StatelessWidget {
                   child: Text(
                     DateFormat('HH:mm').format(appointment.dateTime),
                     style: TextStyle(
-                      fontSize: 12.sp,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                       color: Colors.blue[700],
                     ),
@@ -65,15 +65,15 @@ class AppointmentsListWidget extends StatelessWidget {
                   children: [
                     Text(
                       appointment.patientName,
-                      style: TextStyle(
-                        fontSize: 16.sp,
+                      style: const TextStyle(
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(
                       'Dr. ${appointment.doctorName}',
                       style: TextStyle(
-                        fontSize: 13.sp,
+                        fontSize: 13,
                         color: Colors.grey[600],
                       ),
                     ),
@@ -88,10 +88,10 @@ class AppointmentsListWidget extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: 12.w),
                   minimumSize: Size(0, 32.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(6.r),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
-                child: Text('Check-in', style: TextStyle(fontSize: 12.sp)),
+                child: const Text('Check-in', style: TextStyle(fontSize: 12)),
               ),
             ],
           ),

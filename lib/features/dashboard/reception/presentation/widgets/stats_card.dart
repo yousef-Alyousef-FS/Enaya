@@ -21,7 +21,7 @@ class DashboardStatsCard extends StatelessWidget {
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -36,9 +36,9 @@ class DashboardStatsCard extends StatelessWidget {
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8.r),
+              borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: color, size: 24.sp),
+            child: Icon(icon, color: color, size: 24),
           ),
           SizedBox(width: 16.w),
           Column(
@@ -46,15 +46,15 @@ class DashboardStatsCard extends StatelessWidget {
             children: [
               Text(
                 value,
-                style: TextStyle(
-                  fontSize: 20.sp,
+                style: const TextStyle(
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
               Text(
                 title,
                 style: TextStyle(
-                  fontSize: 14.sp,
+                  fontSize: 14,
                   color: Colors.grey[600],
                 ),
               ),

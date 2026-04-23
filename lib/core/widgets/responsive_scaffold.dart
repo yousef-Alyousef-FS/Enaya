@@ -18,7 +18,7 @@ class ResponsiveScaffold extends StatelessWidget {
     final theme = Theme.of(context);
     final isMobile = context.isMobile;
     final isTablet = context.isTablet;
-    final isDesktop = context.isDesktop;
+  //final isDesktop = context.isDesktop;
 
     return Scaffold(
       appBar: isMobile

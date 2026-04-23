@@ -23,11 +23,7 @@ class DioFactory {
       receiveTimeout: timeout,
       sendTimeout: timeout,
       connectTimeout: timeout,
-      headers: {
-        CONTENT_TYPE: APPLICATION_JSON,
-        ACCEPT: APPLICATION_JSON,
-        DEFAULT_LANGUAGE: "ar",
-      },
+      headers: {CONTENT_TYPE: APPLICATION_JSON, ACCEPT: APPLICATION_JSON, DEFAULT_LANGUAGE: "ar"},
     );
 
     addDioInterceptor(dio);
@@ -61,16 +57,27 @@ class DioFactory {
               try {
                 // طلب Refresh Token
                 final refreshResponse = await dio.post(
-                  "/auth/refresh",
+                  ApiConstants.refreshToken,
                   data: {"refresh_token": refreshToken},
                 );
 
-                final newToken = refreshResponse.data["token"];
-                final newRefresh = refreshResponse.data["refresh_token"];
+                final responseData = refreshResponse.data;
+                if (responseData is! Map) {
+                  throw const FormatException('Invalid refresh response format');
+                }
+
+                final newToken = responseData["token"]?.toString();
+                final newRefresh = responseData["refresh_token"]?.toString();
+
+                if (newToken == null || newToken.isEmpty) {
+                  throw const FormatException('Missing token in refresh response');
+                }
 
                 // حفظ التوكن الجديد
                 await tokenManager.saveToken(newToken);
-                await tokenManager.saveRefreshToken(newRefresh);
+                if (newRefresh != null && newRefresh.isNotEmpty) {
+                  await tokenManager.saveRefreshToken(newRefresh);
+                }
 
                 // إعادة الطلب الأصلي
                 final retryRequest = error.requestOptions;

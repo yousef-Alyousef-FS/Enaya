@@ -20,13 +20,9 @@ Future<void> initGetIt() async {
   // 1. External & Core
   final sharedPrefs = await SharedPreferences.getInstance();
   const secureStorage = FlutterSecureStorage();
-  final dio = DioFactory.getDio();
 
   getIt.registerLazySingleton<CacheHelper>(
-    () => CacheHelper(
-      sharedPreferences: sharedPrefs,
-      secureStorage: secureStorage,
-    ),
+    () => CacheHelper(sharedPreferences: sharedPrefs, secureStorage: secureStorage),
   );
   getIt.registerLazySingleton(() => InternetConnection());
   getIt.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(getIt()));
@@ -38,25 +34,33 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton(() => MockDataService());
 
   // 3. Dio Factory
-  getIt.registerLazySingleton(() => dio);
+  getIt.registerLazySingleton(() => DioFactory.getDio());
 
   // 4. Auth Feature
   getIt.registerLazySingleton<AuthRemoteDataSource>(
-    () =>
-        AuthMockDataSourceImpl(mockDataService: getIt(), tokenManager: getIt()),
+    () => AuthMockDataSourceImpl(tokenManager: getIt()),
   );
   getIt.registerLazySingleton<IAuthRepository>(
     () => AuthRepositoryImpl(remoteDataSource: getIt(), networkInfo: getIt()),
   );
+
   getIt.registerLazySingleton(() => LoginUseCase(getIt()));
   getIt.registerLazySingleton(() => SignupUsecase(getIt()));
   getIt.registerLazySingleton(() => ForgotPasswordUseCase(getIt()));
+  getIt.registerLazySingleton(() => ResetPasswordUseCase(getIt()));
+  getIt.registerLazySingleton(() => ChangePasswordUseCase(getIt()));
+  getIt.registerLazySingleton(() => SendEmailVerificationUseCase(getIt()));
+  getIt.registerLazySingleton(() => VerifyEmailUseCase(getIt()));
   getIt.registerLazySingleton(() => LogoutUseCase(getIt()));
   getIt.registerFactory(
-    () => AuthViewModel(
+    () => AuthCubit(
       loginUseCase: getIt(),
       signupUseCase: getIt(),
       forgotPasswordUseCase: getIt(),
+      resetPasswordUseCase: getIt(),
+      changePasswordUseCase: getIt(),
+      sendEmailVerificationUseCase: getIt(),
+      verifyEmailUseCase: getIt(),
       logoutUseCase: getIt(),
     ),
   );
@@ -65,8 +69,11 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton<AppointmentRemoteDataSource>(
     () => AppointmentRemoteDataSourceImpl(getIt()),
   );
-  getIt.registerLazySingleton<AppointmentRepository>(
-    () => AppointmentRepositoryImpl(getIt()),
+  getIt.registerLazySingleton<AppointmentManagementRepository>(
+    () => AppointmentManagementRepositoryImpl(getIt()),
+  );
+  getIt.registerLazySingleton<PatientAppointmentsRepository>(
+    () => PatientAppointmentsRepositoryImpl(getIt()),
   );
 
   getIt.registerLazySingleton(() => CreateAppointmentUseCase(getIt()));
@@ -74,24 +81,30 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton(() => GetTodayAppointmentsUseCase(getIt()));
   getIt.registerLazySingleton(() => GetAppointmentByIdUseCase(getIt()));
   getIt.registerLazySingleton(() => GetAppointmentsByDoctorUseCase(getIt()));
-  getIt.registerLazySingleton(() => GetAppointmentsByPatientUseCase(getIt()));
   getIt.registerLazySingleton(() => UpdateAppointmentStatusUseCase(getIt()));
   getIt.registerLazySingleton(() => RescheduleAppointmentUseCase(getIt()));
-  getIt.registerLazySingleton(() => CancelAppointmentUseCase(getIt()));
+  getIt.registerLazySingleton(
+    () => CancelAppointmentUseCase(managementRepository: getIt(), patientRepository: getIt()),
+  );
   getIt.registerLazySingleton(() => DeleteAppointmentUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetAvailableSlotsUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetAppointmentsStatsUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetPatientAppointmentsUseCase(getIt()));
 
   getIt.registerFactory(
-    () => AppointmentState(
-      createAppointmentUseCase: getIt(),
+    () => AppointmentsOverviewCubit(
       getAppointmentsByDateUseCase: getIt(),
       getTodayAppointmentsUseCase: getIt(),
-      userRoleId: 3,
     ),
+  );
+
+  getIt.registerFactory(
+    () => AppointmentScheduleCubit(createAppointmentUseCase: getIt(), userRoleId: 3),
   );
 
   // 6. Reception Dashboard Feature
   getIt.registerFactory(
-    () => ReceptionDashboardState(
+    () => ReceptionDashboardCubit(
       getTodayAppointmentsUseCase: getIt(),
       updateAppointmentStatusUseCase: getIt(),
       userRoleId: 3,

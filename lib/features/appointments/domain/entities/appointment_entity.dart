@@ -36,20 +36,20 @@ class AppointmentEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        patientId,
-        patientName,
-        patientPhone,
-        doctorId,
-        doctorName,
-        dateTime,
-        status,
-        reason,
-        notes,
-        queueNumber,
-        cancelledBy,
-        cancellationReason,
-      ];
+    id,
+    patientId,
+    patientName,
+    patientPhone,
+    doctorId,
+    doctorName,
+    dateTime,
+    status,
+    reason,
+    notes,
+    queueNumber,
+    cancelledBy,
+    cancellationReason,
+  ];
 
   AppointmentEntity copyWith({
     AppointmentStatus? status,
@@ -74,10 +74,11 @@ class AppointmentEntity extends Equatable {
       notes: notes == _sentinel ? this.notes : notes as String?,
       queueNumber: queueNumber ?? this.queueNumber,
       cancelledBy: cancelledBy == _sentinel ? this.cancelledBy : cancelledBy as String?,
-      cancellationReason: cancellationReason == _sentinel ? this.cancellationReason : cancellationReason as String?,
+      cancellationReason: cancellationReason == _sentinel
+          ? this.cancellationReason
+          : cancellationReason as String?,
     );
   }
 
   static const _sentinel = Object();
-
 }

@@ -1,9 +1,10 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
+import '../../../../core/network/api_error_handler.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../entities/appointment_entity.dart';
-import '../repositories/appointment_repository.dart';
+import '../repositories/appointment_management_repository.dart';
 
 class GetTodayAppointmentsParams {
   final int page;
@@ -14,22 +15,17 @@ class GetTodayAppointmentsParams {
 
 class GetTodayAppointmentsUseCase
     implements UseCase<List<AppointmentEntity>, GetTodayAppointmentsParams> {
-  final AppointmentRepository repository;
+  final AppointmentManagementRepository repository;
 
   GetTodayAppointmentsUseCase(this.repository);
 
   @override
-  Future<Either<Failure, List<AppointmentEntity>>> call(
-    GetTodayAppointmentsParams params,
-  ) async {
+  Future<Either<Failure, List<AppointmentEntity>>> call(GetTodayAppointmentsParams params) async {
     try {
-      final result = await repository.getAppointmentsToday(
-        page: params.page,
-        limit: params.limit,
-      );
+      final result = await repository.getAppointmentsToday(page: params.page, limit: params.limit);
       return Right(result);
     } catch (e) {
-      return Left(ServerFailure(e.toString()));
+      return Left(ApiErrorHandler.handle(e));
     }
   }
 }

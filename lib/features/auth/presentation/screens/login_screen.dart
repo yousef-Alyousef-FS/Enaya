@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/mixins/responsive_layout_mixin.dart';
@@ -12,8 +12,9 @@ import '../../../../core/widgets/app_loaders.dart';
 import '../../../../core/widgets/auth_card_container.dart';
 import '../../../../core/widgets/logo.dart';
 
+import '../cubit/auth_cubit.dart';
+import '../cubit/auth_state.dart';
 import '../mixins/auth_form_mixin.dart';
-import '../state/auth_view_model.dart';
 import '../widgets/auth_text_field.dart';
 
 enum UserRole {
@@ -25,10 +26,7 @@ enum UserRole {
   const UserRole(this.id);
 
   static UserRole fromId(int id) {
-    return UserRole.values.firstWhere(
-          (e) => e.id == id,
-      orElse: () => UserRole.patient,
-    );
+    return UserRole.values.firstWhere((e) => e.id == id, orElse: () => UserRole.patient);
   }
 }
 
@@ -56,15 +54,9 @@ class _LoginScreenState extends State<LoginScreen>
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
 
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 350),
-    );
+    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
 
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeOut,
-    );
+    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
   }
 
   @override
@@ -78,8 +70,8 @@ class _LoginScreenState extends State<LoginScreen>
   // -----------------------------
   // Navigation Logic
   // -----------------------------
-  void _handleNavigation(BuildContext context, AuthViewModel viewModel) {
-    final user = viewModel.currentUser;
+  void _handleNavigation(BuildContext context, AuthState state) {
+    final user = state.currentUser;
     if (user == null) return;
 
     final role = UserRole.fromId(user.roleId);
@@ -123,15 +115,12 @@ class _LoginScreenState extends State<LoginScreen>
     return null;
   }
 
-  void _onLoginPressed(AuthViewModel viewModel) {
+  void _onLoginPressed(AuthCubit cubit) {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => errorMessage = null);
 
-    viewModel.login(
-      _emailController.text.trim(),
-      _passwordController.text,
-    );
+    cubit.login(_emailController.text.trim(), _passwordController.text);
   }
 
   // -----------------------------
@@ -139,8 +128,8 @@ class _LoginScreenState extends State<LoginScreen>
   // -----------------------------
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => getIt<AuthViewModel>(),
+    return BlocProvider(
+      create: (_) => getIt<AuthCubit>(),
       child: Scaffold(
         body: SafeArea(
           child: OrientationBuilder(
@@ -166,44 +155,37 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildLogo(config) {
+  Widget _buildLogo(ResponsiveLayoutConfig config) {
     return Container(
-      width: config.isPortrait ? 72.w : 56.w,
-      height: config.isPortrait ? 72.w : 56.w,
-      decoration: BoxDecoration(
-        color: AppColors.primary.withAlpha(35),
-        shape: BoxShape.circle,
-      ),
+      width: config.logoSize,
+      height: config.logoSize,
+      decoration: BoxDecoration(color: AppColors.primary.withAlpha(35), shape: BoxShape.circle),
       child: LogoIcon(
-        width: config.isPortrait ? 36.sp : 28.sp,
-        height: config.isPortrait ? 36.sp : 28.sp,
+        width: config.iconSize,
+        height: config.iconSize,
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, config) {
+  Widget _buildHeader(BuildContext context, ResponsiveLayoutConfig config) {
     return Column(
       children: [
         Text(
           'welcome_back'.tr(),
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.displayLarge?.copyWith(
-            fontSize: config.titleFontSize,
-          ),
+          style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
         ),
         SizedBox(height: config.isPortrait ? 10.h : 8.h),
         Text(
           'login_description'.tr(),
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            fontSize: config.bodyFontSize,
-          ),
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
         ),
       ],
     );
   }
 
-  Widget _buildForm(config) {
+  Widget _buildForm(ResponsiveLayoutConfig config) {
     return Form(
       key: _formKey,
       child: Column(
@@ -260,33 +242,50 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   Widget _buildLoginSection(config) {
-    return Consumer<AuthViewModel>(
-      builder: (context, viewModel, _) {
-        handleAuthStateChange(viewModel, () {
-          if (!mounted) return;
-          _handleNavigation(context, viewModel);
-        });
+    return BlocConsumer<AuthCubit, AuthState>(
+      listener: (context, state) {
+        final cubit = context.read<AuthCubit>();
+
+        if (state.isError) {
+          setState(() => errorMessage = state.errorMessage ?? 'error_occurred'.tr());
+          _fadeController.forward(from: 0);
+          cubit.clearStatus();
+          return;
+        }
+
+        if (state.isSuccess) {
+          setState(() {
+            errorMessage = null;
+            isNavigating = true;
+          });
+          successAnimationController.forward().then((_) {
+            if (mounted) {
+              _handleNavigation(context, state);
+              // We don't reverse or clear status here because we are leaving the screen
+            }
+          });
+          return;
+        }
+      },
+      builder: (context, state) {
+        final cubit = context.read<AuthCubit>();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AnimatedBuilder(
               animation: successAnimation,
-              builder: (_, __) => Transform.scale(
+              builder: (_, _) => Transform.scale(
                 scale: successAnimation.value,
                 child: ElevatedButton(
-                  onPressed: viewModel.isLoading
-                      ? null
-                      : () => _onLoginPressed(viewModel),
-                  child: viewModel.isLoading
-                      ? AppLoaders.inline()
-                      : Text('login'.tr()),
+                  onPressed: (state.isLoading || isNavigating) ? null : () => _onLoginPressed(cubit),
+                  child: state.isLoading ? AppLoaders.inline() : Text('login'.tr()),
                 ),
               ),
             ),
 
             // Error message with fade animation
-            if (errorMessage != null)
+            if (errorMessage != null && !state.isSuccess)
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: Padding(
@@ -313,10 +312,7 @@ class _LoginScreenState extends State<LoginScreen>
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text(
-          'dont_have_account'.tr(),
-          style: TextStyle(fontSize: config.buttonFontSize),
-        ),
+        Text('dont_have_account'.tr(), style: TextStyle(fontSize: config.buttonFontSize)),
         TextButton(
           onPressed: () => context.push(AppRouter.signup),
           child: Text(

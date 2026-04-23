@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/mixins/responsive_layout_mixin.dart';
@@ -10,8 +10,9 @@ import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_loaders.dart';
 import '../../../../core/widgets/auth_card_container.dart';
+import '../cubit/auth_cubit.dart';
+import '../cubit/auth_state.dart';
 import '../mixins/auth_form_mixin.dart';
-import '../state/auth_view_model.dart';
 import '../widgets/auth_text_field.dart';
 
 class SignupScreen extends StatefulWidget {
@@ -38,15 +39,9 @@ class _SignupScreenState extends State<SignupScreen>
   void initState() {
     super.initState();
 
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 350),
-    );
+    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
 
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeOut,
-    );
+    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
   }
 
   @override
@@ -108,12 +103,12 @@ class _SignupScreenState extends State<SignupScreen>
     return null;
   }
 
-  void _onSignupPressed(AuthViewModel viewModel) {
+  void _onSignupPressed(AuthCubit cubit) {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => errorMessage = null);
 
-    viewModel.signup(
+    cubit.signup(
       _emailController.text.trim(),
       _passwordController.text,
       _userNameController.text.trim(),
@@ -126,8 +121,8 @@ class _SignupScreenState extends State<SignupScreen>
   // -----------------------------
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => getIt<AuthViewModel>(),
+    return BlocProvider(
+      create: (_) => getIt<AuthCubit>(),
       child: Scaffold(
         appBar: AppBar(
           title: Text('create_account'.tr()),
@@ -147,17 +142,17 @@ class _SignupScreenState extends State<SignupScreen>
                   Text(
                     'join_enaya'.tr(),
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      fontSize: config.titleFontSize,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
                   ),
                   SizedBox(height: config.isPortrait ? 10.h : 8.h),
                   Text(
                     'signup_description'.tr(),
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontSize: config.bodyFontSize,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
                   ),
                   SizedBox(height: config.isPortrait ? 32.h : 24.h),
 
@@ -171,7 +166,7 @@ class _SignupScreenState extends State<SignupScreen>
     );
   }
 
-  Widget _buildForm(config) {
+  Widget _buildForm(ResponsiveLayoutConfig config) {
     return Form(
       key: _formKey,
       child: Column(
@@ -182,8 +177,7 @@ class _SignupScreenState extends State<SignupScreen>
             hintText: 'full_name'.tr(),
             controller: _userNameController,
             prefixIcon: Icons.person_outline,
-            validator: (value) =>
-            value!.isEmpty ? 'enter_your_name'.tr() : null,
+            validator: (value) => value!.isEmpty ? 'enter_your_name'.tr() : null,
           ),
           SizedBox(height: config.isPortrait ? 16.h : 12.h),
 
@@ -236,14 +230,34 @@ class _SignupScreenState extends State<SignupScreen>
     );
   }
 
-  Widget _buildSignupButton(config) {
-    return Consumer<AuthViewModel>(
-      builder: (context, viewModel, _) {
-        handleAuthStateChange(viewModel, () {
-          if (mounted) {
-            context.go(AppRouter.patientHome);
-          }
-        });
+  Widget _buildSignupButton(ResponsiveLayoutConfig config) {
+    return BlocConsumer<AuthCubit, AuthState>(
+      listener: (context, state) {
+        final cubit = context.read<AuthCubit>();
+
+        if (state.isError) {
+          setState(() => errorMessage = state.errorMessage ?? 'error_occurred'.tr());
+          _fadeController.forward(from: 0);
+          cubit.clearStatus();
+          return;
+        }
+
+        if (state.isSuccess) {
+          setState(() {
+            errorMessage = null;
+            isNavigating = true;
+          });
+          successAnimationController.forward().then((_) {
+            if (mounted) {
+              context.go(AppRouter.patientHome);
+              // No reverse or clearStatus needed as we navigate away
+            }
+          });
+          return;
+        }
+      },
+      builder: (context, state) {
+        final cubit = context.read<AuthCubit>();
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -253,17 +267,13 @@ class _SignupScreenState extends State<SignupScreen>
               builder: (_, __) => Transform.scale(
                 scale: successAnimation.value,
                 child: ElevatedButton(
-                  onPressed: viewModel.isLoading
-                      ? null
-                      : () => _onSignupPressed(viewModel),
-                  child: viewModel.isLoading
-                      ? AppLoaders.inline()
-                      : Text('sign_up'.tr()),
+                  onPressed: (state.isLoading || isNavigating) ? null : () => _onSignupPressed(cubit),
+                  child: state.isLoading ? AppLoaders.inline() : Text('sign_up'.tr()),
                 ),
               ),
             ),
 
-            if (errorMessage != null)
+            if (errorMessage != null && !state.isSuccess)
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: Padding(
@@ -285,16 +295,13 @@ class _SignupScreenState extends State<SignupScreen>
     );
   }
 
-  Widget _buildLoginRedirect(config) {
+  Widget _buildLoginRedirect(ResponsiveLayoutConfig config) {
     return Center(
       child: Wrap(
         alignment: WrapAlignment.center,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Text(
-            'already_have_account'.tr(),
-            style: TextStyle(fontSize: config.bodyFontSize),
-          ),
+          Text('already_have_account'.tr(), style: TextStyle(fontSize: config.bodyFontSize)),
           TextButton(
             onPressed: () => context.pop(),
             child: Text(

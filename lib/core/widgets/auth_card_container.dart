@@ -46,7 +46,7 @@ class AuthCardContainer extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(
-                    config.isPortrait ? 28.r : 20.r,
+                    config.isPortrait ? 24 : 16,
                   ),
                   boxShadow: [
                     BoxShadow(

@@ -6,5 +6,5 @@ enum AppointmentStatus {
   completed,
   cancelled,
   noShow,
-  rescheduled, // تمت إضافة الحالة المقترحة للتعامل مع "إعادة الجدولة" بدلاً من الرفض
+  rescheduled,
 }
