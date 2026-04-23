@@ -1,111 +1,163 @@
 import 'package:dartz/dartz.dart';
+
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/api_error_handler.dart';
 import '../../../../core/network/network_info.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_data_source.dart';
-import '../models/auth_responses.dart';
 
 class AuthRepositoryImpl implements IAuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final NetworkInfo networkInfo;
 
-  AuthRepositoryImpl({
-    required this.remoteDataSource,
-    required this.networkInfo,
-  });
+  AuthRepositoryImpl({required this.remoteDataSource, required this.networkInfo});
 
-  // ---------------------------------------------------------------------------
-  // 🔥 Helper: توحيد التعامل مع الأخطاء
-  // ---------------------------------------------------------------------------
-  Future<Either<Failure, T>> _safeCall<T>(Future<T> Function() call) async {
+  @override
+  Future<Either<Failure, User>> login({
+    required String usernameOrEmail,
+    required String password,
+  }) async
+  {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure());
     }
 
     try {
-      final result = await call();
-      return Right(result);
+      final user = await remoteDataSource.login(
+        usernameOrEmail: usernameOrEmail,
+        password: password,
+      );
+      return Right(user);
     } catch (error) {
       return Left(ApiErrorHandler.handle(error));
     }
   }
 
-  // ---------------------------------------------------------------------------
-  // 🔐 Login
-  // ---------------------------------------------------------------------------
-  @override
-  Future<Either<Failure, User>> login({
-    required String usernameOrEmail,
-    required String password,
-  }) async {
-    return _safeCall<User>(() async {
-      final response = await remoteDataSource.login(
-        usernameOrEmail: usernameOrEmail,
-        password: password,
-      );
-
-      if (response.success && response.data != null) {
-        return response.data!.user.toEntity();
-      }
-
-      throw ServerFailure(response.error ?? "Login failed");
-    });
-  }
-
-  // ---------------------------------------------------------------------------
-  // 📝 Signup
-  // ---------------------------------------------------------------------------
   @override
   Future<Either<Failure, User>> signup({
     required String email,
     required String password,
     required String username,
     required String phone,
-  }) async {
-    return _safeCall<User>(() async {
-      final response = await remoteDataSource.signup(
+  }) async
+  {
+    if (!await networkInfo.isConnected) {
+      return Left(NetworkFailure());
+    }
+
+    try {
+      final user = await remoteDataSource.signup(
         email: email,
         password: password,
-        userName: username,
+        username: username,
         phone: phone,
       );
-
-      if (response.success && response.data != null) {
-        return response.data!.user.toEntity();
-      }
-
-      throw ServerFailure(response.error ?? "Signup failed");
-    });
+      return Right(user);
+    } catch (error) {
+      return Left(ApiErrorHandler.handle(error));
+    }
   }
 
-  // ---------------------------------------------------------------------------
-  // 🔑 Forgot Password
-  // ---------------------------------------------------------------------------
   @override
-  Future<Either<Failure, Unit>> forgotPassword({
+  Future<Either<Failure, Unit>> forgotPassword({required String email}) async
+  {
+    if (!await networkInfo.isConnected) {
+      return Left(NetworkFailure());
+    }
+
+    try {
+      await remoteDataSource.forgotPassword(email: email);
+      return const Right(unit);
+    } catch (error) {
+      return Left(ApiErrorHandler.handle(error));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> resetPassword({
     required String email,
-  }) async {
-    return _safeCall<Unit>(() async {
-      final response = await remoteDataSource.forgotPassword(email: email);
+    required String verificationCode,
+    required String newPassword,
+  }) async
+  {
+    if (!await networkInfo.isConnected) {
+      return Left(NetworkFailure());
+    }
 
-      if (response.success) {
-        return unit;
-      }
-
-      throw ServerFailure(response.error ?? "Request failed");
-    });
+    try {
+      await remoteDataSource.resetPassword(
+        email: email,
+        verificationCode: verificationCode,
+        newPassword: newPassword,
+      );
+      return const Right(unit);
+    } catch (error) {
+      return Left(ApiErrorHandler.handle(error));
+    }
   }
 
-  // ---------------------------------------------------------------------------
-  // 🚪 Logout
-  // ---------------------------------------------------------------------------
   @override
-  Future<Either<Failure, Unit>> logout() async {
-    return _safeCall<Unit>(() async {
+  Future<Either<Failure, Unit>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async
+  {
+    if (!await networkInfo.isConnected) {
+      return Left(NetworkFailure());
+    }
+
+    try {
+      await remoteDataSource.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      return const Right(unit);
+    } catch (error) {
+      return Left(ApiErrorHandler.handle(error));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> sendEmailVerification({required String email}) async {
+    if (!await networkInfo.isConnected) {
+      return Left(NetworkFailure());
+    }
+
+    try {
+      await remoteDataSource.sendEmailVerification(email: email);
+      return const Right(unit);
+    } catch (error) {
+      return Left(ApiErrorHandler.handle(error));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> verifyEmail({
+    required String email,
+    required String verificationCode,
+  }) async
+  {
+    if (!await networkInfo.isConnected) {
+      return Left(NetworkFailure());
+    }
+
+    try {
+      await remoteDataSource.verifyEmail(email: email, verificationCode: verificationCode);
+      return const Right(unit);
+    } catch (error) {
+      return Left(ApiErrorHandler.handle(error));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> logout() async
+  {
+    try {
       await remoteDataSource.logout();
-      return unit;
-    });
+      return const Right(unit);
+    } catch (error) {
+      return Left(ApiErrorHandler.handle(error));
+    }
   }
 }

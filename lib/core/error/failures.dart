@@ -8,7 +8,7 @@ abstract class Failure {
 }
 
 class ServerFailure extends Failure {
-  ServerFailure(String message, {int? code}) : super(message, code: code);
+  ServerFailure(super.message, {super.code});
 }
 
 class CacheFailure extends Failure {

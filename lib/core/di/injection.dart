@@ -2,15 +2,12 @@ import 'package:get_it/get_it.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../../features/auth/data/datasources/auth_mock_data_source.dart';
-import '../../features/auth/data/datasources/auth_remote_data_source.dart';
-import '../../features/auth/data/repositories/auth_repository_impl.dart';
-import '../../features/auth/domain/repositories/auth_repository.dart';
-import '../../features/auth/domain/usecases/login_usecase.dart';
-import '../../features/auth/domain/usecases/signup_usecase.dart';
-import '../../features/auth/domain/usecases/forgot_password_usecase.dart';
-import '../../features/auth/domain/usecases/logout_usecase.dart';
-import '../../features/auth/presentation/state/auth_view_model.dart';
+
+// Import Barrel Files (The Clean Way)
+import '../../features/auth/auth_imports.dart';
+import '../../features/appointments/appointments_imports.dart';
+import '../../features/dashboard/dashboard_imports.dart';
+
 import '../cache/cache_helper.dart';
 import '../network/dio_factory.dart';
 import '../network/network_info.dart';
@@ -25,12 +22,8 @@ Future<void> initGetIt() async {
   const secureStorage = FlutterSecureStorage();
 
   getIt.registerLazySingleton<CacheHelper>(
-    () => CacheHelper(
-      sharedPreferences: sharedPrefs,
-      secureStorage: secureStorage,
-    ),
+    () => CacheHelper(sharedPreferences: sharedPrefs, secureStorage: secureStorage),
   );
-
   getIt.registerLazySingleton(() => InternetConnection());
   getIt.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(getIt()));
 
@@ -38,20 +31,15 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton(
     () => TokenManager(secureStorage: secureStorage, cacheHelper: getIt()),
   );
-
   getIt.registerLazySingleton(() => MockDataService());
 
   // 3. Dio Factory
-  final dio = DioFactory.getDio();
-  getIt.registerLazySingleton(() => dio);
+  getIt.registerLazySingleton(() => DioFactory.getDio());
 
   // 4. Auth Feature
-  // التبديل هنا: نستخدم AuthMockDataSourceImpl مع الخدمات الجديدة
   getIt.registerLazySingleton<AuthRemoteDataSource>(
-    () =>
-        AuthMockDataSourceImpl(mockDataService: getIt(), tokenManager: getIt()),
+    () => AuthMockDataSourceImpl(tokenManager: getIt()),
   );
-
   getIt.registerLazySingleton<IAuthRepository>(
     () => AuthRepositoryImpl(remoteDataSource: getIt(), networkInfo: getIt()),
   );
@@ -59,14 +47,67 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton(() => LoginUseCase(getIt()));
   getIt.registerLazySingleton(() => SignupUsecase(getIt()));
   getIt.registerLazySingleton(() => ForgotPasswordUseCase(getIt()));
+  getIt.registerLazySingleton(() => ResetPasswordUseCase(getIt()));
+  getIt.registerLazySingleton(() => ChangePasswordUseCase(getIt()));
+  getIt.registerLazySingleton(() => SendEmailVerificationUseCase(getIt()));
+  getIt.registerLazySingleton(() => VerifyEmailUseCase(getIt()));
   getIt.registerLazySingleton(() => LogoutUseCase(getIt()));
-
   getIt.registerFactory(
-    () => AuthViewModel(
+    () => AuthCubit(
       loginUseCase: getIt(),
       signupUseCase: getIt(),
       forgotPasswordUseCase: getIt(),
+      resetPasswordUseCase: getIt(),
+      changePasswordUseCase: getIt(),
+      sendEmailVerificationUseCase: getIt(),
+      verifyEmailUseCase: getIt(),
       logoutUseCase: getIt(),
+    ),
+  );
+
+  // 5. Appointments Feature
+  getIt.registerLazySingleton<AppointmentRemoteDataSource>(
+    () => AppointmentRemoteDataSourceImpl(getIt()),
+  );
+  getIt.registerLazySingleton<AppointmentManagementRepository>(
+    () => AppointmentManagementRepositoryImpl(getIt()),
+  );
+  getIt.registerLazySingleton<PatientAppointmentsRepository>(
+    () => PatientAppointmentsRepositoryImpl(getIt()),
+  );
+
+  getIt.registerLazySingleton(() => CreateAppointmentUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetAppointmentsByDateUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetTodayAppointmentsUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetAppointmentByIdUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetAppointmentsByDoctorUseCase(getIt()));
+  getIt.registerLazySingleton(() => UpdateAppointmentStatusUseCase(getIt()));
+  getIt.registerLazySingleton(() => RescheduleAppointmentUseCase(getIt()));
+  getIt.registerLazySingleton(
+    () => CancelAppointmentUseCase(managementRepository: getIt(), patientRepository: getIt()),
+  );
+  getIt.registerLazySingleton(() => DeleteAppointmentUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetAvailableSlotsUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetAppointmentsStatsUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetPatientAppointmentsUseCase(getIt()));
+
+  getIt.registerFactory(
+    () => AppointmentsOverviewCubit(
+      getAppointmentsByDateUseCase: getIt(),
+      getTodayAppointmentsUseCase: getIt(),
+    ),
+  );
+
+  getIt.registerFactory(
+    () => AppointmentScheduleCubit(createAppointmentUseCase: getIt(), userRoleId: 3),
+  );
+
+  // 6. Reception Dashboard Feature
+  getIt.registerFactory(
+    () => ReceptionDashboardCubit(
+      getTodayAppointmentsUseCase: getIt(),
+      updateAppointmentStatusUseCase: getIt(),
+      userRoleId: 3,
     ),
   );
 }

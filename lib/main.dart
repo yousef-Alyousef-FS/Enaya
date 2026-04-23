@@ -8,10 +8,10 @@ import 'package:enaya/core/routing/app_router.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
-  
+
   // Initialize Dependency Injection
   await initGetIt();
-  
+
   runApp(
     EasyLocalization(
       supportedLocales: const [Locale('en', 'US'), Locale('ar', 'SA')],
@@ -39,11 +39,10 @@ class EnayaApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: ThemeMode.system,
-          
+
           localizationsDelegates: context.localizationDelegates,
           supportedLocales: context.supportedLocales,
           locale: context.locale,
-
 
           routerConfig: AppRouter.router,
         );

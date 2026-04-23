@@ -28,25 +28,34 @@ mixin ResponsiveLayoutMixin {
       titleFontSize: _getTitleFontSize(screenWidth),
       bodyFontSize: _getBodyFontSize(screenWidth),
       buttonFontSize: _getButtonFontSize(screenWidth),
+      logoSize: _getLogoSize(screenWidth),
+      iconSize: _getIconSize(screenWidth),
     );
   }
 
   double _getTitleFontSize(double width) {
-    if (width > 1200) return 28; // Desktop
-    if (width > 800) return 27;  // Tablet
-    return 26;                   // Mobile
+    if (width > 800) return 26; // Tablet (Fixed, not giant)
+    return 24;                  // Mobile
   }
 
   double _getBodyFontSize(double width) {
-    if (width > 1200) return 15;
-    if (width > 800) return 14.5;
+    if (width > 800) return 15;
     return 14;
   }
 
   double _getButtonFontSize(double width) {
-    if (width > 1200) return 15;
-    if (width > 800) return 14.5;
-    return 14;
+    if (width > 800) return 16;
+    return 15;
+  }
+
+  double _getLogoSize(double width) {
+    if (width > 800) return 80;
+    return 72;
+  }
+
+  double _getIconSize(double width) {
+    if (width > 800) return 32;
+    return 28;
   }
 }
 
@@ -59,6 +68,8 @@ class ResponsiveLayoutConfig {
   final double titleFontSize;
   final double bodyFontSize;
   final double buttonFontSize;
+  final double logoSize;
+  final double iconSize;
 
   const ResponsiveLayoutConfig({
     required this.isPortrait,
@@ -69,5 +80,7 @@ class ResponsiveLayoutConfig {
     required this.titleFontSize,
     required this.bodyFontSize,
     required this.buttonFontSize,
+    required this.logoSize,
+    required this.iconSize,
   });
 }

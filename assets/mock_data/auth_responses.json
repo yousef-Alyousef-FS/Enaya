@@ -2,8 +2,8 @@
   "users": [
     {
       "id": 1,
-      "username": "Receptionist",
-      "email": "nurse@enaya.com",
+      "username": "يوسف اليوسف",
+      "email": "yousef@enaya.com",
       "password": "12345678",
       "phone": "+966501234569",
       "roleId": 1,
@@ -11,7 +11,6 @@
       "token": "mock_token_nurse_eyJ1c2VySWQiOiAzLCJleHAiOiAxNjc3NjI1MjAwfQ==",
       "createdAt": "2024-01-03T00:00:00Z"
     },
-
     {
       "id": 2,
       "username": "doctor",
@@ -23,7 +22,6 @@
       "token": "mock_token_doctor_eyJ1c2VySWQiOiAyLCJleHAiOiAxNjc3NjI1MjAwfQ==",
       "createdAt": "2024-01-02T00:00:00Z"
     },
-
     {
       "id": 4,
       "username": "patient",
@@ -37,21 +35,18 @@
     }
   ],
   "roles": [
-
     {
       "id": 1,
       "name": "Receptionist",
       "nameAr": "موظف استقبال",
       "permissions": ["read", "write", "view_patients", "update_records"]
     },
-
     {
       "id": 2,
       "name": "Doctor",
       "nameAr": "طبيب",
       "permissions": ["read", "write", "view_patients"]
     },
-
     {
       "id": 3,
       "name": "Patient",
