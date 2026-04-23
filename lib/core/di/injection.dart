@@ -4,8 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 // Import Barrel Files (The Clean Way)
+import '../../features/appointments/domain/usecases/generate_time_slots_usecase.dart';
 import '../../features/auth/auth_imports.dart';
 import '../../features/appointments/appointments_imports.dart';
+import '../../features/appointments/domain/services/time_slot_generator.dart';
 import '../../features/dashboard/dashboard_imports.dart';
 
 import '../cache/cache_helper.dart';
@@ -28,9 +30,9 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(getIt()));
 
   // 2. Services
-  getIt.registerLazySingleton(
-    () => TokenManager(secureStorage: secureStorage, cacheHelper: getIt()),
-  );
+  getIt.registerLazySingleton(() => TokenManager(
+    secureStorage: secureStorage, cacheHelper: getIt()
+    ));
   getIt.registerLazySingleton(() => MockDataService());
 
   // 3. Dio Factory
@@ -38,7 +40,7 @@ Future<void> initGetIt() async {
 
   // 4. Auth Feature
   getIt.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthMockDataSourceImpl(tokenManager: getIt()),
+    () => AuthRemoteDataSourceImpl(tokenManager: getIt(), dio: getIt() ),
   );
   getIt.registerLazySingleton<IAuthRepository>(
     () => AuthRepositoryImpl(remoteDataSource: getIt(), networkInfo: getIt()),
@@ -90,6 +92,14 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton(() => GetAvailableSlotsUseCase(getIt()));
   getIt.registerLazySingleton(() => GetAppointmentsStatsUseCase(getIt()));
   getIt.registerLazySingleton(() => GetPatientAppointmentsUseCase(getIt()));
+  
+  // Services
+  getIt.registerLazySingleton(() => TimeSlotGenerator());
+  
+  getIt.registerLazySingleton(() => GenerateTimeSlotsUseCase(
+    repository: getIt(),
+    generator: getIt(),
+  ));
 
   getIt.registerFactory(
     () => AppointmentsOverviewCubit(
@@ -99,7 +109,11 @@ Future<void> initGetIt() async {
   );
 
   getIt.registerFactory(
-    () => AppointmentScheduleCubit(createAppointmentUseCase: getIt(), userRoleId: 3),
+    () => AppointmentScheduleCubit(
+      createAppointmentUseCase: getIt(),
+      generateTimeSlotsUseCase: getIt(),
+      userRoleId: 3,
+    ),
   );
 
   // 6. Reception Dashboard Feature

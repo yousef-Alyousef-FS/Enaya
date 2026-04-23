@@ -57,7 +57,16 @@ class AppRouter {
       GoRoute(path: changePassword, builder: (context, state) => const ChangePasswordScreen()),
       GoRoute(
         path: appointmentsOverview,
-        builder: (context, state) => const AppointmentsOverviewScreen(),
+        builder: (context, state) {
+          final modeStr = state.uri.queryParameters['mode'];
+          final mode = AppointmentsOverviewMode.values.firstWhere(
+            (e) => e.name == modeStr,
+            orElse: () => AppointmentsOverviewMode.generic,
+          );
+          return AppointmentsOverviewScreen(
+            config: AppointmentsOverviewConfig(mode: mode),
+          );
+        },
       ),
       GoRoute(path: receptionistHome, builder: (context, state) => const ReceptionDashboardPage()),
 

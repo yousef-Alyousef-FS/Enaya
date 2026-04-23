@@ -3,30 +3,47 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../domain/entities/appointment_entity.dart';
 import '../../domain/entities/appointment_status.dart';
+import '../../domain/entities/time_slot_entity.dart';
 import '../../domain/usecases/create_appointment_usecase.dart';
+import '../../domain/usecases/generate_time_slots_usecase.dart';
 import 'appointment_schedule_state.dart';
 
 class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
   final CreateAppointmentUseCase _createAppointmentUseCase;
+  final GenerateTimeSlotsUseCase _generateTimeSlotsUseCase;
 
   AppointmentScheduleCubit({
     required CreateAppointmentUseCase createAppointmentUseCase,
+    required GenerateTimeSlotsUseCase generateTimeSlotsUseCase,
     required int userRoleId,
   }) : _createAppointmentUseCase = createAppointmentUseCase,
+       _generateTimeSlotsUseCase = generateTimeSlotsUseCase,
        super(AppointmentScheduleState.initial(canSchedule: userRoleId == 3));
 
-  void updateSelectedDate(DateTime date) {
-    emit(
-      state.copyWith(
+  Future<void> loadAvailableSlots({required String doctorId, required DateTime date}) async {
+    emit(state.copyWith(isLoading: true, clearErrorMessage: true, isSuccess: false));
+    
+    final result = await _generateTimeSlotsUseCase(
+      GenerateTimeSlotsParams(doctorId: doctorId, date: date),
+    );
+
+    result.fold(
+      (failure) => emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
+      (slots) => emit(state.copyWith(
+        isLoading: false, 
+        availableSlots: slots,
         selectedDate: date,
         clearSelectedTimeSlot: true,
-        clearErrorMessage: true,
-        isSuccess: false,
-      ),
+      )),
     );
   }
 
-  void updateSelectedTimeSlot(String slot) {
+  void updateSelectedDate({required DateTime date, required String doctorId}) {
+    loadAvailableSlots(doctorId: doctorId, date: date);
+  }
+
+  void updateSelectedTimeSlot(TimeSlot? slot) {
+    // Dummy comment
     emit(state.copyWith(selectedTimeSlot: slot, clearErrorMessage: true, isSuccess: false));
   }
 
@@ -42,21 +59,20 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
     }
 
     final slot = state.selectedTimeSlot;
-    if (slot == null || slot.isEmpty) {
+    if (slot == null) {
       emit(state.copyWith(errorMessage: 'select_time'.tr(), isSuccess: false));
       return;
     }
 
     emit(state.copyWith(isLoading: true, clearErrorMessage: true, isSuccess: false));
 
-    final dateTime = _combineDateAndSlot(state.selectedDate, slot);
     final appointment = AppointmentEntity(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       patientId: patientId,
       patientName: patientName,
       doctorId: doctorId,
       doctorName: doctorName,
-      dateTime: dateTime,
+      dateTime: slot.dateTime,
       status: AppointmentStatus.scheduled,
       reason: null,
       notes: null,
@@ -69,7 +85,7 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
         emit(
           state.copyWith(
             isLoading: false,
-            errorMessage: _resolveFailureMessage(failure.message),
+            errorMessage: failure.message,
             isSuccess: false,
           ),
         );
@@ -78,41 +94,5 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
         emit(state.copyWith(isLoading: false, clearErrorMessage: true, isSuccess: true));
       },
     );
-  }
-
-  DateTime _combineDateAndSlot(DateTime date, String slot) {
-    final parts = slot.split(':');
-    if (parts.length != 2) {
-      return date;
-    }
-
-    final hour = int.tryParse(parts[0]) ?? 0;
-    final minute = int.tryParse(parts[1]) ?? 0;
-
-    return DateTime(date.year, date.month, date.day, hour, minute);
-  }
-
-  String _resolveFailureMessage(String message) {
-    final normalized = message.toLowerCase();
-
-    if (normalized.contains('timeout')) {
-      return 'error_connection_timeout'.tr();
-    }
-    if (normalized.contains('socketexception') ||
-        normalized.contains('connection') ||
-        normalized.contains('internet')) {
-      return 'no_internet_connection'.tr();
-    }
-    if (normalized.contains('unauthorized') || normalized.contains('401')) {
-      return 'error_unauthorized'.tr();
-    }
-    if (normalized.contains('forbidden') || normalized.contains('403')) {
-      return 'error_forbidden'.tr();
-    }
-    if (normalized.contains('not found') || normalized.contains('404')) {
-      return 'error_not_found'.tr();
-    }
-
-    return 'error_occurred'.tr();
   }
 }

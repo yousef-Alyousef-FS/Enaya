@@ -8,7 +8,7 @@ class ApiConstants {
   static const String changePassword = "auth/change-password";
   static const String sendEmailVerification = "auth/send-email-verification";
   static const String verifyEmail = "auth/verify-email";
-  static const String refreshToken = "auth/refresh";
+  static const String refreshToken = "auth/refresh-token";
 
   // Storage Keys
   static const String tokenKey = "user_token";

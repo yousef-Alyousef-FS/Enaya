@@ -88,5 +88,9 @@
   "verify_email": "تحقق من البريد الإلكتروني",
   "resend_code": "إعادة إرسال الرمز",
   "verify": "تحقق",
-  "invalid_code": "رمز التحقق غير صالح"
+  "invalid_code": "رمز التحقق غير صالح",
+  "slot_occupied": "محجوز",
+  "slot_break": "استراحة",
+  "slot_off": "عطلة",
+  "no_slots_available": "لا توجد مواعيد متاحة في هذا اليوم"
 }

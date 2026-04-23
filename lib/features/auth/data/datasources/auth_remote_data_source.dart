@@ -155,7 +155,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     final response = await dio.post(
       ApiConstants.signup,
-      data: {'email': email, 'password': password, 'username': username, 'phone': phone},
+      data: {'email': email, 'password': password, 'username': username, 'phone': phone , 'password_confirmation':password},
     );
 
     _validateStatusCode(response, [200, 201]);
