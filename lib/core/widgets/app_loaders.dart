@@ -59,7 +59,7 @@ class AppLoaders {
     Color? color,
     double size = 18,
   }) {
-    return SpinKitPulse(
+    return SpinKitChasingDots(
       color: color ?? AppColors.primary,
       size: size,
     );

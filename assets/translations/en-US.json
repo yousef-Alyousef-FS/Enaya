@@ -88,5 +88,9 @@
   "verify_email": "Verify Email",
   "resend_code": "Resend Code",
   "verify": "Verify",
-  "invalid_code": "Invalid verification code"
+  "invalid_code": "Invalid verification code",
+  "slot_occupied": "Occupied",
+  "slot_break": "Break",
+  "slot_off": "Off-day",
+  "no_slots_available": "No time slots available for this day"
 }

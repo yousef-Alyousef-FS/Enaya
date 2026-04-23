@@ -1,4 +1,5 @@
 import '../../domain/entities/queue_item.dart';
+import '../../domain/entities/queue_item_status.dart';
 
 class QueueItemModel extends QueueItem {
   QueueItemModel({

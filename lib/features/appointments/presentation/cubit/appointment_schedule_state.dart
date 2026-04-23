@@ -1,8 +1,10 @@
 import 'package:equatable/equatable.dart';
+import '../../domain/entities/time_slot_entity.dart';
 
 class AppointmentScheduleState extends Equatable {
   final DateTime selectedDate;
-  final String? selectedTimeSlot;
+  final List<TimeSlot> availableSlots;
+  final TimeSlot? selectedTimeSlot;
   final bool isLoading;
   final String? errorMessage;
   final bool isSuccess;
@@ -10,6 +12,7 @@ class AppointmentScheduleState extends Equatable {
 
   const AppointmentScheduleState({
     required this.selectedDate,
+    required this.availableSlots,
     required this.selectedTimeSlot,
     required this.isLoading,
     required this.errorMessage,
@@ -20,6 +23,7 @@ class AppointmentScheduleState extends Equatable {
   factory AppointmentScheduleState.initial({required bool canSchedule}) {
     return AppointmentScheduleState(
       selectedDate: DateTime.now(),
+      availableSlots: const [],
       selectedTimeSlot: null,
       isLoading: false,
       errorMessage: null,
@@ -32,7 +36,8 @@ class AppointmentScheduleState extends Equatable {
 
   AppointmentScheduleState copyWith({
     DateTime? selectedDate,
-    String? selectedTimeSlot,
+    List<TimeSlot>? availableSlots,
+    TimeSlot? selectedTimeSlot,
     bool clearSelectedTimeSlot = false,
     bool? isLoading,
     String? errorMessage,
@@ -42,6 +47,7 @@ class AppointmentScheduleState extends Equatable {
   }) {
     return AppointmentScheduleState(
       selectedDate: selectedDate ?? this.selectedDate,
+      availableSlots: availableSlots ?? this.availableSlots,
       selectedTimeSlot: clearSelectedTimeSlot ? null : selectedTimeSlot ?? this.selectedTimeSlot,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearErrorMessage ? null : errorMessage ?? this.errorMessage,
@@ -53,6 +59,7 @@ class AppointmentScheduleState extends Equatable {
   @override
   List<Object?> get props => [
     selectedDate,
+    availableSlots,
     selectedTimeSlot,
     isLoading,
     errorMessage,

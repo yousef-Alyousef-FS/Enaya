@@ -8,7 +8,7 @@ class QueueCubit extends Cubit<QueueState> {
 
   QueueCubit(this._repository) : super(const QueueState.initial());
 
-  Future<void> fetchQueue(String doctorId) async {
+  Future<void> fetchQueue(int doctorId) async {
     emit(state.copyWith(isLoading: true, clearErrorMessage: true));
 
     try {
@@ -19,7 +19,7 @@ class QueueCubit extends Cubit<QueueState> {
     }
   }
 
-  Future<void> addToQueue(String patientId, String patientName, String doctorId) async {
+  Future<void> addToQueue(int patientId, String patientName, int doctorId) async {
     try {
       final newItem = await _repository.addToQueue(patientId, patientName, doctorId);
       emit(state.copyWith(clearErrorMessage: true, queueItems: [...state.queueItems, newItem]));
