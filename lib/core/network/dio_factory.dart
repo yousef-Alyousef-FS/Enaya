@@ -6,11 +6,11 @@ import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../di/injection.dart';
 import '../services/token_manager.dart';
 
-const String APPLICATION_JSON = "application/json";
-const String CONTENT_TYPE = "content-type";
-const String ACCEPT = "accept";
-const String AUTHORIZATION = "authorization";
-const String DEFAULT_LANGUAGE = "language";
+const String applicationJson = "application/json";
+const String contentType = "content-type";
+const String accept = "accept";
+const String authorization = "authorization";
+const String defaultLanguage = "language";
 
 String platformLocale = PlatformDispatcher.instance.locale.languageCode;
 
@@ -23,7 +23,7 @@ class DioFactory {
       receiveTimeout: timeout,
       sendTimeout: timeout,
       connectTimeout: timeout,
-      headers: {CONTENT_TYPE: APPLICATION_JSON, ACCEPT: APPLICATION_JSON, DEFAULT_LANGUAGE: "ar"},
+      headers: {contentType: applicationJson, accept: applicationJson, defaultLanguage: "ar"},
     );
 
     addDioInterceptor(dio);
@@ -37,12 +37,12 @@ class DioFactory {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          options.headers[DEFAULT_LANGUAGE] = platformLocale;
+          options.headers[defaultLanguage] = platformLocale;
 
           // إضافة التوكن
           final token = await tokenManager.getToken();
           if (token != null && token.isNotEmpty) {
-            options.headers[AUTHORIZATION] = "Bearer $token";
+            options.headers[authorization] = "Bearer $token";
           }
 
           return handler.next(options);
@@ -81,7 +81,7 @@ class DioFactory {
 
                 // إعادة الطلب الأصلي
                 final retryRequest = error.requestOptions;
-                retryRequest.headers[AUTHORIZATION] = "Bearer $newToken";
+                retryRequest.headers[authorization] = "Bearer $newToken";
 
                 final response = await dio.fetch(retryRequest);
                 return handler.resolve(response);

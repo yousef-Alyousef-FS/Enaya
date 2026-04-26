@@ -5,11 +5,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
-import '../../../../core/mixins/responsive_layout_mixin.dart';
+import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_loaders.dart';
 import '../../../../core/widgets/auth_card_container.dart';
+import '../../../../core/widgets/portrait_only_scope.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 import '../widgets/auth_text_field.dart';
@@ -23,8 +24,7 @@ class ResetPasswordScreen extends StatefulWidget {
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends State<ResetPasswordScreen>
-    with ResponsiveLayoutMixin, TickerProviderStateMixin {
+class _ResetPasswordScreenState extends State<ResetPasswordScreen> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _emailController;
@@ -67,52 +67,54 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<AuthCubit>(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('reset_password'.tr()),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios),
-            onPressed: () => context.pop(),
+    return PortraitOnlyScope(
+      child: BlocProvider(
+        create: (_) => getIt<AuthCubit>(),
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('reset_password'.tr()),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios),
+              onPressed: () => context.pop(),
+            ),
           ),
-        ),
-        body: SafeArea(
-          child: OrientationBuilder(
-            builder: (context, _) {
-              final config = getResponsiveConfig(context);
+          body: SafeArea(
+            child: OrientationBuilder(
+              builder: (context, _) {
+                final config = ResponsiveLayout.of(context);
 
-              return AuthCardContainer(
-                config: config,
-                gradientAlpha: 41,
-                children: [
-                  Text(
-                    'reset_password'.tr(),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
-                  ),
-                  SizedBox(height: config.isPortrait ? 10.h : 8.h),
-                  Text(
-                    'enter_code_new_password'.tr(),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
-                  ),
-                  SizedBox(height: config.isPortrait ? 30.h : 20.h),
-                  _buildForm(config),
-                ],
-              );
-            },
+                return AuthCardContainer(
+                  config: config,
+                  gradientAlpha: 41,
+                  children: [
+                    Text(
+                      'reset_password'.tr(),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
+                    ),
+                    SizedBox(height: config.isPortrait ? 10.h : 8.h),
+                    Text(
+                      'enter_code_new_password'.tr(),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
+                    ),
+                    SizedBox(height: config.isPortrait ? 30.h : 20.h),
+                    _buildForm(config),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildForm(config) {
+  Widget _buildForm(ResponsiveLayoutConfig config) {
     return Form(
       key: _formKey,
       child: Column(

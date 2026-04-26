@@ -15,26 +15,27 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
   AppointmentScheduleCubit({
     required CreateAppointmentUseCase createAppointmentUseCase,
     required GenerateTimeSlotsUseCase generateTimeSlotsUseCase,
-    required int userRoleId,
   }) : _createAppointmentUseCase = createAppointmentUseCase,
        _generateTimeSlotsUseCase = generateTimeSlotsUseCase,
-       super(AppointmentScheduleState.initial(canSchedule: userRoleId == 3));
+       super(AppointmentScheduleState.initial());
 
   Future<void> loadAvailableSlots({required String doctorId, required DateTime date}) async {
     emit(state.copyWith(isLoading: true, clearErrorMessage: true, isSuccess: false));
-    
+
     final result = await _generateTimeSlotsUseCase(
       GenerateTimeSlotsParams(doctorId: doctorId, date: date),
     );
 
     result.fold(
       (failure) => emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
-      (slots) => emit(state.copyWith(
-        isLoading: false, 
-        availableSlots: slots,
-        selectedDate: date,
-        clearSelectedTimeSlot: true,
-      )),
+      (slots) => emit(
+        state.copyWith(
+          isLoading: false,
+          availableSlots: slots,
+          selectedDate: date,
+          clearSelectedTimeSlot: true,
+        ),
+      ),
     );
   }
 
@@ -53,11 +54,6 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
     required String doctorId,
     required String doctorName,
   }) async {
-    if (!state.canSchedule) {
-      emit(state.copyWith(errorMessage: 'receptionist_only'.tr(), isSuccess: false));
-      return;
-    }
-
     final slot = state.selectedTimeSlot;
     if (slot == null) {
       emit(state.copyWith(errorMessage: 'select_time'.tr(), isSuccess: false));
@@ -82,13 +78,7 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
 
     result.fold(
       (failure) {
-        emit(
-          state.copyWith(
-            isLoading: false,
-            errorMessage: failure.message,
-            isSuccess: false,
-          ),
-        );
+        emit(state.copyWith(isLoading: false, errorMessage: failure.message, isSuccess: false));
       },
       (_) {
         emit(state.copyWith(isLoading: false, clearErrorMessage: true, isSuccess: true));

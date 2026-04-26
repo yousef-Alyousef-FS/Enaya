@@ -39,3 +39,4 @@ export 'presentation/cubit/appointments_cubit_imports.dart';
 // Screens
 export 'presentation/screens/appointments_overview_screen.dart';
 export 'presentation/screens/schedule_appointment_screen.dart';
+export 'presentation/screens/appointment_details_screen.dart';

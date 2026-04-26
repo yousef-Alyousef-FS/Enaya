@@ -14,7 +14,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   AuthRepositoryImpl({required this.remoteDataSource, required this.networkInfo});
 
   @override
-  Future<Either<Failure, User>> login({
+  Future<Either<Failure, UserEntity>> login({
     required String usernameOrEmail,
     required String password,
   }) async
@@ -35,7 +35,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> signup({
+  Future<Either<Failure, UserEntity>> signup({
     required String email,
     required String password,
     required String username,

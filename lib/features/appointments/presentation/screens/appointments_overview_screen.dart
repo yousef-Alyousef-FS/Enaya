@@ -4,12 +4,12 @@ import 'package:enaya/core/theme/app_colors.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../domain/entities/appointment_entity.dart';
 import '../../domain/entities/appointment_status.dart';
 import '../cubit/appointments_cubit_imports.dart';
+import 'appointment_details_screen.dart';
 
 enum AppointmentsOverviewMode { generic, receptionist, doctor, patient }
 
@@ -112,6 +112,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
               message: state.errorMessage,
               icon: Icons.error_outline,
               isError: true,
+              onRetry: () => _refreshCurrentView(cubit),
             );
           }
 
@@ -121,6 +122,11 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                 padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 8.h),
                 child: _buildHeader(state),
               ),
+              if (state.isPageLoading)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: LinearProgressIndicator(minHeight: 2),
+                ),
               if (widget.config.showDateFilter || widget.config.showTodayShortcut)
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
@@ -186,12 +192,13 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                             final appointment = state.appointments[index];
                             return Card(
                               elevation: 0,
+                              color: Theme.of(context).colorScheme.surface,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                                 side: const BorderSide(color: AppColors.gray200),
                               ),
                               child: ListTile(
-                                onTap: () => _showAppointmentDetails(context, appointment),
+                                onTap: () => _openAppointmentDetails(context, appointment),
                                 contentPadding: EdgeInsets.all(16.w),
                                 leading: CircleAvatar(
                                   backgroundColor: AppColors.primaryExtraLight,
@@ -269,10 +276,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                   ),
                 ),
                 SizedBox(height: 4.h),
-                Text(
-                  subtitle,
-                  style: TextStyle(color: Colors.white.withAlpha(220), fontSize: 13),
-                ),
+                Text(subtitle, style: TextStyle(color: Colors.white.withAlpha(220), fontSize: 13)),
               ],
             ),
           ),
@@ -284,7 +288,11 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
             ),
             child: Text(
               '${state.appointments.length}',
-              style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -318,50 +326,9 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
     }
   }
 
-  void _showAppointmentDetails(BuildContext context, AppointmentEntity appointment) {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.all(20.w),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _buildPrimaryTitle(appointment.patientName, appointment.doctorName),
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.secondary,
-                ),
-              ),
-              SizedBox(height: 12.h),
-              Text('${'patient'.tr()}: ${appointment.patientName}'),
-              SizedBox(height: 6.h),
-              Text('${'doctor'.tr()}: ${appointment.doctorName}'),
-              SizedBox(height: 6.h),
-              Text(
-                DateFormat(
-                  'EEE, dd MMM yyyy - HH:mm',
-                  context.locale.toString(),
-                ).format(appointment.dateTime),
-              ),
-              SizedBox(height: 6.h),
-              Text('${'status'.tr()}: ${_buildStatusLabel(appointment.status)}'),
-              if (appointment.reason != null && appointment.reason!.isNotEmpty) ...[
-                SizedBox(height: 6.h),
-                Text('${'reason'.tr()}: ${appointment.reason}'),
-              ],
-              SizedBox(height: 16.h),
-            ],
-          ),
-        );
-      },
+  void _openAppointmentDetails(BuildContext context, AppointmentEntity appointment) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => AppointmentDetailsScreen(appointment: appointment)),
     );
   }
 
@@ -397,24 +364,12 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
     );
   }
 
-  String _buildStatusLabel(AppointmentStatus status) {
-    return switch (status) {
-      AppointmentStatus.scheduled => 'scheduled'.tr(),
-      AppointmentStatus.confirmed => 'confirmed'.tr(),
-      AppointmentStatus.arrived => 'arrived'.tr(),
-      AppointmentStatus.inProgress => 'in_progress'.tr(),
-      AppointmentStatus.completed => 'completed'.tr(),
-      AppointmentStatus.cancelled => 'cancelled'.tr(),
-      AppointmentStatus.noShow => 'no_show'.tr(),
-      AppointmentStatus.rescheduled => 'rescheduled'.tr(),
-    };
-  }
-
   Widget _buildEmptyState({
     required String title,
     required String? message,
     required IconData icon,
     bool isError = false,
+    VoidCallback? onRetry,
   }) {
     return Center(
       child: Padding(
@@ -428,11 +383,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                 color: isError ? AppColors.error.withAlpha(15) : AppColors.primaryExtraLight,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                size: 34,
-                color: isError ? AppColors.error : AppColors.primaryDark,
-              ),
+              child: Icon(icon, size: 34, color: isError ? AppColors.error : AppColors.primaryDark),
             ),
             SizedBox(height: 16.h),
             Text(
@@ -452,6 +403,14 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                 style: const TextStyle(fontSize: 13, color: AppColors.gray600),
               ),
             ],
+            if (onRetry != null) ...[
+              SizedBox(height: 16.h),
+              FilledButton.tonalIcon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh),
+                label: Text('retry'.tr()),
+              ),
+            ],
           ],
         ),
       ),
@@ -459,35 +418,38 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
   }
 
   Widget _buildLoadingShimmer() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? AppColors.darkSurfaceSoft : AppColors.gray200;
+    final highlightColor = isDark ? AppColors.darkSurfaceLight : Colors.white;
+    final cardColor = isDark ? AppColors.darkSurface : Theme.of(context).colorScheme.surface;
+    final blockColor = isDark ? AppColors.gray700.withAlpha(140) : Colors.white;
+
     return ListView.separated(
       padding: EdgeInsets.all(16.w),
       itemCount: 5,
       separatorBuilder: (context, index) => SizedBox(height: 12.h),
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
-          baseColor: AppColors.gray200,
-          highlightColor: Colors.white,
+          baseColor: baseColor,
+          highlightColor: highlightColor,
           child: Container(
             padding: EdgeInsets.all(16.w),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration: BoxDecoration(color: cardColor, borderRadius: BorderRadius.circular(12)),
             child: Row(
               children: [
                 Container(
                   width: 52.w,
                   height: 52.w,
-                  decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: blockColor, shape: BoxShape.circle),
                 ),
                 SizedBox(width: 16.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(height: 14.h, width: double.infinity, color: Colors.white),
+                      Container(height: 14.h, width: double.infinity, color: blockColor),
                       SizedBox(height: 10.h),
-                      Container(height: 12.h, width: 160.w, color: Colors.white),
+                      Container(height: 12.h, width: 160.w, color: blockColor),
                     ],
                   ),
                 ),
@@ -496,7 +458,7 @@ class _AppointmentsOverviewBodyState extends State<_AppointmentsOverviewBody> {
                   width: 72.w,
                   height: 28.h,
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: blockColor,
                     borderRadius: BorderRadius.circular(20),
                   ),
                 ),

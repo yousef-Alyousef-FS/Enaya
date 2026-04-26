@@ -3,23 +3,24 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'app_colors.dart';
 
 class AppTheme {
+  static const String appFontFamily = 'Roboto';
+
   // ---------------------------------------------------------------------------
   // 🌞 LIGHT THEME
   // ---------------------------------------------------------------------------
   static ThemeData get lightTheme {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      brightness: Brightness.light,
-    ).copyWith(
-      primary: AppColors.primary,
-      secondary: AppColors.secondary,
-      surface: AppColors.surface,
-      error: AppColors.error,
-      onSurface: AppColors.gray700,
-    );
+    final colorScheme =
+        ColorScheme.fromSeed(seedColor: AppColors.primary, brightness: Brightness.light).copyWith(
+          primary: AppColors.primary,
+          secondary: AppColors.secondary,
+          surface: AppColors.surface,
+          error: AppColors.error,
+          onSurface: AppColors.gray700,
+        );
 
     return ThemeData(
       useMaterial3: true,
+      fontFamily: appFontFamily,
       brightness: Brightness.light,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.background,
@@ -93,7 +94,11 @@ class AppTheme {
         backgroundColor: AppColors.primaryExtraLight,
         selectedColor: AppColors.primary,
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
-        labelStyle: const TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.w600),
+        labelStyle: const TextStyle(
+          color: AppColors.primary,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
 
@@ -102,7 +107,11 @@ class AppTheme {
         backgroundColor: AppColors.surface,
         elevation: 5,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        titleTextStyle: const TextStyle(color: AppColors.secondary, fontSize: 20, fontWeight: FontWeight.bold),
+        titleTextStyle: const TextStyle(
+          color: AppColors.secondary,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
       ),
 
       // Buttons
@@ -125,19 +134,18 @@ class AppTheme {
   // 🌙 DARK THEME
   // ---------------------------------------------------------------------------
   static ThemeData get darkTheme {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: AppColors.primary,
-      brightness: Brightness.dark,
-    ).copyWith(
-      primary: AppColors.primary,
-      secondary: AppColors.primaryLight,
-      surface: AppColors.darkSurface,
-      error: AppColors.error,
-      onSurface: AppColors.darkTextPrimary,
-    );
+    final colorScheme =
+        ColorScheme.fromSeed(seedColor: AppColors.primary, brightness: Brightness.dark).copyWith(
+          primary: AppColors.primary,
+          secondary: AppColors.primaryLight,
+          surface: AppColors.darkSurface,
+          error: AppColors.error,
+          onSurface: AppColors.darkTextPrimary,
+        );
 
     return ThemeData(
       useMaterial3: true,
+      fontFamily: appFontFamily,
       brightness: Brightness.dark,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: AppColors.darkBackground,
@@ -238,7 +246,10 @@ class AppTheme {
       prefixIconColor: isDark ? AppColors.darkTextSecondary : AppColors.gray400,
       suffixIconColor: isDark ? AppColors.darkTextSecondary : AppColors.gray400,
       errorStyle: const TextStyle(color: AppColors.error, fontSize: 12),
-      labelStyle: TextStyle(color: isDark ? AppColors.darkTextSecondary : AppColors.gray400, fontSize: 14),
+      labelStyle: TextStyle(
+        color: isDark ? AppColors.darkTextSecondary : AppColors.gray400,
+        fontSize: 14,
+      ),
       hintStyle: const TextStyle(color: AppColors.gray400, fontSize: 14),
     );
   }

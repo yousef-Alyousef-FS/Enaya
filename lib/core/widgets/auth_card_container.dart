@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../mixins/responsive_layout_mixin.dart';
+import '../layout/responsive_layout.dart';
 import '../theme/app_colors.dart';
 
 class AuthCardContainer extends StatelessWidget {
@@ -18,6 +17,8 @@ class AuthCardContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final layout = ResponsiveLayout.of(context);
+
     return Stack(
       children: [
         Positioned.fill(
@@ -36,18 +37,16 @@ class AuthCardContainer extends StatelessWidget {
         ),
         Center(
           child: ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: config.cardMaxWidth),
+            constraints: BoxConstraints(maxWidth: layout.cardMaxWidth),
             child: SingleChildScrollView(
               padding: EdgeInsets.symmetric(
-                horizontal: config.cardHorizontalPadding,
-                vertical: config.scrollVerticalPadding,
+                horizontal: layout.cardHorizontalPadding,
+                vertical: layout.scrollVerticalPadding,
               ),
               child: Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(
-                    config.isPortrait ? 24 : 16,
-                  ),
+                  borderRadius: BorderRadius.circular(layout.isPortrait ? 24 : 16),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withAlpha(15),
@@ -57,13 +56,10 @@ class AuthCardContainer extends StatelessWidget {
                   ],
                 ),
                 padding: EdgeInsets.symmetric(
-                  horizontal: config.cardHorizontalPadding,
-                  vertical: config.cardVerticalPadding,
+                  horizontal: layout.cardHorizontalPadding,
+                  vertical: layout.cardVerticalPadding,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: children,
-                ),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
               ),
             ),
           ),

@@ -5,11 +5,12 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
-import '../../../../core/mixins/responsive_layout_mixin.dart';
+import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_loaders.dart';
 import '../../../../core/widgets/auth_card_container.dart';
+import '../../../../core/widgets/portrait_only_scope.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 import '../mixins/auth_form_mixin.dart';
@@ -22,8 +23,7 @@ class SignupScreen extends StatefulWidget {
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen>
-    with TickerProviderStateMixin, ResponsiveLayoutMixin, AuthFormMixin {
+class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMixin, AuthFormMixin {
   final _formKey = GlobalKey<FormState>();
 
   final _userNameController = TextEditingController();
@@ -121,45 +121,47 @@ class _SignupScreenState extends State<SignupScreen>
   // -----------------------------
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<AuthCubit>(),
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('create_account'.tr()),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios),
-            onPressed: () => context.pop(),
+    return PortraitOnlyScope(
+      child: BlocProvider(
+        create: (_) => getIt<AuthCubit>(),
+        child: Scaffold(
+          appBar: AppBar(
+            title: Text('create_account'.tr()),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios),
+              onPressed: () => context.pop(),
+            ),
           ),
-        ),
-        body: SafeArea(
-          child: OrientationBuilder(
-            builder: (context, _) {
-              final config = getResponsiveConfig(context);
+          body: SafeArea(
+            child: OrientationBuilder(
+              builder: (context, _) {
+                final config = ResponsiveLayout.of(context);
 
-              return AuthCardContainer(
-                config: config,
-                children: [
-                  Text(
-                    'join_enaya'.tr(),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
-                  ),
-                  SizedBox(height: config.isPortrait ? 10.h : 8.h),
-                  Text(
-                    'signup_description'.tr(),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
-                  ),
-                  SizedBox(height: config.isPortrait ? 32.h : 24.h),
+                return AuthCardContainer(
+                  config: config,
+                  children: [
+                    Text(
+                      'join_enaya'.tr(),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
+                    ),
+                    SizedBox(height: config.isPortrait ? 10.h : 8.h),
+                    Text(
+                      'signup_description'.tr(),
+                      textAlign: TextAlign.center,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
+                    ),
+                    SizedBox(height: config.isPortrait ? 32.h : 24.h),
 
-                  _buildForm(config),
-                ],
-              );
-            },
+                    _buildForm(config),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -264,10 +266,12 @@ class _SignupScreenState extends State<SignupScreen>
           children: [
             AnimatedBuilder(
               animation: successAnimation,
-              builder: (_, __) => Transform.scale(
+              builder: (_, _) => Transform.scale(
                 scale: successAnimation.value,
                 child: ElevatedButton(
-                  onPressed: (state.isLoading || isNavigating) ? null : () => _onSignupPressed(cubit),
+                  onPressed: (state.isLoading || isNavigating)
+                      ? null
+                      : () => _onSignupPressed(cubit),
                   child: state.isLoading ? AppLoaders.inline() : Text('sign_up'.tr()),
                 ),
               ),

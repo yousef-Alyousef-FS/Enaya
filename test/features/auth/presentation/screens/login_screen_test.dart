@@ -119,7 +119,7 @@ void main() {
 
   testWidgets('Should navigate to home on success', (WidgetTester tester) async {
     // Arrange
-    const testUser = User(
+    const testUser = UserEntity(
       id: 1,
       email: 'test@test.com',
       userName: 'tester',

@@ -5,7 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
-import '../../../../core/mixins/responsive_layout_mixin.dart';
+import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_loaders.dart';
 import '../../../../core/widgets/auth_card_container.dart';
@@ -20,8 +20,7 @@ class ChangePasswordScreen extends StatefulWidget {
   State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
 
-class _ChangePasswordScreenState extends State<ChangePasswordScreen>
-    with ResponsiveLayoutMixin, TickerProviderStateMixin {
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
@@ -72,7 +71,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
         body: SafeArea(
           child: OrientationBuilder(
             builder: (context, _) {
-              final config = getResponsiveConfig(context);
+              final config = ResponsiveLayout.of(context);
 
               return AuthCardContainer(
                 config: config,
@@ -104,7 +103,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
     );
   }
 
-  Widget _buildForm(config) {
+  Widget _buildForm(ResponsiveLayoutConfig config) {
     return Form(
       key: _formKey,
       child: Column(
