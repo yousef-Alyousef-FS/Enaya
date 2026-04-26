@@ -6,7 +6,7 @@ class AuthState extends Equatable {
   final bool isLoading;
   final String? errorMessage;
   final bool isSuccess;
-  final User? currentUser;
+  final UserEntity? currentUser;
 
   const AuthState({
     required this.isLoading,
@@ -29,7 +29,7 @@ class AuthState extends Equatable {
     String? errorMessage,
     bool clearErrorMessage = false,
     bool? isSuccess,
-    User? currentUser,
+    UserEntity? currentUser,
     bool clearCurrentUser = false,
   }) {
     return AuthState(

@@ -23,11 +23,9 @@ class AppointmentModel with _$AppointmentModel {
     String? cancellationReason,
   }) = _AppointmentModel;
 
-  factory AppointmentModel.fromJson(Map<String, dynamic> json) =>
-      _$AppointmentModelFromJson(json);
-
-
+  factory AppointmentModel.fromJson(Map<String, dynamic> json) => _$AppointmentModelFromJson(json);
 }
+
 extension AppointmentModelMapper on AppointmentModel {
   AppointmentEntity toEntity() {
     return AppointmentEntity(
@@ -65,4 +63,3 @@ extension AppointmentModelMapper on AppointmentModel {
     );
   }
 }
-

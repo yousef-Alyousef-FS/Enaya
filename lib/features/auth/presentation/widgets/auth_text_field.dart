@@ -56,17 +56,15 @@ class _AuthTextFieldState extends State<AuthTextField> {
 
         suffixIcon: widget.isPassword
             ? IconButton(
-          icon: Icon(
-            _obscureText
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-            color: theme.iconTheme.color?.withOpacity(0.6),
-          ),
-          onPressed: () {
-            setState(() => _obscureText = !_obscureText);
-          },
-          tooltip: _obscureText ? 'Show password' : 'Hide password',
-        )
+                icon: Icon(
+                  _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  color: theme.iconTheme.color?.withValues(alpha: 0.6),
+                ),
+                onPressed: () {
+                  setState(() => _obscureText = !_obscureText);
+                },
+                tooltip: _obscureText ? 'Show password' : 'Hide password',
+              )
             : null,
         floatingLabelBehavior: FloatingLabelBehavior.auto,
       ),

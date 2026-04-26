@@ -12,7 +12,7 @@ class ServerFailure extends Failure {
 }
 
 class CacheFailure extends Failure {
-  CacheFailure(String message) : super(message);
+  CacheFailure(super.message);
 }
 
 class NetworkFailure extends Failure {

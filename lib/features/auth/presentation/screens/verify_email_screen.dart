@@ -5,12 +5,13 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
-import '../../../../core/mixins/responsive_layout_mixin.dart';
+import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/app_loaders.dart';
 import '../../../../core/widgets/auth_card_container.dart';
 import '../../../../core/widgets/logo.dart';
+import '../../../../core/widgets/portrait_only_scope.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 import '../mixins/auth_form_mixin.dart';
@@ -25,7 +26,7 @@ class VerifyEmailScreen extends StatefulWidget {
 }
 
 class _VerifyEmailScreenState extends State<VerifyEmailScreen>
-    with TickerProviderStateMixin, ResponsiveLayoutMixin, AuthFormMixin {
+    with TickerProviderStateMixin, AuthFormMixin {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _codeController;
 
@@ -55,25 +56,27 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen>
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<AuthCubit>(),
-      child: Scaffold(
-        body: SafeArea(
-          child: OrientationBuilder(
-            builder: (context, _) {
-              final config = getResponsiveConfig(context);
+    return PortraitOnlyScope(
+      child: BlocProvider(
+        create: (_) => getIt<AuthCubit>(),
+        child: Scaffold(
+          body: SafeArea(
+            child: OrientationBuilder(
+              builder: (context, _) {
+                final config = ResponsiveLayout.of(context);
 
-              return AuthCardContainer(
-                config: config,
-                children: [
-                  _buildLogo(config),
-                  SizedBox(height: 22.h),
-                  _buildHeader(context, config),
-                  SizedBox(height: 30.h),
-                  _buildForm(config),
-                ],
-              );
-            },
+                return AuthCardContainer(
+                  config: config,
+                  children: [
+                    _buildLogo(config),
+                    SizedBox(height: 22.h),
+                    _buildHeader(context, config),
+                    SizedBox(height: 30.h),
+                    _buildForm(config),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -85,10 +88,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen>
       width: config.logoSize,
       height: config.logoSize,
       decoration: BoxDecoration(color: AppColors.primary.withAlpha(35), shape: BoxShape.circle),
-      child: LogoIcon(
-        width: config.iconSize,
-        height: config.iconSize,
-      ),
+      child: LogoIcon(width: config.iconSize, height: config.iconSize),
     );
   }
 
@@ -128,7 +128,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen>
             keyboardType: TextInputType.number,
             validator: (value) {
               if (value == null || value.isEmpty) return 'enter_verification_code'.tr();
-              if (value.length < 6) return 'invalid_code'.tr(); // Placeholder for invalid code translation
+              if (value.length < 6) {
+                return 'invalid_code'.tr(); // Placeholder for invalid code translation
+              }
               return null;
             },
           ),
@@ -168,10 +170,12 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen>
           children: [
             AnimatedBuilder(
               animation: successAnimation,
-              builder: (_, __) => Transform.scale(
+              builder: (_, _) => Transform.scale(
                 scale: successAnimation.value,
                 child: ElevatedButton(
-                  onPressed: (state.isLoading || isNavigating) ? null : () => _onVerifyPressed(cubit),
+                  onPressed: (state.isLoading || isNavigating)
+                      ? null
+                      : () => _onVerifyPressed(cubit),
                   child: state.isLoading ? AppLoaders.inline() : Text('verify'.tr()),
                 ),
               ),

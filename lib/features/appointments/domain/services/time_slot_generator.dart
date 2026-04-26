@@ -4,11 +4,13 @@ import '../entities/doctor_availability_entity.dart';
 import '../entities/time_slot_entity.dart';
 
 class TimeSlotGenerator {
+
   List<TimeSlot> generate({
     required DateTime date,
     required DoctorAvailability availability,
     required List<AppointmentEntity> occupiedAppointments,
-  }) {
+  })
+  {
     // 1. Check if it's an explicit off day
     if (availability.isOffDay(date)) {
       return [];
@@ -66,7 +68,8 @@ class TimeSlotGenerator {
     required DateTime currentTime,
     required WorkingDay workingDay,
     required List<AppointmentEntity> occupiedAppointments,
-  }) {
+  })
+  {
     // A. Check Break Time
     if (workingDay.isTimeInBreak(time)) {
       return TimeSlotStatus.breakTime;

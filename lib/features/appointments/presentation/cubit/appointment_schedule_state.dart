@@ -8,7 +8,6 @@ class AppointmentScheduleState extends Equatable {
   final bool isLoading;
   final String? errorMessage;
   final bool isSuccess;
-  final bool canSchedule;
 
   const AppointmentScheduleState({
     required this.selectedDate,
@@ -17,10 +16,9 @@ class AppointmentScheduleState extends Equatable {
     required this.isLoading,
     required this.errorMessage,
     required this.isSuccess,
-    required this.canSchedule,
   });
 
-  factory AppointmentScheduleState.initial({required bool canSchedule}) {
+  factory AppointmentScheduleState.initial() {
     return AppointmentScheduleState(
       selectedDate: DateTime.now(),
       availableSlots: const [],
@@ -28,7 +26,6 @@ class AppointmentScheduleState extends Equatable {
       isLoading: false,
       errorMessage: null,
       isSuccess: false,
-      canSchedule: canSchedule,
     );
   }
 
@@ -43,7 +40,6 @@ class AppointmentScheduleState extends Equatable {
     String? errorMessage,
     bool clearErrorMessage = false,
     bool? isSuccess,
-    bool? canSchedule,
   }) {
     return AppointmentScheduleState(
       selectedDate: selectedDate ?? this.selectedDate,
@@ -52,7 +48,6 @@ class AppointmentScheduleState extends Equatable {
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearErrorMessage ? null : errorMessage ?? this.errorMessage,
       isSuccess: isSuccess ?? this.isSuccess,
-      canSchedule: canSchedule ?? this.canSchedule,
     );
   }
 
@@ -64,6 +59,5 @@ class AppointmentScheduleState extends Equatable {
     isLoading,
     errorMessage,
     isSuccess,
-    canSchedule,
   ];
 }

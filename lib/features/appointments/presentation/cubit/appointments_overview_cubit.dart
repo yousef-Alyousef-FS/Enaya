@@ -28,15 +28,6 @@ class AppointmentsOverviewCubit extends Cubit<AppointmentsOverviewState> {
         normalized.contains('internet')) {
       return 'no_internet_connection'.tr();
     }
-    if (normalized.contains('unauthorized') || normalized.contains('401')) {
-      return 'error_unauthorized'.tr();
-    }
-    if (normalized.contains('forbidden') || normalized.contains('403')) {
-      return 'error_forbidden'.tr();
-    }
-    if (normalized.contains('not found') || normalized.contains('404')) {
-      return 'error_not_found'.tr();
-    }
 
     return 'error_occurred'.tr();
   }

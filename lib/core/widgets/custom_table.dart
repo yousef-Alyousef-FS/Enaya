@@ -16,9 +16,7 @@ class CustomDataTable extends StatelessWidget {
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isDark
-              ? theme.colorScheme.outline.withOpacity(0.3)
-              : theme.dividerColor,
+          color: isDark ? theme.colorScheme.outline.withValues(alpha: 0.3) : theme.dividerColor,
         ),
       ),
       child: ClipRRect(
@@ -27,11 +25,11 @@ class CustomDataTable extends StatelessWidget {
           scrollDirection: Axis.horizontal,
           child: DataTable(
             headingRowColor: WidgetStateProperty.all(
-              theme.colorScheme.primary.withOpacity(0.08),
+              theme.colorScheme.primary.withValues(alpha: 0.08),
             ),
             dataRowColor: WidgetStateProperty.resolveWith(
               (states) => states.contains(WidgetState.hovered)
-                  ? theme.colorScheme.primary.withOpacity(0.05)
+                  ? theme.colorScheme.primary.withValues(alpha: 0.05)
                   : null,
             ),
             headingTextStyle: theme.textTheme.titleMedium?.copyWith(
@@ -42,9 +40,7 @@ class CustomDataTable extends StatelessWidget {
             columnSpacing: 32,
             horizontalMargin: 24,
             dividerThickness: 0.8,
-            columns: columns
-                .map((col) => DataColumn(label: Text(col)))
-                .toList(),
+            columns: columns.map((col) => DataColumn(label: Text(col))).toList(),
             rows: rows.isEmpty
                 ? [
                     DataRow(
@@ -61,20 +57,13 @@ class CustomDataTable extends StatelessWidget {
                             ),
                           ),
                         ),
-                        ...List.generate(
-                          columns.length - 1,
-                          (_) => const DataCell(Text("")),
-                        ),
+                        ...List.generate(columns.length - 1, (_) => const DataCell(Text(""))),
                       ],
                     ),
                   ]
                 : rows
                       .map(
-                        (row) => DataRow(
-                          cells: row
-                              .map((cell) => DataCell(Text(cell)))
-                              .toList(),
-                        ),
+                        (row) => DataRow(cells: row.map((cell) => DataCell(Text(cell))).toList()),
                       )
                       .toList(),
           ),

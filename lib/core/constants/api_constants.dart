@@ -9,6 +9,9 @@ class ApiConstants {
   static const String sendEmailVerification = "auth/send-email-verification";
   static const String verifyEmail = "auth/verify-email";
   static const String refreshToken = "auth/refresh-token";
+  
+  // Dashboard
+  static const String receptionistDashboard = "/dashboard/receptionist";
 
   // Storage Keys
   static const String tokenKey = "user_token";

@@ -6,9 +6,14 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 // Import Barrel Files (The Clean Way)
 import '../../features/appointments/domain/usecases/generate_time_slots_usecase.dart';
 import '../../features/auth/auth_imports.dart';
+import '../../features/appointments/data/datasources/appointment_mock_data_source.dart';
 import '../../features/appointments/appointments_imports.dart';
 import '../../features/appointments/domain/services/time_slot_generator.dart';
-import '../../features/dashboard/dashboard_imports.dart';
+import '../../features/dashboard/receptionist/data/datasources/receptionist_dashboard_mock_data_source.dart';
+import '../../features/dashboard/receptionist/data/repositories/receptionist_dashboard_repository_impl.dart';
+import '../../features/dashboard/receptionist/domain/repositories/receptionist_dashboard_repository.dart';
+import '../../features/dashboard/receptionist/domain/usecases/get_receptionist_dashboard_stats_usecase.dart';
+import '../../features/dashboard/receptionist/presentation/cubit/receptionist_dashboard_cubit.dart';
 
 import '../cache/cache_helper.dart';
 import '../network/dio_factory.dart';
@@ -30,9 +35,9 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(getIt()));
 
   // 2. Services
-  getIt.registerLazySingleton(() => TokenManager(
-    secureStorage: secureStorage, cacheHelper: getIt()
-    ));
+  getIt.registerLazySingleton(
+    () => TokenManager(secureStorage: secureStorage, cacheHelper: getIt()),
+  );
   getIt.registerLazySingleton(() => MockDataService());
 
   // 3. Dio Factory
@@ -40,7 +45,7 @@ Future<void> initGetIt() async {
 
   // 4. Auth Feature
   getIt.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(tokenManager: getIt(), dio: getIt() ),
+    () => AuthRemoteDataSourceImpl(tokenManager: getIt(), dio: getIt()),
   );
   getIt.registerLazySingleton<IAuthRepository>(
     () => AuthRepositoryImpl(remoteDataSource: getIt(), networkInfo: getIt()),
@@ -68,9 +73,7 @@ Future<void> initGetIt() async {
   );
 
   // 5. Appointments Feature
-  getIt.registerLazySingleton<AppointmentRemoteDataSource>(
-    () => AppointmentRemoteDataSourceImpl(getIt()),
-  );
+  getIt.registerLazySingleton<AppointmentRemoteDataSource>(() => AppointmentMockDataSourceImpl());
   getIt.registerLazySingleton<AppointmentManagementRepository>(
     () => AppointmentManagementRepositoryImpl(getIt()),
   );
@@ -92,14 +95,25 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton(() => GetAvailableSlotsUseCase(getIt()));
   getIt.registerLazySingleton(() => GetAppointmentsStatsUseCase(getIt()));
   getIt.registerLazySingleton(() => GetPatientAppointmentsUseCase(getIt()));
-  
+
+  // Receptionist Dashboard
+  getIt.registerLazySingleton<ReceptionistDashboardMockDataSource>(
+    () => ReceptionistDashboardMockDataSourceImpl(),
+  );
+
+  getIt.registerLazySingleton<ReceptionistDashboardRepository>(
+    () => ReceptionistDashboardRepositoryImpl(getIt<ReceptionistDashboardMockDataSource>()),
+  );
+  getIt.registerLazySingleton(
+    () => GetReceptionistDashboardUseCase(getIt<ReceptionistDashboardRepository>()),
+  );
+  getIt.registerFactory(() => ReceptionistDashboardCubit(getIt<GetReceptionistDashboardUseCase>()));
+
   // Services
   getIt.registerLazySingleton(() => TimeSlotGenerator());
-  
-  getIt.registerLazySingleton(() => GenerateTimeSlotsUseCase(
-    repository: getIt(),
-    generator: getIt(),
-  ));
+  getIt.registerLazySingleton(
+    () => GenerateTimeSlotsUseCase(repository: getIt(), generator: getIt()),
+  );
 
   getIt.registerFactory(
     () => AppointmentsOverviewCubit(
@@ -112,16 +126,6 @@ Future<void> initGetIt() async {
     () => AppointmentScheduleCubit(
       createAppointmentUseCase: getIt(),
       generateTimeSlotsUseCase: getIt(),
-      userRoleId: 3,
-    ),
-  );
-
-  // 6. Reception Dashboard Feature
-  getIt.registerFactory(
-    () => ReceptionDashboardCubit(
-      getTodayAppointmentsUseCase: getIt(),
-      updateAppointmentStatusUseCase: getIt(),
-      userRoleId: 3,
     ),
   );
 }

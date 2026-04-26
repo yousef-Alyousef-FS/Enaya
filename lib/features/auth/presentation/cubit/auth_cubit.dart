@@ -44,7 +44,7 @@ class AuthCubit extends Cubit<AuthState> {
        super(const AuthState.initial());
 
   Future<void> login(String usernameOrEmail, String password) async {
-    await _handleResult<User>(
+    await _handleResult<UserEntity>(
       _loginUseCase(LoginParams(usernameOrEmail: usernameOrEmail, password: password)),
       onSuccess: (user) => emit(
         state.copyWith(
@@ -58,7 +58,7 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signup(String email, String password, String username, String phone) async {
-    await _handleResult<User>(
+    await _handleResult<UserEntity>(
       _signupUseCase(
         SignupParams(email: email, password: password, username: username, phone: phone),
       ),
