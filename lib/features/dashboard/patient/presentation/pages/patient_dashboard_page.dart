@@ -14,9 +14,14 @@ import '../../../shared/presentation/models/dashboard_nav_item.dart';
 import '../../../shared/presentation/widgets/dashboard_shell.dart';
 import '../../../shared/presentation/widgets/dashboard_stat_card.dart';
 
-class PatientDashboardPage extends StatelessWidget {
+class PatientDashboardPage extends StatefulWidget {
   const PatientDashboardPage({super.key});
 
+  @override
+  State<PatientDashboardPage> createState() => _PatientDashboardPageState();
+}
+
+class _PatientDashboardPageState extends State<PatientDashboardPage> {
   static const List<DashboardNavItem> _navigationItems = [
     DashboardNavItem(
       icon: Icons.dashboard_outlined,
@@ -48,6 +53,8 @@ class PatientDashboardPage extends StatelessWidget {
     ),
   ];
 
+  int _selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -59,35 +66,39 @@ class PatientDashboardPage extends StatelessWidget {
           }
         },
         child: DashboardShell(
-          appBar: const DashboardAppBar(titleText: 'Patient Dashboard'),
+          appBar: DashboardAppBar(titleText: _sectionTitle(_selectedIndex).tr()),
           navigationItems: _navigationItems,
-          selectedIndex: 0,
-          onItemSelected: (index) => _onNavigationSelected(context, index),
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              final isMobile = context.isMobile;
-              return SingleChildScrollView(
-                padding: EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildGreeting(context),
-                    SizedBox(height: isMobile ? 20 : 28),
-                    _buildStatsGrid(context, isMobile),
-                    SizedBox(height: 24),
-                    _buildSectionTitle(context, 'upcoming_appointments'),
-                    SizedBox(height: 14),
-                    _buildAppointmentPreview(context),
-                    SizedBox(height: 24),
-                    _buildSectionTitle(context, 'health_summary'),
-                    SizedBox(height: 14),
-                    _buildFeatureCards(context, isMobile),
-                  ],
-                ),
-              );
-            },
-          ),
+          selectedIndex: _selectedIndex,
+          onItemSelected: _onNavigationSelected,
+          body: _buildBody(context),
         ),
+      ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context) {
+    if (_selectedIndex != 0) {
+      return _buildSectionPlaceholder(context, _selectedIndex);
+    }
+
+    final isMobile = context.isMobile;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildGreeting(context),
+          SizedBox(height: isMobile ? 20 : 28),
+          _buildStatsGrid(context, isMobile),
+          const SizedBox(height: 24),
+          _buildSectionTitle(context, 'upcoming_appointments'),
+          const SizedBox(height: 14),
+          _buildAppointmentPreview(context),
+          const SizedBox(height: 24),
+          _buildSectionTitle(context, 'health_summary'),
+          const SizedBox(height: 14),
+          _buildFeatureCards(context, isMobile),
+        ],
       ),
     );
   }
@@ -232,16 +243,63 @@ class PatientDashboardPage extends StatelessWidget {
     );
   }
 
-  void _onNavigationSelected(BuildContext context, int index) {
+  Widget _buildSectionPlaceholder(BuildContext context, int index) {
+    final title = _sectionTitle(index).tr();
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.dashboard_customize_outlined,
+              size: 72,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'section_coming_soon'.tr(args: [title]),
+              textAlign: TextAlign.center,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'section_workflow_later'.tr(args: [title]),
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _onNavigationSelected(int index) {
+    final item = _navigationItems[index];
+    if (!item.isEnabled) return;
+    if (_selectedIndex == index) return;
+
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  String _sectionTitle(int index) {
     switch (index) {
       case 0:
-        context.go(AppRouter.patientHome);
-        break;
+        return 'today_overview';
       case 1:
-        context.go('${AppRouter.appointmentsOverview}?mode=patient');
-        break;
+        return 'appointments_title';
+      case 2:
+        return 'patients_management';
+      case 3:
+        return 'billing_payments';
+      case 4:
+        return 'settings';
       default:
-        break;
+        return 'today_overview';
     }
   }
 }

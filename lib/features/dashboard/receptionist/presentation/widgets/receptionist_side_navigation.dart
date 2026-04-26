@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:enaya/core/helpers/responsive_helper.dart';
 
@@ -31,7 +32,7 @@ class ReceptionistSideNavigation extends StatelessWidget {
       width: isDesktop ? desktopWidth : null,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        border: Border(right: BorderSide(color: Theme.of(context).dividerColor, width: 1)),
+        border: BorderDirectional(end: BorderSide(color: Theme.of(context).dividerColor, width: 1)),
       ),
       child: SafeArea(
         child: Padding(
@@ -40,14 +41,14 @@ class ReceptionistSideNavigation extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Enaya Reception',
+                'enaya_reception'.tr(),
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
-                'Receptionist workspace',
+                'receptionist_workspace'.tr(),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: Theme.of(context).colorScheme.onSurface.withAlpha(200),
                 ),
@@ -72,37 +73,37 @@ class ReceptionistSideNavigation extends StatelessWidget {
     return [
       _NavigationItem(
         section: ReceptionistDashboardSection.dashboard,
-        title: 'Dashboard',
+        titleKey: 'dashboard',
         icon: Icons.dashboard,
       ),
       _NavigationItem(
         section: ReceptionistDashboardSection.patients,
-        title: 'Patients',
+        titleKey: 'patients',
         icon: Icons.person_search,
       ),
       _NavigationItem(
         section: ReceptionistDashboardSection.appointments,
-        title: 'Appointments',
+        titleKey: 'appointments',
         icon: Icons.calendar_month,
       ),
       _NavigationItem(
         section: ReceptionistDashboardSection.checkIn,
-        title: 'Check-in',
+        titleKey: 'check_in',
         icon: Icons.person_add_alt_1,
       ),
       _NavigationItem(
         section: ReceptionistDashboardSection.registrations,
-        title: 'Registrations',
+        titleKey: 'registrations',
         icon: Icons.how_to_reg,
       ),
       _NavigationItem(
         section: ReceptionistDashboardSection.billing,
-        title: 'Billing',
+        titleKey: 'billing',
         icon: Icons.receipt_long,
       ),
       _NavigationItem(
         section: ReceptionistDashboardSection.settings,
-        title: 'Settings',
+        titleKey: 'settings',
         icon: Icons.settings,
       ),
     ];
@@ -128,14 +129,14 @@ class ReceptionistSideNavigation extends StatelessWidget {
           child: Container(
             height: 52,
             padding: const EdgeInsets.symmetric(horizontal: 14),
-            alignment: Alignment.centerLeft,
+            alignment: AlignmentDirectional.centerStart,
             child: Row(
               children: [
                 Icon(item.icon, color: contentColor, size: 22),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
-                    item.title,
+                    item.titleKey.tr(),
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: contentColor,
                       fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
@@ -153,8 +154,8 @@ class ReceptionistSideNavigation extends StatelessWidget {
 
 class _NavigationItem {
   final ReceptionistDashboardSection section;
-  final String title;
+  final String titleKey;
   final IconData icon;
 
-  _NavigationItem({required this.section, required this.title, required this.icon});
+  _NavigationItem({required this.section, required this.titleKey, required this.icon});
 }

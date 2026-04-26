@@ -1,4 +1,5 @@
-﻿import 'package:flutter/material.dart';
+﻿import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../shared/presentation/models/dashboard_nav_item.dart';
@@ -36,7 +37,7 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
     DashboardNavItem(
       icon: Icons.how_to_reg_outlined,
       selectedIcon: Icons.how_to_reg,
-      labelKey: 'check_in',
+      labelKey: 'queue',
     ),
     DashboardNavItem(
       icon: Icons.note_add_outlined,
@@ -60,6 +61,9 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
   int _selectedIndex = 0;
 
   void _onNavigationSelected(int index) {
+    if (!_navigationItems[index].isEnabled) return;
+    if (_selectedIndex == index) return;
+
     setState(() {
       _selectedIndex = index;
     });
@@ -70,7 +74,7 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
     return BlocProvider(
       create: (_) => getIt<ReceptionistDashboardCubit>()..loadDashboard(),
       child: DashboardShell(
-        appBar: DashboardAppBar(titleText: _sectionTitle(_selectedIndex)),
+        appBar: DashboardAppBar(titleText: _sectionTitle(_selectedIndex).tr()),
         navigationItems: _navigationItems,
         selectedIndex: _selectedIndex,
         onItemSelected: _onNavigationSelected,
@@ -88,7 +92,7 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
                     const Icon(Icons.error_outline, color: Colors.red, size: 40),
                     const SizedBox(height: 12),
                     Text(
-                      state.errorMessage ?? 'Error loading dashboard',
+                      state.errorMessage ?? 'error_loading_dashboard'.tr(),
                       style: const TextStyle(color: Colors.red),
                     ),
                     const SizedBox(height: 16),
@@ -96,7 +100,7 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
                       onPressed: () {
                         context.read<ReceptionistDashboardCubit>().loadDashboard();
                       },
-                      child: const Text('Retry'),
+                      child: Text('retry'.tr()),
                     ),
                   ],
                 ),
@@ -104,10 +108,13 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
             }
 
             if (!state.hasData) {
-              return const Center(child: Text('No data available'));
+              return Center(child: Text('no_data_available'.tr()));
             }
 
-            final stats = state.stats!;
+            final stats = state.stats;
+            if (stats == null) {
+              return Center(child: Text('no_data_available'.tr()));
+            }
 
             if (_selectedIndex != 0) {
               return _buildSectionPlaceholder(_selectedIndex);
@@ -124,13 +131,13 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1300),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           if (isWide)
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
+                            Builder(
+                              builder: (context) {
+                                final isRtl = Directionality.of(context) == TextDirection.RTL;
+                                final greetingSection = Expanded(
                                   flex: 5,
                                   child: GreetingSection(
                                     receptionistName: stats.receptionistName,
@@ -138,9 +145,8 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
                                     shiftStart: stats.shiftStart,
                                     shiftEnd: stats.shiftEnd,
                                   ),
-                                ),
-                                const SizedBox(width: 24),
-                                Expanded(
+                                );
+                                final controlsSection = Expanded(
                                   flex: 4,
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -150,8 +156,23 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
                                       StatsSection(stats: stats),
                                     ],
                                   ),
-                                ),
-                              ],
+                                );
+
+                                return Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: isRtl
+                                      ? [
+                                          controlsSection,
+                                          const SizedBox(width: 24),
+                                          greetingSection,
+                                        ]
+                                      : [
+                                          greetingSection,
+                                          const SizedBox(width: 24),
+                                          controlsSection,
+                                        ],
+                                );
+                              },
                             )
                           else ...[
                             GreetingSection(
@@ -161,16 +182,40 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
                               shiftEnd: stats.shiftEnd,
                             ),
                             const SizedBox(height: 20),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: Text(
+                                'quick_actions'.tr(),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
                             const QuickActions(),
                             const SizedBox(height: 24),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 20),
+                              child: Text(
+                                'stats'.tr(),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+
+                            const SizedBox(height: 16),
                             StatsSection(stats: stats),
                           ],
                           const SizedBox(height: 28),
-                          Text(
-                            "Today's Appointments",
-                            style: Theme.of(
-                              context
-                            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              'today_appointments'.tr(),
+                              style: Theme.of(
+                                context,
+                              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                            ),
                           ),
                           const SizedBox(height: 16),
                           AppointmentsTable(stats: stats),
@@ -188,7 +233,7 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
   }
 
   Widget _buildSectionPlaceholder(int index) {
-    final title = _sectionTitleByIndex(index);
+    final title = _sectionTitle(index).tr();
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -202,7 +247,7 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
             ),
             const SizedBox(height: 24),
             Text(
-              '$title is coming soon',
+              'coming soon',//.tr(args: [title]),
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,
@@ -210,7 +255,7 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
             ),
             const SizedBox(height: 12),
             Text(
-              'This section will be connected to the $title workflow later.',
+              'section workflow later',//.tr(args: [title]),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
@@ -223,23 +268,21 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
   String _sectionTitle(int index) {
     switch (index) {
       case 0:
-        return 'Receptionist Dashboard';
+        return 'dashboard';
       case 1:
-        return 'Patients';
+        return 'patients';
       case 2:
-        return 'Appointments';
+        return 'appointments';
       case 3:
-        return 'Queue Management';
+        return 'queue';
       case 4:
-        return 'Registrations';
+        return 'registrations';
       case 5:
-        return 'Billing';
+        return 'billing';
       case 6:
-        return 'Settings';
+        return 'settings';
       default:
-        return 'Receptionist Dashboard';
+        return 'dashboard';
     }
   }
-
-  String _sectionTitleByIndex(int index) => _sectionTitle(index);
 }

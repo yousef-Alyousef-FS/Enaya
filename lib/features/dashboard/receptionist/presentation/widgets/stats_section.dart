@@ -1,7 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:enaya/features/dashboard/shared/presentation/widgets/dashboard_stat_card.dart';
-import '../../domain/entities/receptionist_dashboard_stats.dart';
 import 'package:enaya/core/theme/app_colors.dart';
+import '../../domain/entities/receptionist_dashboard_stats.dart';
 
 class StatsSection extends StatelessWidget {
   final ReceptionistDashboardStats? stats;
@@ -10,56 +10,55 @@ class StatsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final statsData = stats;
     return LayoutBuilder(
       builder: (context, constraints) {
         final maxWidth = constraints.maxWidth;
-        final columns = maxWidth >= 1200
-            ? 4
-            : maxWidth >= 900
-            ? 3
-            : maxWidth >= 700
-            ? 2
-            : 1;
-        final spacing = 16.0;
-        final cardWidth = columns == 1 ? maxWidth : (maxWidth - spacing * (columns - 1)) / columns;
 
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
+        int crossAxisCount;
+        if (maxWidth < 520) {
+          crossAxisCount = 1;
+        } else if (maxWidth < 720) {
+          crossAxisCount = 2;
+        } else {
+          crossAxisCount = 4;
+        }
+
+        final aspectRatio = 2.6;
+
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: aspectRatio,
           children: [
-            _stat(
+            _compactStatCard(
               context,
-              cardWidth,
-              title: 'Today’s Appointments',
-              value: stats?.totalAppointments.toString() ?? '--',
-              subtitle: 'Today’s total bookings',
+              title: 'today_appointments'.tr(),
+              value: statsData?.totalAppointments.toString() ?? '--',
               icon: Icons.calendar_month_rounded,
               color: AppColors.receptionist,
             ),
-            _stat(
+            _compactStatCard(
               context,
-              cardWidth,
-              title: 'Waiting List',
-              value: stats?.waitingListCount.toString() ?? '--',
-              subtitle: 'Patients waiting now',
+              title: 'waiting_list'.tr(),
+              value: statsData?.waitingListCount.toString() ?? '--',
               icon: Icons.people_alt_rounded,
               color: AppColors.primary,
             ),
-            _stat(
+            _compactStatCard(
               context,
-              cardWidth,
-              title: 'New Registrations',
-              value: stats?.newRegistrations.toString() ?? '--',
-              subtitle: 'Today’s new patients',
+              title: 'new_registrations'.tr(),
+              value: statsData?.newRegistrations.toString() ?? '--',
               icon: Icons.person_add_alt_1_rounded,
               color: AppColors.accent,
             ),
-            _stat(
+            _compactStatCard(
               context,
-              cardWidth,
-              title: 'Active Desks',
-              value: stats?.activeCheckInDesks.toString() ?? '--',
-              subtitle: 'Check-in desks live',
+              title: 'active_desks'.tr(),
+              value: statsData?.activeCheckInDesks.toString() ?? '--',
               icon: Icons.table_rows_rounded,
               color: AppColors.medicalBlue,
             ),
@@ -69,24 +68,60 @@ class StatsSection extends StatelessWidget {
     );
   }
 
-  Widget _stat(
-    BuildContext context,
-    double width, {
+  Widget _compactStatCard(
+    BuildContext context, {
     required String title,
     required String value,
-    required String subtitle,
     required IconData icon,
     required Color color,
   }) {
-    return SizedBox(
-      width: width,
-      child: DashboardStatCard(
-        title: title,
-        value: value,
-        subtitle: subtitle,
-        icon: icon,
-        accentColor: color,
-        //hoverEffect: true, // لو بدك نضيفها داخل DashboardStatCard
+    return Card(
+      elevation: 10,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      color: Theme.of(context).colorScheme.surface,
+      child: InkWell(
+        onTap: () {},
+        borderRadius: BorderRadius.circular(16),
+        splashColor: color.withOpacity(0.1),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(color: color.withOpacity(0.12), shape: BoxShape.circle),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      value,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 22,
+                        height: 1.2,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context).hintColor,
+                        fontSize: 12,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -72,6 +72,7 @@ class DashboardShell extends StatelessWidget {
           ? body
           : SafeArea(
               child: Row(
+                textDirection: TextDirection.ltr,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (!isRtl)

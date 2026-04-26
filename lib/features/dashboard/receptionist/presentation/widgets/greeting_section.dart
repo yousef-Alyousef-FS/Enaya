@@ -1,4 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:enaya/core/helpers/responsive_helper.dart';
 import 'package:enaya/core/theme/app_colors.dart';
 
 class GreetingSection extends StatelessWidget {
@@ -15,11 +18,11 @@ class GreetingSection extends StatelessWidget {
     required this.shiftEnd,
   });
 
-  String get _greeting {
+  String _localizedGreeting(BuildContext context) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return 'greeting_morning'.tr();
+    if (hour < 17) return 'greeting_afternoon'.tr();
+    return 'greeting_evening'.tr();
   }
 
   IconData get _greetingIcon {
@@ -29,30 +32,40 @@ class GreetingSection extends StatelessWidget {
     return Icons.nightlight_round;
   }
 
-  String get _shiftTimeRange {
-    return '${_formatTime(shiftStart)} - ${_formatTime(shiftEnd)}';
-  }
+  String _shiftTimeRange(BuildContext context) =>
+      '${_formatTime(context, shiftStart)} - ${_formatTime(context, shiftEnd)}';
 
-  String _formatTime(DateTime dateTime) {
-    final hour = dateTime.hour % 12 == 0 ? 12 : dateTime.hour % 12;
-    final minute = dateTime.minute.toString().padLeft(2, '0');
-    final period = dateTime.hour < 12 ? 'AM' : 'PM';
-    return '$hour:$minute $period';
+  String _formatTime(BuildContext context, DateTime dateTime) {
+    return DateFormat.jm(context.locale.toString()).format(dateTime);
   }
 
   Color get _statusColor {
-    switch (shiftStatus) {
-      case 'Active':
+    switch (shiftStatus.toLowerCase()) {
+      case 'active':
         return AppColors.medicalGreen;
-      case 'Break':
+      case 'break':
         return AppColors.accent;
       default:
         return AppColors.gray500;
     }
   }
 
+  String _localizedShiftStatus() {
+    switch (shiftStatus.toLowerCase()) {
+      case 'active':
+        return 'status_active'.tr();
+      case 'break':
+        return 'status_break'.tr();
+      default:
+        return shiftStatus;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isMobile = context.isMobile; // if you have ResponsiveHelper
+    // أو استخدم MediaQuery.of(context).size.width < 700
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -60,67 +73,107 @@ class GreetingSection extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            flex: 3,
-            child: Row(
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(_greetingIcon, size: 26, color: AppColors.primary),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    '$_greeting, $receptionistName 👋',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                // الترحيب والأيقونة
+                Row(
+                  children: [
+                    Icon(_greetingIcon, size: 26, color: AppColors.primary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        '${_localizedGreeting(context)}, $receptionistName 👋',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // معلومات الوردية والحالة
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _statusChip(context),
+                    Row(
+                      children: [
+                        const Icon(Icons.schedule, color: AppColors.gray500, size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          _shiftTimeRange(context),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(color: AppColors.gray700),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            flex: 2,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _statusChip(context),
-                const SizedBox(height: 8),
+                // الجزء الأيسر: الترحيب والأيقونة
+                Expanded(
+                  child: Row(
+                    children: [
+                      Icon(_greetingIcon, size: 26, color: AppColors.primary),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          '${_localizedGreeting(context)}, $receptionistName 👋',
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 24),
+                // الجزء الأيمن: الحالة + وقت الوردية بشكل عمودي أو أفقي حسب الحاجة
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.schedule, color: AppColors.gray500, size: 18),
-                    const SizedBox(width: 6),
-                    Text(
-                      _shiftTimeRange,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(color: AppColors.gray700),
+                    _statusChip(context),
+                    const SizedBox(width: 20),
+                    Row(
+                      children: [
+                        const Icon(Icons.schedule, color: AppColors.gray500, size: 18),
+                        const SizedBox(width: 6),
+                        Text(
+                          _shiftTimeRange(context),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(color: AppColors.gray700),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
   Widget _statusChip(BuildContext context) {
     final color = _statusColor;
-
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withAlpha((0.16 * 255).round()),
-        borderRadius: BorderRadius.circular(12),
+        color: color.withOpacity(0.16),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
-        shiftStatus,
+        _localizedShiftStatus(),
         style: Theme.of(
           context,
         ).textTheme.bodyMedium?.copyWith(color: color, fontWeight: FontWeight.w600),
