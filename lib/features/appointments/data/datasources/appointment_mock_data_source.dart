@@ -1,4 +1,7 @@
-import 'package:enaya/features/appointments/appointments_imports.dart';
+
+import '../../domain/entities/appointment_status.dart';
+import '../models/appointment_model.dart';
+import 'appointment_remote_data_source.dart';
 
 class AppointmentMockDataSourceImpl implements AppointmentRemoteDataSource {
   final List<AppointmentModel> _mockAppointments = [
@@ -29,29 +32,67 @@ class AppointmentMockDataSourceImpl implements AppointmentRemoteDataSource {
       dateTime: DateTime.now().copyWith(hour: 11, minute: 0),
       status: AppointmentStatus.scheduled,
     ),
+    // Additional mock data for range testing
+    AppointmentModel(
+      id: '4',
+      patientId: 'p4',
+      patientName: 'Mona Zaki',
+      doctorId: 'd1',
+      doctorName: 'Dr. Samir',
+      dateTime: DateTime.now().add(const Duration(days: 1)).copyWith(hour: 14, minute: 0),
+      status: AppointmentStatus.scheduled,
+    ),
+    AppointmentModel(
+      id: '5',
+      patientId: 'p5',
+      patientName: 'Omar Khaled',
+      doctorId: 'd2',
+      doctorName: 'Dr. Laila',
+      dateTime: DateTime.now().add(const Duration(days: 2)).copyWith(hour: 16, minute: 30),
+      status: AppointmentStatus.confirmed,
+    ),
   ];
 
   @override
-  Future<List<AppointmentModel>> getAppointmentsByDate(
-    DateTime date, {
+  Future<List<AppointmentModel>> getAppointments({
+    DateTime? date,
+    DateTime? endDate,
+    String? doctorId,
+    String? patientId,
     String? status,
     int page = 1,
     int limit = 20,
   }) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    return _mockAppointments
-        .where(
-          (a) =>
-              a.dateTime.year == date.year &&
-              a.dateTime.month == date.month &&
-              a.dateTime.day == date.day,
-        )
-        .toList();
-  }
-
-  @override
-  Future<List<AppointmentModel>> getAppointmentsToday({int page = 1, int limit = 20}) async {
-    return getAppointmentsByDate(DateTime.now());
+    
+    return _mockAppointments.where((a) {
+      bool matches = true;
+      
+      if (date != null && endDate != null) {
+        final start = DateTime(date.year, date.month, date.day);
+        final end = DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59);
+        matches &= a.dateTime.isAfter(start.subtract(const Duration(seconds: 1))) && 
+                  a.dateTime.isBefore(end.add(const Duration(seconds: 1)));
+      } else if (date != null) {
+        matches &= a.dateTime.year == date.year &&
+                  a.dateTime.month == date.month &&
+                  a.dateTime.day == date.day;
+      }
+      
+      if (doctorId != null) {
+        matches &= a.doctorId == doctorId;
+      }
+      
+      if (patientId != null) {
+        matches &= a.patientId == patientId;
+      }
+      
+      if (status != null) {
+        matches &= a.status.name == status;
+      }
+      
+      return matches;
+    }).toList();
   }
 
   @override
@@ -59,23 +100,6 @@ class AppointmentMockDataSourceImpl implements AppointmentRemoteDataSource {
     return _mockAppointments.firstWhere((a) => a.id == appointmentId);
   }
 
-  @override
-  Future<List<AppointmentModel>> getAppointmentsByPatient(
-    String patientId, {
-    int page = 1,
-    int limit = 20,
-  }) async {
-    return _mockAppointments.where((a) => a.patientId == patientId).toList();
-  }
-
-  @override
-  Future<List<AppointmentModel>> getAppointmentsByDoctor(
-    String doctorId, {
-    int page = 1,
-    int limit = 20,
-  }) async {
-    return _mockAppointments.where((a) => a.doctorId == doctorId).toList();
-  }
 
   @override
   Future<AppointmentModel> createAppointment(AppointmentModel model) async {
@@ -126,14 +150,25 @@ class AppointmentMockDataSourceImpl implements AppointmentRemoteDataSource {
   @override
   Future<Map<String, dynamic>> getAppointmentsStats({DateTime? date, String? doctorId}) async {
     return {
-      'today_total': _mockAppointments.length,
-      'arrived_count': _mockAppointments.where((a) => a.status == AppointmentStatus.arrived).length,
-      'pending_count': _mockAppointments
-          .where((a) => a.status == AppointmentStatus.scheduled)
-          .length,
-      'completed_count': _mockAppointments
-          .where((a) => a.status == AppointmentStatus.completed)
-          .length,
+      'total_appointments': _mockAppointments.length,
+      'scheduled': _mockAppointments.where((a) => a.status == AppointmentStatus.scheduled).length,
+      'confirmed': _mockAppointments.where((a) => a.status == AppointmentStatus.confirmed).length,
+      'arrived': _mockAppointments.where((a) => a.status == AppointmentStatus.arrived).length,
+      'completed': _mockAppointments.where((a) => a.status == AppointmentStatus.completed).length,
+      'cancelled': _mockAppointments.where((a) => a.status == AppointmentStatus.cancelled).length,
+      'no_show': 0,
+      'utilization_rate': 75.0,
+      'completion_rate': 90.0,
+      'by_doctor': [
+        {
+          'doctor_id': 'd1',
+          'doctor_name': 'Dr. Samir',
+          'total_appointments': _mockAppointments.where((a) => a.doctorId == 'd1').length,
+          'completed': 5,
+          'completion_rate': 85.0,
+          'average_wait_time': 12.5,
+        }
+      ],
     };
   }
 

@@ -6,28 +6,17 @@ import '../models/appointment_model.dart';
 // ?? Abstract Interface
 // ============================================================================
 abstract class AppointmentRemoteDataSource {
-  Future<List<AppointmentModel>> getAppointmentsByDate(
-    DateTime date, {
+  Future<List<AppointmentModel>> getAppointments({
+    DateTime? date,
+    DateTime? endDate,
+    String? doctorId,
+    String? patientId,
     String? status,
     int page = 1,
     int limit = 20,
   });
 
-  Future<List<AppointmentModel>> getAppointmentsToday({int page = 1, int limit = 20});
-
   Future<AppointmentModel> getAppointmentById(String appointmentId);
-
-  Future<List<AppointmentModel>> getAppointmentsByPatient(
-    String patientId, {
-    int page = 1,
-    int limit = 20,
-  });
-
-  Future<List<AppointmentModel>> getAppointmentsByDoctor(
-    String doctorId, {
-    int page = 1,
-    int limit = 20,
-  });
 
   Future<AppointmentModel> createAppointment(AppointmentModel model);
 
@@ -116,39 +105,27 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
   }
 
   @override
-  Future<List<AppointmentModel>> getAppointmentsByDate(
-    DateTime date, {
+  Future<List<AppointmentModel>> getAppointments({
+    DateTime? date,
+    DateTime? endDate,
+    String? doctorId,
+    String? patientId,
     String? status,
     int page = 1,
     int limit = 20,
   }) async {
-    final queryParameters = {
-      'date': date.toIso8601String().split('T')[0],
+    final queryParameters = <String, dynamic>{
       'page': page,
       'limit': limit,
     };
 
-    if (status != null) {
-      queryParameters['status'] = status;
-    }
+    if (date != null) queryParameters['date'] = date.toIso8601String().split('T')[0];
+    if (endDate != null) queryParameters['end_date'] = endDate.toIso8601String().split('T')[0];
+    if (doctorId != null) queryParameters['doctor_id'] = doctorId;
+    if (patientId != null) queryParameters['patient_id'] = patientId;
+    if (status != null) queryParameters['status'] = status;
 
     final response = await dio.get('/appointments', queryParameters: queryParameters);
-    _validateStatusCode(response.statusCode, [200]);
-    final responseData = _asResponseData(response);
-    final items = _asResponseList(responseData);
-
-    return items
-        .whereType<Map>()
-        .map((json) => AppointmentModel.fromJson(Map<String, dynamic>.from(json)))
-        .toList();
-  }
-
-  @override
-  Future<List<AppointmentModel>> getAppointmentsToday({int page = 1, int limit = 20}) async {
-    final response = await dio.get(
-      '/appointments/today',
-      queryParameters: {'page': page, 'limit': limit},
-    );
     _validateStatusCode(response.statusCode, [200]);
     final responseData = _asResponseData(response);
     final items = _asResponseList(responseData);
@@ -167,45 +144,6 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
     return AppointmentModel.fromJson(_asResponseMap(responseData));
   }
 
-  @override
-  Future<List<AppointmentModel>> getAppointmentsByPatient(
-    String patientId, {
-    int page = 1,
-    int limit = 20,
-  }) async {
-    final response = await dio.get(
-      '/appointments/patient/$patientId',
-      queryParameters: {'page': page, 'limit': limit},
-    );
-    _validateStatusCode(response.statusCode, [200]);
-    final responseData = _asResponseData(response);
-    final items = _asResponseList(responseData);
-
-    return items
-        .whereType<Map>()
-        .map((json) => AppointmentModel.fromJson(Map<String, dynamic>.from(json)))
-        .toList();
-  }
-
-  @override
-  Future<List<AppointmentModel>> getAppointmentsByDoctor(
-    String doctorId, {
-    int page = 1,
-    int limit = 20,
-  }) async {
-    final response = await dio.get(
-      '/appointments/doctor/$doctorId',
-      queryParameters: {'page': page, 'limit': limit},
-    );
-    _validateStatusCode(response.statusCode, [200]);
-    final responseData = _asResponseData(response);
-    final items = _asResponseList(responseData);
-
-    return items
-        .whereType<Map>()
-        .map((json) => AppointmentModel.fromJson(Map<String, dynamic>.from(json)))
-        .toList();
-  }
 
   @override
   Future<AppointmentModel> createAppointment(AppointmentModel model) async {

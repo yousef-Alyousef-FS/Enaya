@@ -7,6 +7,8 @@ import '../repositories/appointment_management_repository.dart';
 import '../services/time_slot_generator.dart';
 import 'package:flutter/material.dart';
 
+import '../usecases/get_appointments_usecase.dart';
+
 class GenerateTimeSlotsUseCase implements UseCase<List<TimeSlot>, GenerateTimeSlotsParams> {
   final AppointmentManagementRepository repository;
   final TimeSlotGenerator generator;
@@ -20,7 +22,10 @@ class GenerateTimeSlotsUseCase implements UseCase<List<TimeSlot>, GenerateTimeSl
       final availability = await _fetchDoctorAvailability(params.doctorId);
       
       // 2. Get Occupied Appointments
-      final appointments = await repository.getAppointmentsByDate(params.date);
+      final appointments = await repository.getAppointments(GetAppointmentsParams(
+        date: params.date,
+        doctorId: params.doctorId,
+      ));
       final doctorOccupied = appointments.where((a) => a.doctorId == params.doctorId).toList();
 
       // 3. Delegate generation to Domain Service

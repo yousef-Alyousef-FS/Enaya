@@ -6,14 +6,13 @@ import 'package:enaya/core/error/failures.dart';
 import 'package:enaya/features/appointments/domain/entities/appointment_entity.dart';
 import 'package:enaya/features/appointments/domain/entities/appointment_stats_entity.dart';
 import 'package:enaya/features/appointments/domain/entities/appointment_status.dart';
-import 'package:enaya/features/appointments/domain/entities/patient_appointments_entity.dart';
 import 'package:enaya/features/appointments/domain/entities/patient_cancellation_result.dart';
 import 'package:enaya/features/appointments/domain/usecases/cancel_appointment_usecase.dart';
 import 'package:enaya/features/appointments/domain/repositories/appointment_management_repository.dart';
 import 'package:enaya/features/appointments/domain/repositories/patient_appointments_repository.dart';
 import 'package:enaya/features/appointments/domain/usecases/get_available_slots_usecase.dart';
 import 'package:enaya/features/appointments/domain/usecases/get_appointments_stats_usecase.dart';
-import 'package:enaya/features/appointments/domain/usecases/get_patient_appointments_usecase.dart';
+import 'package:enaya/features/appointments/domain/usecases/get_appointments_usecase.dart';
 
 class MockAppointmentManagementRepository extends Mock implements AppointmentManagementRepository {}
 
@@ -27,6 +26,7 @@ void main() {
     setUp(() {
       managementRepository = MockAppointmentManagementRepository();
       patientRepository = MockPatientAppointmentsRepository();
+      registerFallbackValue(GetAppointmentsParams());
     });
 
     test('GetAvailableSlotsUseCase forwards the available slots result', () async {
@@ -93,42 +93,35 @@ void main() {
       ).called(1);
     });
 
-    test('GetPatientAppointmentsUseCase forwards the patient list result', () async {
-      const patientId = 'patient-1';
-      final expectedList = PatientAppointmentsList(
-        patientId: patientId,
-        patientName: 'Patient Test',
-        upcoming: [
-          PatientAppointmentView(
-            id: 'apt-1',
-            doctorId: 'doctor-1',
-            doctorName: 'Dr. Test',
-            dateTime: DateTime(2026, 5, 1, 9, 0),
-            reason: 'Checkup',
-            status: 'scheduled',
-            confirmationCode: 'APT-001',
-            daysRemaining: 10,
-            reminderScheduled: true,
-          ),
-        ],
-        past: const [],
-      );
+    test('GetAppointmentsUseCase forwards the list result', () async {
+      final params = GetAppointmentsParams(doctorId: 'doctor-1');
+      final expectedList = [
+        AppointmentEntity(
+          id: 'apt-1',
+          patientId: 'patient-1',
+          patientName: 'Patient Test',
+          doctorId: 'doctor-1',
+          doctorName: 'Dr. Test',
+          dateTime: DateTime(2026, 5, 1, 9),
+          status: AppointmentStatus.scheduled,
+        ),
+      ];
 
       when(
-        () => patientRepository.getPatientAppointments(patientId: patientId),
-      ).thenAnswer((_) async => Right(expectedList));
+        () => managementRepository.getAppointments(any()),
+      ).thenAnswer((_) async => expectedList);
 
-      final useCase = GetPatientAppointmentsUseCase(patientRepository);
-      final result = await useCase(GetPatientAppointmentsParams(patientId: patientId));
+      final useCase = GetAppointmentsUseCase(managementRepository);
+      final result = await useCase(params);
 
       result.fold((failure) => fail('Expected success but got failure: ${failure.message}'), (
         list,
       ) {
-        expect(list.patientName, 'Patient Test');
-        expect(list.totalUpcoming, 1);
+        expect(list.length, 1);
+        expect(list.first.patientName, 'Patient Test');
       });
 
-      verify(() => patientRepository.getPatientAppointments(patientId: patientId)).called(1);
+      verify(() => managementRepository.getAppointments(any())).called(1);
     });
 
     test('CancelAppointmentUseCase routes patient cancellation to patient repository', () async {

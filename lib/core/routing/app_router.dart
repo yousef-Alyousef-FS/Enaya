@@ -1,4 +1,8 @@
 import 'package:go_router/go_router.dart';
+import 'package:enaya/features/appointments/presentation/appointments_page.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../features/auth/presentation/cubit/auth_cubit.dart';
+import '../../features/auth/presentation/cubit/auth_state.dart';
 import 'package:enaya/features/auth/presentation/screens/signup_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
@@ -6,7 +10,6 @@ import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/change_password_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/verify_email_screen.dart';
-import '../../features/appointments/presentation/screens/appointments_overview_screen.dart';
 import '../../features/dashboard/doctor/presentation/pages/doctor_dashboard_page.dart';
 import '../../features/dashboard/patient/presentation/pages/patient_dashboard_page.dart';
 import '../../features/dashboard/receptionist/presentation/pages/receptionist_dashboard_page.dart';
@@ -62,12 +65,12 @@ class AppRouter {
       GoRoute(
         path: appointmentsOverview,
         builder: (context, state) {
-          final modeStr = state.uri.queryParameters['mode'];
-          final mode = AppointmentsOverviewMode.values.firstWhere(
-            (e) => e.name == modeStr,
-            orElse: () => AppointmentsOverviewMode.generic,
+          return BlocBuilder<AuthCubit, AuthState>(
+            builder: (context, authState) {
+              final mode = AppointmentsPage.mapRoleIdToMode(authState.currentUser?.roleId);
+              return AppointmentsPage(mode: mode);
+            },
           );
-          return AppointmentsOverviewScreen(config: AppointmentsOverviewConfig(mode: mode));
         },
       ),
       GoRoute(path: doctorHome, builder: (context, state) => const DoctorDashboardPage()),

@@ -24,9 +24,7 @@ _$$ReceptionistDashboardStatsModelImplFromJson(Map<String, dynamic> json) =>
       nextCheckInPatient: json['nextCheckInPatient'] as String,
       nextCheckInTime: json['nextCheckInTime'] as String,
       appointments: (json['appointments'] as List<dynamic>)
-          .map(
-            (e) => AppointmentSummaryModel.fromJson(e as Map<String, dynamic>),
-          )
+          .map((e) => AppointmentModel.fromJson(e as Map<String, dynamic>))
           .toList(),
     );
 

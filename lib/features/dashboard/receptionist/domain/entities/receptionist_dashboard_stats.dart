@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'appointment_summary.dart';
+import '../../../../appointments/domain/entities/appointment_entity.dart';
 
 class ReceptionistDashboardStats extends Equatable {
   final String receptionistName;
@@ -14,7 +14,7 @@ class ReceptionistDashboardStats extends Equatable {
   final int activeCheckInDesks;
   final String nextCheckInPatient;
   final String nextCheckInTime;
-  final List<AppointmentSummary> appointments;
+  final List<AppointmentEntity> appointments;
 
   const ReceptionistDashboardStats({
     required this.receptionistName,
@@ -45,7 +45,7 @@ class ReceptionistDashboardStats extends Equatable {
     int? activeCheckInDesks,
     String? nextCheckInPatient,
     String? nextCheckInTime,
-    List<AppointmentSummary>? appointments,
+    List<AppointmentEntity>? appointments,
   }) {
     return ReceptionistDashboardStats(
       receptionistName: receptionistName ?? this.receptionistName,

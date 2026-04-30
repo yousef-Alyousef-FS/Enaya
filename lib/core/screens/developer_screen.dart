@@ -30,7 +30,11 @@ class DeveloperScreen extends StatelessWidget {
           ]),
           const SizedBox(height: 20),
           _buildSection('Appointments', [
-            _buildItem(context, 'Appointments Overview (General)', AppRouter.appointmentsOverview),
+            _buildItem(
+              context,
+              'Appointments Overview (Auto Mode)',
+              AppRouter.appointmentsOverview,
+            ),
             _buildItem(
               context,
               'Appointments (Doctor Mode)',
@@ -40,6 +44,11 @@ class DeveloperScreen extends StatelessWidget {
               context,
               'Appointments (Patient Mode)',
               '${AppRouter.appointmentsOverview}?mode=patient',
+            ),
+            _buildItem(
+              context,
+              'Appointments (Receptionist Mode)',
+              '${AppRouter.appointmentsOverview}?mode=receptionist',
             ),
           ]),
           const SizedBox(height: 20),

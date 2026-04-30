@@ -1,6 +1,11 @@
-class LayoutBreakpoints {
-  static const double mobileMaxWidth = 700;
-  static const double desktopMinWidth = 1200;
+/// Responsive layout breakpoints used across the app.
+abstract class LayoutBreakpoints {
+  static const double mobileMaxWidth = 600;
+  static const double desktopMinWidth = 1024;
 
-  const LayoutBreakpoints._();
+  static const double compactLandscapeMaxWidth = 1000;
+  static const double compactLandscapeMaxHeight = 700;
+
+  static const double navigationRailWidth = 200;
+  static const double navigationRailWidthArabic = 220;
 }

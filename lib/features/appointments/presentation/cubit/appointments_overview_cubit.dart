@@ -1,44 +1,26 @@
-import 'package:easy_localization/easy_localization.dart';
+import 'package:enaya/features/appointments/domain/entities/appointment_entity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../domain/entities/appointment_status.dart';
-import '../../domain/usecases/get_appointments_by_date_usecase.dart';
-import '../../domain/usecases/get_today_appointments_usecase.dart';
-import 'appointments_overview_state.dart';
+import 'package:enaya/features/appointments/domain/usecases/get_appointments_usecase.dart';
+import 'package:enaya/features/appointments/presentation/cubit/appointments_overview_state.dart';
 
-class AppointmentsOverviewCubit extends Cubit<AppointmentsOverviewState> {
-  final GetAppointmentsByDateUseCase _getAppointmentsByDateUseCase;
-  final GetTodayAppointmentsUseCase _getTodayAppointmentsUseCase;
+class AppointmentsManagerCubit extends Cubit<AppointmentsOverviewState> {
+  final GetAppointmentsUseCase _getAppointmentsUseCase;
 
-  AppointmentsOverviewCubit({
-    required GetAppointmentsByDateUseCase getAppointmentsByDateUseCase,
-    required GetTodayAppointmentsUseCase getTodayAppointmentsUseCase,
-  }) : _getAppointmentsByDateUseCase = getAppointmentsByDateUseCase,
-       _getTodayAppointmentsUseCase = getTodayAppointmentsUseCase,
+  AppointmentsManagerCubit({
+    required GetAppointmentsUseCase getAppointmentsUseCase,
+  }) : _getAppointmentsUseCase = getAppointmentsUseCase,
        super(AppointmentsOverviewState.initial());
 
-  String _resolveFailureMessage(String message) {
-    final normalized = message.toLowerCase();
-
-    if (normalized.contains('timeout')) {
-      return 'error_connection_timeout'.tr();
-    }
-    if (normalized.contains('socketexception') ||
-        normalized.contains('connection') ||
-        normalized.contains('internet')) {
-      return 'no_internet_connection'.tr();
-    }
-
-    return 'error_occurred'.tr();
-  }
 
   Future<void> loadInitialData({int pageSize = 20}) async {
     if (state.isLoading || state.isPageLoading) return;
-    if (state.isTodaySelected) {
-      await fetchTodayAppointments(page: 1, limit: pageSize);
-    } else {
-      await fetchAppointmentsByDate(state.selectedDate, page: 1, limit: pageSize);
-    }
+    await fetchAppointments(GetAppointmentsParams(
+      date: state.selectedDate,
+      endDate: state.endDate,
+      page: 1,
+      limit: pageSize,
+    ));
   }
 
   Future<void> updateSelectedDate(DateTime date, {int pageSize = 20}) async {
@@ -48,26 +30,53 @@ class AppointmentsOverviewCubit extends Cubit<AppointmentsOverviewState> {
         currentPage: 1,
         pageSize: pageSize,
         clearErrorMessage: true,
+        clearEndDate: true,
       ),
     );
-    await fetchAppointmentsByDate(date, page: 1, limit: pageSize);
+    await fetchAppointments(GetAppointmentsParams(date: date, page: 1, limit: pageSize));
   }
 
-  Future<void> fetchTodayAppointments({int page = 1, int limit = 20}) async {
+  Future<void> updateDateRange(DateTime start, DateTime end, {int pageSize = 20}) async {
+    emit(
+      state.copyWith(
+        selectedDate: start,
+        endDate: end,
+        currentPage: 1,
+        pageSize: pageSize,
+        clearErrorMessage: true,
+      ),
+    );
+    await fetchAppointments(GetAppointmentsParams(date: start, endDate: end, page: 1, limit: pageSize));
+  }
+
+  Future<void> updateSelectedDoctorId(String doctorId, {int pageSize = 20}) async {
+    if (state.selectedDoctorId == doctorId) return;
+    emit(
+      state.copyWith(
+        selectedDoctorId: doctorId,
+        currentPage: 1,
+        pageSize: pageSize,
+        clearErrorMessage: true,
+      ),
+    );
+    await refreshCurrentView();
+  }
+
+  Future<void> fetchAppointments(GetAppointmentsParams params) async {
     if (state.isPageLoading) return;
     emit(
       state.copyWith(
-        isLoading: true,
+        selectedDate: params.date,
+        endDate: params.endDate,
+        isLoading: params.page == 1,
         isPageLoading: true,
-        currentPage: page,
-        pageSize: limit,
+        currentPage: params.page,
+        pageSize: params.limit,
         clearErrorMessage: true,
       ),
     );
 
-    final result = await _getTodayAppointmentsUseCase(
-      GetTodayAppointmentsParams(page: page, limit: limit),
-    );
+    final result = await _getAppointmentsUseCase(params);
 
     result.fold(
       (failure) {
@@ -75,7 +84,7 @@ class AppointmentsOverviewCubit extends Cubit<AppointmentsOverviewState> {
           state.copyWith(
             isLoading: false,
             isPageLoading: false,
-            errorMessage: _resolveFailureMessage(failure.message),
+            errorMessage: failure.message,
           ),
         );
       },
@@ -83,97 +92,91 @@ class AppointmentsOverviewCubit extends Cubit<AppointmentsOverviewState> {
         emit(
           state.copyWith(
             appointments: appointments,
-            hasMore: appointments.length == limit,
+            filteredAppointments: appointments,
+            hasMore: appointments.length == params.limit,
             isLoading: false,
             isPageLoading: false,
             clearErrorMessage: true,
           ),
         );
-      },
-    );
-  }
-
-  Future<void> fetchAppointmentsByDate(
-    DateTime date, {
-    AppointmentStatus? status,
-    int page = 1,
-    int limit = 20,
-  }) async {
-    if (state.isPageLoading) return;
-    emit(
-      state.copyWith(
-        selectedDate: date,
-        isLoading: true,
-        isPageLoading: true,
-        currentPage: page,
-        pageSize: limit,
-        clearErrorMessage: true,
-      ),
-    );
-
-    final result = await _getAppointmentsByDateUseCase(
-      GetAppointmentsByDateParams(date: date, status: status, page: page, limit: limit),
-    );
-
-    result.fold(
-      (failure) {
-        emit(
-          state.copyWith(
-            isLoading: false,
-            isPageLoading: false,
-            errorMessage: _resolveFailureMessage(failure.message),
-          ),
-        );
-      },
-      (appointments) {
-        emit(
-          state.copyWith(
-            appointments: appointments,
-            hasMore: appointments.length == limit,
-            isLoading: false,
-            isPageLoading: false,
-            clearErrorMessage: true,
-          ),
-        );
+        _applyFilters();
       },
     );
   }
 
   Future<void> loadNextPage() async {
     if (!state.hasMore || state.isPageLoading) return;
-    if (state.isTodaySelected) {
-      await fetchTodayAppointments(page: state.currentPage + 1, limit: state.pageSize);
-    } else {
-      await fetchAppointmentsByDate(
-        state.selectedDate,
-        page: state.currentPage + 1,
-        limit: state.pageSize,
-      );
-    }
+    await fetchAppointments(GetAppointmentsParams(
+      date: state.selectedDate,
+      endDate: state.endDate,
+      page: state.currentPage + 1,
+      limit: state.pageSize,
+    ));
   }
 
   Future<void> loadPreviousPage() async {
     if (state.currentPage <= 1 || state.isPageLoading) return;
-    if (state.isTodaySelected) {
-      await fetchTodayAppointments(page: state.currentPage - 1, limit: state.pageSize);
-    } else {
-      await fetchAppointmentsByDate(
-        state.selectedDate,
-        page: state.currentPage - 1,
-        limit: state.pageSize,
-      );
-    }
+    await fetchAppointments(GetAppointmentsParams(
+      date: state.selectedDate,
+      endDate: state.endDate,
+      page: state.currentPage - 1,
+      limit: state.pageSize,
+    ));
   }
 
   Future<void> refreshCurrentView() async {
-    if (state.isTodaySelected) {
-      await fetchTodayAppointments(page: state.currentPage, limit: state.pageSize);
-    } else {
-      await fetchAppointmentsByDate(
-        state.selectedDate,
-        page: state.currentPage,
-        limit: state.pageSize,
-      );
+    await fetchAppointments(GetAppointmentsParams(
+      date: state.selectedDate,
+      endDate: state.endDate,
+      page: state.currentPage,
+      limit: state.pageSize,
+    ));
+  }
+
+  void updateSearchQuery(String query) {
+    emit(state.copyWith(searchQuery: query));
+    _applyFilters();
+  }
+
+  void selectDoctor({required String doctorId, required String doctorName}) {
+    if (state.selectedDoctorId == doctorId && state.selectedDoctorName == doctorName) {
+      return;
     }
+
+    emit(state.copyWith(selectedDoctorId: doctorId, selectedDoctorName: doctorName));
+    _applyFilters();
+  }
+
+  void _applyFilters() {
+    var filtered = List<AppointmentEntity>.from(state.appointments);
+
+    if (state.searchQuery.isNotEmpty) {
+      final query = state.searchQuery.toLowerCase();
+      filtered = filtered.where((appointment) {
+        return appointment.patientName.toLowerCase().contains(query) ||
+            appointment.id.toLowerCase().contains(query) ||
+            (appointment.queueNumber?.toString().contains(query) ?? false);
+      }).toList();
+    }
+
+    if (state.selectedDoctorId != 'all') {
+      filtered = filtered
+          .where((appointment) => appointment.doctorId == state.selectedDoctorId)
+          .toList();
+    }
+
+    filtered.sort((a, b) => a.dateTime.compareTo(b.dateTime));
+
+    emit(state.copyWith(filteredAppointments: filtered));
+  }
+
+  void clearSearch() {
+    emit(state.copyWith(searchQuery: ''));
+    _applyFilters();
+  }
+
+  void clearDoctorSelection() {
+    emit(state.copyWith(selectedDoctorId: 'all', clearSelectedDoctorName: true));
+    _applyFilters();
   }
 }

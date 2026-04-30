@@ -1,4 +1,4 @@
-import 'package:enaya/core/widgets/logo.dart';
+import 'package:enaya/core/widgets/common/logo.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';

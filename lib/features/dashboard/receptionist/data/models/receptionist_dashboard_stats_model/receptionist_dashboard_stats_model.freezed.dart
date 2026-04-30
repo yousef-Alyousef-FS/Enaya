@@ -35,8 +35,7 @@ mixin _$ReceptionistDashboardStatsModel {
   int get activeCheckInDesks => throw _privateConstructorUsedError;
   String get nextCheckInPatient => throw _privateConstructorUsedError;
   String get nextCheckInTime => throw _privateConstructorUsedError;
-  List<AppointmentSummaryModel> get appointments =>
-      throw _privateConstructorUsedError;
+  List<AppointmentModel> get appointments => throw _privateConstructorUsedError;
 
   /// Serializes this ReceptionistDashboardStatsModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -72,7 +71,7 @@ abstract class $ReceptionistDashboardStatsModelCopyWith<$Res> {
     int activeCheckInDesks,
     String nextCheckInPatient,
     String nextCheckInTime,
-    List<AppointmentSummaryModel> appointments,
+    List<AppointmentModel> appointments,
   });
 }
 
@@ -161,7 +160,7 @@ class _$ReceptionistDashboardStatsModelCopyWithImpl<
             appointments: null == appointments
                 ? _value.appointments
                 : appointments // ignore: cast_nullable_to_non_nullable
-                      as List<AppointmentSummaryModel>,
+                      as List<AppointmentModel>,
           )
           as $Val,
     );
@@ -190,7 +189,7 @@ abstract class _$$ReceptionistDashboardStatsModelImplCopyWith<$Res>
     int activeCheckInDesks,
     String nextCheckInPatient,
     String nextCheckInTime,
-    List<AppointmentSummaryModel> appointments,
+    List<AppointmentModel> appointments,
   });
 }
 
@@ -279,7 +278,7 @@ class __$$ReceptionistDashboardStatsModelImplCopyWithImpl<$Res>
         appointments: null == appointments
             ? _value._appointments
             : appointments // ignore: cast_nullable_to_non_nullable
-                  as List<AppointmentSummaryModel>,
+                  as List<AppointmentModel>,
       ),
     );
   }
@@ -302,7 +301,7 @@ class _$ReceptionistDashboardStatsModelImpl
     required this.activeCheckInDesks,
     required this.nextCheckInPatient,
     required this.nextCheckInTime,
-    required final List<AppointmentSummaryModel> appointments,
+    required final List<AppointmentModel> appointments,
   }) : _topWaitingPatients = topWaitingPatients,
        _appointments = appointments;
 
@@ -341,9 +340,9 @@ class _$ReceptionistDashboardStatsModelImpl
   final String nextCheckInPatient;
   @override
   final String nextCheckInTime;
-  final List<AppointmentSummaryModel> _appointments;
+  final List<AppointmentModel> _appointments;
   @override
-  List<AppointmentSummaryModel> get appointments {
+  List<AppointmentModel> get appointments {
     if (_appointments is EqualUnmodifiableListView) return _appointments;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_appointments);
@@ -444,7 +443,7 @@ abstract class _ReceptionistDashboardStatsModel
     required final int activeCheckInDesks,
     required final String nextCheckInPatient,
     required final String nextCheckInTime,
-    required final List<AppointmentSummaryModel> appointments,
+    required final List<AppointmentModel> appointments,
   }) = _$ReceptionistDashboardStatsModelImpl;
 
   factory _ReceptionistDashboardStatsModel.fromJson(Map<String, dynamic> json) =
@@ -475,7 +474,7 @@ abstract class _ReceptionistDashboardStatsModel
   @override
   String get nextCheckInTime;
   @override
-  List<AppointmentSummaryModel> get appointments;
+  List<AppointmentModel> get appointments;
 
   /// Create a copy of ReceptionistDashboardStatsModel
   /// with the given fields replaced by the non-null parameter values.
