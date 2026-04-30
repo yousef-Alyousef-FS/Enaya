@@ -6,6 +6,7 @@ import '../../domain/entities/appointment_entity.dart';
 import '../../domain/entities/appointment_stats_entity.dart';
 import '../../domain/entities/appointment_status.dart';
 import '../../domain/repositories/appointment_management_repository.dart';
+import '../../domain/usecases/get_appointments_usecase.dart';
 import '../datasources/appointment_remote_data_source.dart';
 import '../models/appointment_model.dart';
 
@@ -31,34 +32,16 @@ class AppointmentManagementRepositoryImpl implements AppointmentManagementReposi
   }
 
   @override
-  Future<List<AppointmentEntity>> getAppointmentsByDate(
-    DateTime date, {
-    AppointmentStatus? status,
-    int page = 1,
-    int limit = 20,
-  }) async {
-    final result = await remote.getAppointmentsByDate(
-      date,
-      status: status?.name,
-      page: page,
-      limit: limit,
+  Future<List<AppointmentEntity>> getAppointments(GetAppointmentsParams params) async {
+    final result = await remote.getAppointments(
+      date: params.date,
+      endDate: params.endDate,
+      doctorId: params.doctorId,
+      patientId: params.patientId,
+      status: params.status?.name,
+      page: params.page,
+      limit: params.limit,
     );
-    return result.map((m) => m.toEntity()).toList();
-  }
-
-  @override
-  Future<List<AppointmentEntity>> getAppointmentsToday({int page = 1, int limit = 20}) async {
-    final result = await remote.getAppointmentsToday(page: page, limit: limit);
-    return result.map((m) => m.toEntity()).toList();
-  }
-
-  @override
-  Future<List<AppointmentEntity>> getAppointmentsByPatient(
-    String patientId, {
-    int page = 1,
-    int limit = 20,
-  }) async {
-    final result = await remote.getAppointmentsByPatient(patientId, page: page, limit: limit);
     return result.map((m) => m.toEntity()).toList();
   }
 
@@ -92,15 +75,6 @@ class AppointmentManagementRepositoryImpl implements AppointmentManagementReposi
     return result.toEntity();
   }
 
-  @override
-  Future<List<AppointmentEntity>> getAppointmentsByDoctor(
-    String doctorId, {
-    int page = 1,
-    int limit = 20,
-  }) async {
-    final result = await remote.getAppointmentsByDoctor(doctorId, page: page, limit: limit);
-    return result.map((m) => m.toEntity()).toList();
-  }
 
   @override
   Future<Either<Failure, List<String>>> getAvailableSlots(String doctorId, DateTime date) async {

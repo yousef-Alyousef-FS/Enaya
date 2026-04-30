@@ -1,6 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import '../../../../../appointments/data/models/appointment_model.dart';
 import '../../../domain/entities/receptionist_dashboard_stats.dart';
-import '../appointment_summary_model/appointment_summary_model.dart';
 
 part 'receptionist_dashboard_stats_model.freezed.dart';
 part 'receptionist_dashboard_stats_model.g.dart';
@@ -20,7 +20,7 @@ class ReceptionistDashboardStatsModel with _$ReceptionistDashboardStatsModel {
     required int activeCheckInDesks,
     required String nextCheckInPatient,
     required String nextCheckInTime,
-    required List<AppointmentSummaryModel> appointments,
+    required List<AppointmentModel> appointments,
   }) = _ReceptionistDashboardStatsModel;
 
   factory ReceptionistDashboardStatsModel.fromJson(Map<String, dynamic> json) =>

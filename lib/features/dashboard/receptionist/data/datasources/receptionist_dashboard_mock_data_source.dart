@@ -1,6 +1,6 @@
 import 'dart:async';
-
-import '../models/appointment_summary_model/appointment_summary_model.dart';
+import '../../../../appointments/data/models/appointment_model.dart';
+import '../../../../appointments/domain/entities/appointment_status.dart';
 import '../models/receptionist_dashboard_stats_model/receptionist_dashboard_stats_model.dart';
 
 /// Mock Data Source for development & UI testing
@@ -15,11 +15,13 @@ class ReceptionistDashboardMockDataSourceImpl implements ReceptionistDashboardMo
     // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 600));
 
+    final now = DateTime.now();
+
     return ReceptionistDashboardStatsModel(
       receptionistName: 'Yousef',
       shiftStatus: 'Active',
-      shiftStart: DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
-      shiftEnd: DateTime.now().add(const Duration(hours: 6)).toIso8601String(),
+      shiftStart: now.subtract(const Duration(hours: 2)).toIso8601String(),
+      shiftEnd: now.add(const Duration(hours: 6)).toIso8601String(),
       averageWaitTimeMinutes: 12,
       topWaitingPatients: ['Sarah Malik', 'Omar Naguib', 'Lina Ahmad'],
       totalAppointments: 18,
@@ -29,33 +31,65 @@ class ReceptionistDashboardMockDataSourceImpl implements ReceptionistDashboardMo
       nextCheckInPatient: 'John Doe',
       nextCheckInTime: '10:30 AM',
       appointments: [
-        AppointmentSummaryModel(
+        AppointmentModel(
+          id: '1',
+          patientId: 'p1',
           patientName: 'John Doe',
-          time: '10:30 AM',
+          doctorId: 'd1',
           doctorName: 'Dr. Sara',
-          visitType: 'Consultation',
-          status: 'Waiting',
+          dateTime: now.copyWith(hour: 10, minute: 30),
+          status: AppointmentStatus.arrived,
+          reason: 'Consultation',
         ),
-        AppointmentSummaryModel(
+        AppointmentModel(
+          id: '2',
+          patientId: 'p2',
           patientName: 'Maya Khaled',
-          time: '10:45 AM',
+          doctorId: 'd2',
           doctorName: 'Dr. Omar',
-          visitType: 'Follow-up',
-          status: 'In Progress',
+          dateTime: now.copyWith(hour: 10, minute: 45),
+          status: AppointmentStatus.inProgress,
+          reason: 'Follow-up',
         ),
-        AppointmentSummaryModel(
+        AppointmentModel(
+          id: '3',
+          patientId: 'p3',
           patientName: 'Ali Hassan',
-          time: '11:00 AM',
+          doctorId: 'd3',
           doctorName: 'Dr. Lina',
-          visitType: 'Dental',
-          status: 'Completed',
+          dateTime: now.copyWith(hour: 11, minute: 0),
+          status: AppointmentStatus.completed,
+          reason: 'Dental',
         ),
-        AppointmentSummaryModel(
+        AppointmentModel(
+          id: '4',
+          patientId: 'p4',
           patientName: 'Rana Youssef',
-          time: '11:15 AM',
+          doctorId: 'd1',
           doctorName: 'Dr. Sara',
-          visitType: 'Consultation',
-          status: 'Waiting',
+          dateTime: now.copyWith(hour: 11, minute: 15),
+          status: AppointmentStatus.scheduled,
+          reason: 'Consultation',
+        ),
+        AppointmentModel(
+          id: '4',
+          patientId: 'p4',
+          patientName: 'Rana Youssef',
+          doctorId: 'd1',
+          doctorName: 'Dr. Sara',
+          dateTime: now.copyWith(hour: 11, minute: 15),
+          status: AppointmentStatus.scheduled,
+          reason: 'Consultation',
+        ),
+        AppointmentModel(
+          id: '4',
+          patientId: 'p4',
+          patientName: 'Rana Youssef',
+          doctorId: 'd1',
+          doctorName: 'Dr. Sara',
+          dateTime: now.copyWith(hour: 11, minute: 15),
+          status: AppointmentStatus.scheduled,
+          reason: 'Consultation',
         ),
       ],
     );

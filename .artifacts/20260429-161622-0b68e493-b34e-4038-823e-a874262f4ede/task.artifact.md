@@ -1,0 +1,22 @@
+# Project Cleanup and Refactoring Task List
+
+- [/] Phase 1: Deep Analysis and Planning
+    - [x] Initial interview with user about project issues
+    - [/] Map out all Appointment UseCases for consolidation
+    - [ ] Audit `core` widgets for feature-specific code
+    - [ ] Identify all `dynamic` usages and Type Safety violations
+    - [ ] Review Error Handling implementation across Cubits
+- [ ] Phase 2: Core Refactoring (Centralization)
+    - [ ] Centralize Error Handling in `core/error`
+    - [ ] Implement `toEntity` / `fromEntity` logic in Models/Entities
+    - [ ] Create a centralized Mock Data management system
+- [ ] Phase 3: Appointment Feature Cleanup
+    - [ ] Merge Appointment UseCases into a unified `GetAppointmentsUseCase`
+    - [ ] Refactor Appointment Stats (Domain/Data/UI alignment)
+    - [ ] Fix Cubit-to-Cubit communication for data refresh
+- [ ] Phase 4: UI/Widget Reorganization
+    - [ ] Move feature-specific widgets out of `core`
+    - [ ] Fix hardcoded sizes/magic numbers (ensure consistency)
+- [ ] Phase 5: Final Polish and Verification
+    - [ ] Remove misleading comments
+    - [ ] Run analysis to ensure zero errors/warnings

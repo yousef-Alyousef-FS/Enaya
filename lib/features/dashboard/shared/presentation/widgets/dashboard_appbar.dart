@@ -12,86 +12,129 @@ import '../../../../auth/presentation/cubit/auth_cubit.dart';
 /// - Integration with AuthCubit for logout functionality
 class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? titleText;
+  final String? subtitleText;
   final bool showNotifications;
   final bool showUserMenu;
+  final int notificationCount;
 
   const DashboardAppBar({
     super.key,
     this.titleText,
+    this.subtitleText,
     this.showNotifications = true,
     this.showUserMenu = true,
+    this.notificationCount = 3,
   });
 
   @override
-  Size get preferredSize => const Size.fromHeight(56);
+  Size get preferredSize => Size.fromHeight(subtitleText == null ? 64 : 76);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
-      toolbarHeight: 56,
+      toolbarHeight: preferredSize.height,
+      scrolledUnderElevation: 0,
       backgroundColor: Theme.of(context).colorScheme.surface,
-      elevation: 1,
-      centerTitle: true,
-
-      /// Page title (defaults to "Today Overview")
-      title: Text(
-        titleText ?? 'today_overview'.tr(),
-        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      surfaceTintColor: Theme.of(context).colorScheme.surface,
+      elevation: 0,
+      titleSpacing: 20,
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            titleText ?? 'today_overview'.tr(),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.3),
+          ),
+          if (subtitleText != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              subtitleText!,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
       ),
 
-      /// Right-side actions (notifications + user menu)
       actions: [
         if (showNotifications) _buildNotificationIcon(context),
         if (showUserMenu) _buildUserMenu(context),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
       ],
     );
   }
 
-  /// Builds the notification icon with a small red badge.
-  /// Currently shows a static "3" as a placeholder.
   Widget _buildNotificationIcon(BuildContext context) {
     return Stack(
+      clipBehavior: Clip.none,
       children: [
         IconButton(
+          tooltip: 'notifications'.tr(),
           icon: const Icon(Icons.notifications_none_outlined),
           onPressed: () => _showComingSoon(context, 'notifications'.tr()),
         ),
 
-        /// Notification badge
-        Positioned(
-          right: 10,
-          top: 10,
-          child: Container(
-            padding: const EdgeInsets.all(2),
-            decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
-            constraints: const BoxConstraints(minWidth: 14, minHeight: 14),
-            child: const Text(
-              '3',
-              style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
+        if (notificationCount > 0)
+          Positioned(
+            right: 8,
+            top: 8,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1.5),
+              ),
+              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+              child: Text(
+                notificationCount > 9 ? '9+' : '$notificationCount',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.w700,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ),
           ),
-        ),
       ],
     );
   }
 
-  /// Builds the user menu (profile, settings, logout).
-  /// Logout triggers the AuthCubit.
   Widget _buildUserMenu(BuildContext context) {
     return PopupMenuButton<String>(
       offset: const Offset(0, 50),
-      icon: const CircleAvatar(
-        radius: 18,
-        backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=reception'),
-        backgroundColor: Colors.grey,
+      tooltip: 'profile'.tr(),
+      icon: Container(
+        margin: const EdgeInsets.only(right: 6),
+        padding: const EdgeInsets.all(2),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
+        ),
+        child: const CircleAvatar(
+          radius: 17,
+          backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=reception'),
+          backgroundColor: Colors.grey,
+        ),
       ),
       onSelected: (value) {
         if (value == 'logout') {
-          /// Trigger logout from AuthCubit
-          context.read<AuthCubit>().logout();
+          try {
+            context.read<AuthCubit>().logout();
+          } catch (e) {
+            // AuthCubit not provided in the current context - fallback
+            _showComingSoon(context, 'logout'.tr());
+          }
         } else {
           _showComingSoon(context, value.tr());
         }
@@ -128,7 +171,6 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
-  /// Shows a "Coming Soon" snackbar for unimplemented features.
   void _showComingSoon(BuildContext context, String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

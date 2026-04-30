@@ -4,30 +4,12 @@ import '../../../../core/error/failures.dart';
 import '../entities/appointment_entity.dart';
 import '../entities/appointment_stats_entity.dart';
 import '../entities/appointment_status.dart';
+import '../usecases/get_appointments_usecase.dart';
 
 abstract class AppointmentManagementRepository {
   Future<AppointmentEntity> getAppointmentById(String appointmentId);
 
-  Future<List<AppointmentEntity>> getAppointmentsByDate(
-    DateTime date, {
-    AppointmentStatus? status,
-    int page = 1,
-    int limit = 20,
-  });
-
-  Future<List<AppointmentEntity>> getAppointmentsToday({int page = 1, int limit = 20});
-
-  Future<List<AppointmentEntity>> getAppointmentsByPatient(
-    String patientId, {
-    int page = 1,
-    int limit = 20,
-  });
-
-  Future<List<AppointmentEntity>> getAppointmentsByDoctor(
-    String doctorId, {
-    int page = 1,
-    int limit = 20,
-  });
+  Future<List<AppointmentEntity>> getAppointments(GetAppointmentsParams params);
 
   Future<AppointmentEntity> createAppointment(AppointmentEntity appointment);
 

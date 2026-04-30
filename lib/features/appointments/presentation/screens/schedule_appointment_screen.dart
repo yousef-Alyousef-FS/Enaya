@@ -6,9 +6,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../cubit/appointments_cubit_imports.dart';
-import '../widgets/time_slot_picker.dart';
+import '../widgets/shared/time_slot_picker.dart';
 
-class ScheduleAppointmentScreen extends StatelessWidget {
+class ScheduleAppointmentScreen extends StatefulWidget {
   final String patientId;
   final String patientName;
   final String doctorId;
@@ -23,11 +23,32 @@ class ScheduleAppointmentScreen extends StatelessWidget {
   });
 
   @override
+  State<ScheduleAppointmentScreen> createState() => _ScheduleAppointmentScreenState();
+}
+
+class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
+  late final TextEditingController _reasonController;
+  late final TextEditingController _notesController;
+
+  @override
+  void initState() {
+    super.initState();
+    _reasonController = TextEditingController();
+    _notesController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _reasonController.dispose();
+    _notesController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          getIt<AppointmentScheduleCubit>()
-            ..loadAvailableSlots(doctorId: doctorId, date: DateTime.now()),
+      create: (_) => getIt<AppointmentScheduleCubit>()
+        ..loadAvailableSlots(doctorId: widget.doctorId, date: DateTime.now()),
       child: BlocConsumer<AppointmentScheduleCubit, AppointmentScheduleState>(
         listener: _onStateChanged,
         builder: (context, state) {
@@ -42,10 +63,13 @@ class ScheduleAppointmentScreen extends StatelessWidget {
 
   void _onStateChanged(BuildContext context, AppointmentScheduleState state) {
     if (state.isSuccess) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('appointment_created_success'.tr())));
-      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('appointment_created_success'.tr()),
+          backgroundColor: AppColors.success,
+        ),
+      );
+      Navigator.pop(context, true);
     }
   }
 
@@ -73,10 +97,20 @@ class ScheduleAppointmentScreen extends StatelessWidget {
           _buildTimeSlotPicker(context, state),
           SizedBox(height: 12.h),
           _buildSelectionSummary(state),
+          SizedBox(height: 24.h),
+
+          _buildSectionTitle('reason'),
+          SizedBox(height: 8.h),
+          _buildReasonInput(),
+          SizedBox(height: 16.h),
+
+          _buildSectionTitle('notes'),
+          SizedBox(height: 8.h),
+          _buildNotesInput(),
           SizedBox(height: 40.h),
 
           _buildConfirmButton(context, state),
-          _buildErrorOverlay(context, state),
+          _buildErrorWidget(context, state),
         ],
       ),
     );
@@ -104,30 +138,30 @@ class ScheduleAppointmentScreen extends StatelessWidget {
 
   Widget _buildPatientInfoSection() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: AppColors.primaryExtraLight,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(12.r),
       ),
       child: Row(
         children: [
           const Icon(Icons.person, color: AppColors.primaryDark),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${'patient'.tr()}: $patientName',
+                  '${'patient'.tr()}: ${widget.patientName}',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: AppColors.secondary,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4.h),
                 Text(
-                  '${'doctor'.tr()}: $doctorName',
+                  '${'doctor'.tr()}: ${widget.doctorName}',
                   style: const TextStyle(fontSize: 14, color: AppColors.gray700),
                 ),
               ],
@@ -155,7 +189,7 @@ class ScheduleAppointmentScreen extends StatelessWidget {
           lastDate: DateTime.now().add(const Duration(days: 90)),
         );
         if (picked != null) {
-          cubit.updateSelectedDate(date: picked, doctorId: doctorId);
+          cubit.updateSelectedDate(date: picked, doctorId: widget.doctorId);
         }
       },
     );
@@ -175,10 +209,10 @@ class ScheduleAppointmentScreen extends StatelessWidget {
     if (selected == null) {
       return Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: AppColors.gray100,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.r),
         ),
         child: Text(
           'select_slot_hint'.tr(),
@@ -192,16 +226,16 @@ class ScheduleAppointmentScreen extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
         color: AppColors.primaryExtraLight,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(10.r),
         border: Border.all(color: AppColors.primary.withAlpha(40)),
       ),
       child: Row(
         children: [
           const Icon(Icons.check_circle, color: AppColors.primaryDark),
-          const SizedBox(width: 10),
+          SizedBox(width: 10.w),
           Expanded(
             child: Text(
               '$dateText • $timeText',
@@ -218,47 +252,76 @@ class ScheduleAppointmentScreen extends StatelessWidget {
   }
 
   Widget _buildConfirmButton(BuildContext context, AppointmentScheduleState state) {
-    final bool isEnabled = state.selectedTimeSlot != null && !state.isLoading;
+    final isEnabled = state.selectedTimeSlot != null && !state.isLoading;
 
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
+      child: FilledButton(
         onPressed: isEnabled ? () => _onConfirm(context) : null,
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        style: FilledButton.styleFrom(
+          padding: EdgeInsets.symmetric(vertical: 16.h),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
         child: state.isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-              )
+            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
             : Text('confirm_appointment'.tr(), style: const TextStyle(fontSize: 16)),
       ),
     );
   }
 
   void _onConfirm(BuildContext context) {
+    // يمكن إضافة تأكيد اختياري
+    _createAppointment(context);
+  }
+
+  void _createAppointment(BuildContext context) {
     context.read<AppointmentScheduleCubit>().createAppointment(
-      patientId: patientId,
-      patientName: patientName,
-      doctorId: doctorId,
-      doctorName: doctorName,
+      patientId: widget.patientId,
+      patientName: widget.patientName,
+      doctorId: widget.doctorId,
+      doctorName: widget.doctorName,
+      reason: _reasonController.text.trim().isEmpty ? null : _reasonController.text.trim(),
+      notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
     );
   }
 
-  Widget _buildErrorOverlay(BuildContext context, AppointmentScheduleState state) {
+  Widget _buildReasonInput() {
+    return TextFormField(
+      controller: _reasonController,
+      textInputAction: TextInputAction.next,
+      decoration: InputDecoration(
+        labelText: 'reason'.tr(),
+        hintText: 'reason_hint'.tr(),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+      ),
+      maxLines: 2,
+    );
+  }
+
+  Widget _buildNotesInput() {
+    return TextFormField(
+      controller: _notesController,
+      textInputAction: TextInputAction.newline,
+      decoration: InputDecoration(
+        labelText: 'notes'.tr(),
+        hintText: 'notes_hint'.tr(),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+      ),
+      maxLines: 4,
+    );
+  }
+
+  Widget _buildErrorWidget(BuildContext context, AppointmentScheduleState state) {
     if (!state.isError || state.errorMessage == null) return const SizedBox.shrink();
 
     return Padding(
       padding: EdgeInsets.only(top: 12.h),
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(12),
+        padding: EdgeInsets.all(12.w),
         decoration: BoxDecoration(
           color: AppColors.error.withAlpha(18),
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(10.r),
           border: Border.all(color: AppColors.error.withAlpha(50)),
         ),
         child: Row(
@@ -268,23 +331,23 @@ class ScheduleAppointmentScreen extends StatelessWidget {
               padding: EdgeInsets.only(top: 2),
               child: Icon(Icons.error_outline, color: AppColors.error, size: 18),
             ),
-            const SizedBox(width: 8),
+            SizedBox(width: 8.w),
             Expanded(
               child: Text(
                 state.errorMessage!,
                 style: const TextStyle(color: AppColors.error, fontSize: 13),
               ),
             ),
-            if (state.availableSlots.isEmpty)
-              TextButton(
-                onPressed: () {
-                  context.read<AppointmentScheduleCubit>().loadAvailableSlots(
-                    doctorId: doctorId,
-                    date: state.selectedDate,
-                  );
-                },
-                child: Text('retry'.tr()),
-              ),
+            // ✅ إصلاح الخطر: استخدام doctorId الصحيح
+            TextButton(
+              onPressed: () {
+                context.read<AppointmentScheduleCubit>().loadAvailableSlots(
+                  doctorId: widget.doctorId, // ✅ تم التصحيح
+                  date: state.selectedDate,
+                );
+              },
+              child: Text('retry'.tr()),
+            ),
           ],
         ),
       ),

@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:enaya/core/helpers/responsive_helper.dart';
 import 'package:enaya/core/theme/app_colors.dart';
 
@@ -169,7 +168,7 @@ class GreetingSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.16),
+        color: color.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(

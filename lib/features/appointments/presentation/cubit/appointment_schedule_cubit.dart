@@ -53,6 +53,8 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
     required String patientName,
     required String doctorId,
     required String doctorName,
+    String? reason,
+    String? notes,
   }) async {
     final slot = state.selectedTimeSlot;
     if (slot == null) {
@@ -70,8 +72,8 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
       doctorName: doctorName,
       dateTime: slot.dateTime,
       status: AppointmentStatus.scheduled,
-      reason: null,
-      notes: null,
+      reason: reason,
+      notes: notes,
     );
 
     final result = await _createAppointmentUseCase(CreateAppointmentParams(appointment));

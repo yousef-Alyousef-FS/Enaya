@@ -3,23 +3,21 @@ import 'package:internet_connection_checker_plus/internet_connection_checker_plu
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-// Import Barrel Files (The Clean Way)
-import '../../features/appointments/domain/usecases/generate_time_slots_usecase.dart';
-import '../../features/auth/auth_imports.dart';
-import '../../features/appointments/data/datasources/appointment_mock_data_source.dart';
-import '../../features/appointments/appointments_imports.dart';
-import '../../features/appointments/domain/services/time_slot_generator.dart';
-import '../../features/dashboard/receptionist/data/datasources/receptionist_dashboard_mock_data_source.dart';
-import '../../features/dashboard/receptionist/data/repositories/receptionist_dashboard_repository_impl.dart';
-import '../../features/dashboard/receptionist/domain/repositories/receptionist_dashboard_repository.dart';
-import '../../features/dashboard/receptionist/domain/usecases/get_receptionist_dashboard_stats_usecase.dart';
-import '../../features/dashboard/receptionist/presentation/cubit/receptionist_dashboard_cubit.dart';
+import 'package:enaya/features/auth/auth_imports.dart';
+import 'package:enaya/features/appointments/appointments_imports.dart';
+import 'package:enaya/features/appointments/domain/services/time_slot_generator.dart';
+import 'package:enaya/features/dashboard/receptionist/data/datasources/receptionist_dashboard_mock_data_source.dart';
+import 'package:enaya/features/dashboard/receptionist/data/repositories/receptionist_dashboard_repository_impl.dart';
+import 'package:enaya/features/dashboard/receptionist/domain/repositories/receptionist_dashboard_repository.dart';
+import 'package:enaya/features/dashboard/receptionist/domain/usecases/get_receptionist_dashboard_stats_usecase.dart';
+import 'package:enaya/features/dashboard/receptionist/presentation/cubit/receptionist_dashboard_cubit.dart';
 
-import '../cache/cache_helper.dart';
-import '../network/dio_factory.dart';
-import '../network/network_info.dart';
-import '../services/token_manager.dart';
-import '../services/mock_data_service.dart';
+import 'package:enaya/core/cache/cache_helper.dart';
+import 'package:enaya/core/network/dio_factory.dart';
+import 'package:enaya/core/network/network_info.dart';
+import 'package:enaya/core/services/token_manager.dart';
+import 'package:enaya/core/services/mock_data_service.dart';
+import 'package:enaya/features/appointments/domain/usecases/generate_time_slots_usecase.dart';
 
 final getIt = GetIt.instance;
 
@@ -81,11 +79,9 @@ Future<void> initGetIt() async {
     () => PatientAppointmentsRepositoryImpl(getIt()),
   );
 
+  getIt.registerLazySingleton(() => GetAppointmentsUseCase(getIt()));
   getIt.registerLazySingleton(() => CreateAppointmentUseCase(getIt()));
-  getIt.registerLazySingleton(() => GetAppointmentsByDateUseCase(getIt()));
-  getIt.registerLazySingleton(() => GetTodayAppointmentsUseCase(getIt()));
   getIt.registerLazySingleton(() => GetAppointmentByIdUseCase(getIt()));
-  getIt.registerLazySingleton(() => GetAppointmentsByDoctorUseCase(getIt()));
   getIt.registerLazySingleton(() => UpdateAppointmentStatusUseCase(getIt()));
   getIt.registerLazySingleton(() => RescheduleAppointmentUseCase(getIt()));
   getIt.registerLazySingleton(
@@ -94,7 +90,8 @@ Future<void> initGetIt() async {
   getIt.registerLazySingleton(() => DeleteAppointmentUseCase(getIt()));
   getIt.registerLazySingleton(() => GetAvailableSlotsUseCase(getIt()));
   getIt.registerLazySingleton(() => GetAppointmentsStatsUseCase(getIt()));
-  getIt.registerLazySingleton(() => GetPatientAppointmentsUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetDoctorScheduleUseCase());
+  getIt.registerLazySingleton(() => SaveDoctorScheduleUseCase());
 
   // Receptionist Dashboard
   getIt.registerLazySingleton<ReceptionistDashboardMockDataSource>(
@@ -116,9 +113,8 @@ Future<void> initGetIt() async {
   );
 
   getIt.registerFactory(
-    () => AppointmentsOverviewCubit(
-      getAppointmentsByDateUseCase: getIt(),
-      getTodayAppointmentsUseCase: getIt(),
+    () => AppointmentsManagerCubit(
+      getAppointmentsUseCase: getIt<GetAppointmentsUseCase>(),
     ),
   );
 
@@ -127,5 +123,9 @@ Future<void> initGetIt() async {
       createAppointmentUseCase: getIt(),
       generateTimeSlotsUseCase: getIt(),
     ),
+  );
+
+  getIt.registerFactory(
+    () => DoctorScheduleCubit(getScheduleUseCase: getIt(), saveScheduleUseCase: getIt()),
   );
 }
