@@ -1,6 +1,5 @@
-import '../entities/patient_dashboard_stats.dart';
+import '../entities/patient_dashboard_data.dart';
 
 abstract class PatientDashboardRepository {
-  Future<PatientDashboardStats> getPatientDashboardStats();
-  // TODO: Add other methods like getPatientAppointments
+  Future<PatientDashboardData> getPatientDashboardStats();
 }

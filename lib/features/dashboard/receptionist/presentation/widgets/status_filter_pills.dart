@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../../../appointments/domain/entities/appointment_status.dart';
 
 /// Filter pills for appointment statuses using standardized enum logic.
@@ -31,20 +30,21 @@ class StatusFilterPills extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       physics: const BouncingScrollPhysics(),
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 8.h),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: availableStatuses.map((status) {
-            final isSelected = selectedStatuses.isEmpty || selectedStatuses.contains(status);
+            final isSelected =
+                selectedStatuses.isEmpty || selectedStatuses.contains(status);
             final color = status.color;
 
             return Padding(
-              padding: EdgeInsets.only(right: 8.w),
+              padding: const EdgeInsets.only(right: 8),
               child: FilterChip(
                 label: Text(
                   status.displayName,
                   style: TextStyle(
                     fontWeight: FontWeight.w600,
-                    fontSize: 12.sp,
+                    fontSize: 12,
                     color: isSelected ? Colors.white : color,
                   ),
                 ),
@@ -53,7 +53,9 @@ class StatusFilterPills extends StatelessWidget {
                 backgroundColor: Colors.transparent,
                 selectedColor: color,
                 side: BorderSide(color: color, width: isSelected ? 0 : 1.5),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 showCheckmark: false,
               ),
             );

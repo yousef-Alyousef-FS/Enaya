@@ -1,16 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/loaders/app_loaders.dart';
 import '../widgets/auth_card_container.dart';
-import '../../../../core/widgets/common/portrait_only_scope.dart';
+import '../widgets/portrait_only_scope.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 import '../widgets/auth_text_field.dart';
@@ -24,13 +22,16 @@ class ResetPasswordScreen extends StatefulWidget {
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _ResetPasswordScreenState extends State<ResetPasswordScreen> with TickerProviderStateMixin {
+class _ResetPasswordScreenState extends State<ResetPasswordScreen>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _emailController;
   final _verificationCodeController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
+  bool _isCodeVerified = false;
 
   String? _message;
   bool _isSuccess = false;
@@ -43,8 +44,14 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with TickerPr
     super.initState();
 
     _emailController = TextEditingController(text: widget.initialEmail ?? '');
-    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
   }
 
   @override
@@ -90,19 +97,19 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with TickerPr
                     Text(
                       'reset_password'.tr(),
                       textAlign: TextAlign.center,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                        fontSize: config.titleFontSize,
+                      ),
                     ),
-                    SizedBox(height: config.isPortrait ? 10.h : 8.h),
+                    const SizedBox(height: 8),
                     Text(
                       'enter_code_new_password'.tr(),
                       textAlign: TextAlign.center,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontSize: config.bodyFontSize,
+                      ),
                     ),
-                    SizedBox(height: config.isPortrait ? 30.h : 20.h),
+                    const SizedBox(height: 32),
                     _buildForm(config),
                   ],
                 );
@@ -126,13 +133,17 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with TickerPr
             keyboardType: TextInputType.emailAddress,
             prefixIcon: Icons.email_outlined,
             validator: (value) {
-              if (value == null || value.trim().isEmpty) return 'enter_valid_email'.tr();
+              if (value == null || value.trim().isEmpty) {
+                return 'enter_valid_email'.tr();
+              }
               final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-              if (!emailRegex.hasMatch(value.trim())) return 'enter_valid_email'.tr();
+              if (!emailRegex.hasMatch(value.trim())) {
+                return 'enter_valid_email'.tr();
+              }
               return null;
             },
           ),
-          SizedBox(height: config.isPortrait ? 16.h : 12.h),
+          const SizedBox(height: 16),
           AuthTextField(
             labelText: 'verification_code'.tr(),
             hintText: 'verification_code'.tr(),
@@ -143,52 +154,74 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with TickerPr
               if (value == null || value.trim().isEmpty) {
                 return 'enter_verification_code'.tr();
               }
-              if (value.trim().length < 4) {
+              if (value.trim().length < 6) {
                 return 'enter_verification_code'.tr();
               }
               return null;
             },
           ),
-          SizedBox(height: config.isPortrait ? 16.h : 12.h),
-          AuthTextField(
-            labelText: 'new_password'.tr(),
-            hintText: 'new_password'.tr(),
-            controller: _newPasswordController,
-            prefixIcon: Icons.lock_outline,
-            isPassword: true,
-            validator: (value) {
-              if (value == null || value.isEmpty) return 'enter_password'.tr();
-              if (value.length < 6) return 'password_too_short'.tr();
-              return null;
-            },
-          ),
-          SizedBox(height: config.isPortrait ? 16.h : 12.h),
-          AuthTextField(
-            labelText: 'confirm_new_password'.tr(),
-            hintText: 'confirm_new_password'.tr(),
-            controller: _confirmPasswordController,
-            prefixIcon: Icons.lock_outline,
-            isPassword: true,
-            validator: (value) {
-              if (value == null || value.isEmpty) return 'enter_confirm_password'.tr();
-              if (value != _newPasswordController.text) return 'passwords_do_not_match'.tr();
-              return null;
-            },
-          ),
-          SizedBox(height: config.isPortrait ? 20.h : 14.h),
+          const SizedBox(height: 16),
+          if (_isCodeVerified) ...[
+            AuthTextField(
+              labelText: 'new_password'.tr(),
+              hintText: 'new_password'.tr(),
+              controller: _newPasswordController,
+              prefixIcon: Icons.lock_outline,
+              isPassword: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'enter_password'.tr();
+                }
+                if (value.length < 6) return 'password_too_short'.tr();
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+            AuthTextField(
+              labelText: 'confirm_new_password'.tr(),
+              hintText: 'confirm_new_password'.tr(),
+              controller: _confirmPasswordController,
+              prefixIcon: Icons.lock_outline,
+              isPassword: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'enter_confirm_password'.tr();
+                }
+                if (value != _newPasswordController.text) {
+                  return 'passwords_do_not_match'.tr();
+                }
+                return null;
+              },
+            ),
+          ],
+          const SizedBox(height: 32),
           BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {
               final cubit = context.read<AuthCubit>();
-
               if (state.isError) {
-                _triggerMessage(state.errorMessage ?? 'error_occurred'.tr(), false);
+                _triggerMessage(
+                  state.errorMessage ?? 'error_occurred'.tr(),
+                  false,
+                );
                 cubit.clearStatus();
                 return;
               }
-
               if (state.isSuccess) {
+                if (!_isCodeVerified) {
+                  // Code verification succeeded, reveal password fields.
+                  setState(() {
+                    _isCodeVerified = true;
+                    _message = null;
+                  });
+                  cubit.clearStatus();
+                  return;
+                }
+
+                // Password reset succeeded.
                 _triggerMessage('password_reset_success'.tr(), true);
-                // No immediate clearStatus here
+                Future.delayed(const Duration(milliseconds: 800), () {
+                  context.go(AppRouter.login);
+                });
               }
             },
             builder: (context, state) {
@@ -198,48 +231,71 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> with TickerPr
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  ElevatedButton(
-                    onPressed: isButtonDisabled
-                        ? null
-                        : () {
-                            if (!_formKey.currentState!.validate()) return;
-                            setState(() => _message = null);
-                            cubit.resetPassword(
-                              email: _emailController.text.trim(),
-                              verificationCode: _verificationCodeController.text.trim(),
-                              newPassword: _newPasswordController.text,
-                            );
-                          },
-                    child: state.isLoading
-                        ? AppLoaders.inline()
-                        : Text(
-                            'reset_password'.tr(),
-                            style: TextStyle(fontSize: config.buttonFontSize),
-                          ),
-                  ),
-                  if (_message != null && !state.isSuccess)
+                  if (!_isCodeVerified)
+                    ElevatedButton(
+                      onPressed: isButtonDisabled
+                          ? null
+                          : () {
+                              if (!_formKey.currentState!.validate()) return;
+                              setState(() => _message = null);
+                              cubit.verifyEmail(
+                                email: _emailController.text.trim(),
+                                verificationCode: _verificationCodeController
+                                    .text
+                                    .trim(),
+                              );
+                            },
+                      child: state.isLoading
+                          ? AppLoaders.inline()
+                          : Text('verify_code'.tr()),
+                    )
+                  else
+                    ElevatedButton(
+                      onPressed: isButtonDisabled
+                          ? null
+                          : () {
+                              if (!_formKey.currentState!.validate()) return;
+                              setState(() => _message = null);
+                              cubit.resetPassword(
+                                email: _emailController.text.trim(),
+                                verificationCode: _verificationCodeController
+                                    .text
+                                    .trim(),
+                                newPassword: _newPasswordController.text,
+                              );
+                            },
+                      child: state.isLoading
+                          ? AppLoaders.inline()
+                          : Text(
+                              'reset_password'.tr(),
+                              style: TextStyle(fontSize: config.buttonFontSize),
+                            ),
+                    ),
+                  if (_message != null)
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: Padding(
-                        padding: EdgeInsets.only(top: 12.h),
+                        padding: const EdgeInsets.only(top: 12),
                         child: Text(
                           _message!,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: _isSuccess ? Colors.green : Theme.of(context).colorScheme.error,
+                            color: _isSuccess
+                                ? Colors.green
+                                : Theme.of(context).colorScheme.error,
                             fontSize: config.bodyFontSize,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ),
-                  SizedBox(height: config.isPortrait ? 10.h : 8.h),
+                  const SizedBox(height: 16),
                   TextButton(
                     onPressed: () => context.go(AppRouter.login),
                     child: Text(
                       'back_to_login'.tr(),
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: Theme.of(context).colorScheme.primary,
                         fontSize: config.buttonFontSize,
                         fontWeight: FontWeight.w600,
                       ),

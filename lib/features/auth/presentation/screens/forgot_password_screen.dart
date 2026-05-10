@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
@@ -9,7 +8,7 @@ import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/loaders/app_loaders.dart';
 import '../widgets/auth_card_container.dart';
-import '../../../../core/widgets/common/portrait_only_scope.dart';
+import '../widgets/portrait_only_scope.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 import '../widgets/auth_text_field.dart';
@@ -21,7 +20,8 @@ class ForgotPasswordScreen extends StatefulWidget {
   State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with TickerProviderStateMixin {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
 
@@ -34,10 +34,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
   @override
   void initState() {
     super.initState();
-
-    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
-
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
   }
 
   @override
@@ -80,20 +84,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
                     Text(
                       'reset_password'.tr(),
                       textAlign: TextAlign.center,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                        fontSize: config.titleFontSize,
+                      ),
                     ),
-                    SizedBox(height: config.isPortrait ? 10.h : 8.h),
+                    const SizedBox(height: 8),
                     Text(
                       'enter_email_reset'.tr(),
                       textAlign: TextAlign.center,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontSize: config.bodyFontSize,
+                      ),
                     ),
-                    SizedBox(height: config.isPortrait ? 30.h : 20.h),
-
+                    const SizedBox(height: 32),
                     _buildForm(config),
                   ],
                 );
@@ -127,24 +130,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
               return null;
             },
           ),
-          SizedBox(height: config.isPortrait ? 18.h : 12.h),
-
+          const SizedBox(height: 16),
           BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {
               final cubit = context.read<AuthCubit>();
-
               if (state.isError) {
-                _triggerMessage(state.errorMessage ?? 'error_occurred'.tr(), false);
+                _triggerMessage(
+                  state.errorMessage ?? 'error_occurred'.tr(),
+                  false,
+                );
                 cubit.clearStatus();
                 return;
               }
-
               if (state.isSuccess) {
                 _triggerMessage('reset_email_sent'.tr(), true);
                 context.push(
                   '${AppRouter.resetPassword}?email=${Uri.encodeComponent(_emailController.text.trim())}',
                 );
-                // No clearStatus here to keep the success message until we navigate
               }
             },
             builder: (context, state) {
@@ -160,7 +162,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
                         : () {
                             if (_formKey.currentState!.validate()) {
                               setState(() => _message = null);
-                              cubit.forgotPassword(_emailController.text.trim());
+                              cubit.forgotPassword(
+                                _emailController.text.trim(),
+                              );
                             }
                           },
                     child: state.isLoading
@@ -170,17 +174,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> with Ticker
                             style: TextStyle(fontSize: config.buttonFontSize),
                           ),
                   ),
-
                   if (_message != null && !state.isSuccess)
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: Padding(
-                        padding: EdgeInsets.only(top: 12.h),
+                        padding: const EdgeInsets.only(top: 12),
                         child: Text(
                           _message!,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: _isSuccess ? Colors.green : Theme.of(context).colorScheme.error,
+                            color: _isSuccess
+                                ? Colors.green
+                                : Theme.of(context).colorScheme.error,
                             fontSize: config.bodyFontSize,
                             fontWeight: FontWeight.w600,
                           ),

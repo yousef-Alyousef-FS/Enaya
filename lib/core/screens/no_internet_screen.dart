@@ -20,13 +20,13 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
 
   Future<void> _onRetry() async {
     setState(() => _isChecking = true);
-    
+
     final networkInfo = getIt<NetworkInfo>();
     final isConnected = await networkInfo.isConnected;
-    
+
     if (mounted) {
       setState(() => _isChecking = false);
-      if (isConnected ) {
+      if (isConnected) {
         context.go(widget.nextRoute);
       }
     }
@@ -49,18 +49,18 @@ class _NoInternetScreenState extends State<NoInternetScreen> {
               const SizedBox(height: 30),
               Text(
                 'no_internet_connection'.tr(),
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      fontSize: 24,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.displayLarge?.copyWith(fontSize: 24),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 15),
               Text(
                 'no_internet_description'.tr(),
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontSize: 16,
-                      color: Colors.grey,
-                    ),
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),

@@ -1,17 +1,45 @@
+import '../../../../appointments/data/datasources/appointment_remote_data_source.dart';
+import '../../../../appointments/domain/entities/appointment_status.dart';
 import '../models/patient_dashboard_stats_model.dart';
 
 abstract class PatientDashboardRemoteDataSource {
-  Future<PatientDashboardStatsModel> getStats();
+  Future<PatientDashboardStatsModel> getPatientDashboardStats();
 }
 
-class PatientDashboardRemoteDataSourceImpl implements PatientDashboardRemoteDataSource {
+class PatientDashboardRemoteDataSourceImpl
+    implements PatientDashboardRemoteDataSource {
+  final AppointmentRemoteDataSource appointmentDataSource;
+
+  PatientDashboardRemoteDataSourceImpl(this.appointmentDataSource);
+
   @override
-  Future<PatientDashboardStatsModel> getStats() async {
-    // TODO: Implement actual API call
+  Future<PatientDashboardStatsModel> getPatientDashboardStats() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    // Unified fetch for "current_patient_id" (p1 in mock)
+    final appointments = await appointmentDataSource.getAppointments(
+      patientId: 'p1',
+    );
+
+    final completed = appointments
+        .where((a) => a.status == AppointmentStatus.completed)
+        .length;
+    String? next;
+    if (appointments.isNotEmpty) {
+      final future = appointments.where(
+        (a) => a.dateTime.isAfter(DateTime.now()),
+      );
+      if (future.isNotEmpty) {
+        next = future.first.dateTime.toIso8601String();
+      } else {
+        next = null;
+      }
+    }
+
     return PatientDashboardStatsModel(
-      totalAppointments: 5,
-      completedVisits: 3,
-      nextVisitDate: "2024-05-20",
+      totalAppointments: appointments.length,
+      completedVisits: completed,
+      nextVisitDate: next,
     );
   }
 }

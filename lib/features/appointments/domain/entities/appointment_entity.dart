@@ -65,7 +65,9 @@ class AppointmentEntity extends Equatable {
       id: id,
       patientId: patientId,
       patientName: patientName,
-      patientPhone: patientPhone == _sentinel ? this.patientPhone : patientPhone as String?,
+      patientPhone: patientPhone == _sentinel
+          ? this.patientPhone
+          : patientPhone as String?,
       doctorId: doctorId,
       doctorName: doctorName,
       dateTime: dateTime ?? this.dateTime,
@@ -73,7 +75,9 @@ class AppointmentEntity extends Equatable {
       reason: reason == _sentinel ? this.reason : reason as String?,
       notes: notes == _sentinel ? this.notes : notes as String?,
       queueNumber: queueNumber ?? this.queueNumber,
-      cancelledBy: cancelledBy == _sentinel ? this.cancelledBy : cancelledBy as String?,
+      cancelledBy: cancelledBy == _sentinel
+          ? this.cancelledBy
+          : cancelledBy as String?,
       cancellationReason: cancellationReason == _sentinel
           ? this.cancellationReason
           : cancellationReason as String?,

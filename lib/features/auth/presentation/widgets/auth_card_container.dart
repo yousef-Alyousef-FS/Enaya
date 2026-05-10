@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:enaya/core/layout/responsive_layout.dart';
-import 'package:enaya/core/theme/app_colors.dart';
 
 class AuthCardContainer extends StatelessWidget {
   final ResponsiveLayoutConfig config;
@@ -27,7 +26,9 @@ class AuthCardContainer extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.primary.withAlpha(gradientAlpha),
+                  Theme.of(
+                    context,
+                  ).colorScheme.primary.withAlpha(gradientAlpha),
                   Theme.of(context).scaffoldBackgroundColor,
                 ],
               ),
@@ -45,7 +46,9 @@ class AuthCardContainer extends StatelessWidget {
               child: Container(
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(layout.isPortrait ? 24 : 16),
+                  borderRadius: BorderRadius.circular(
+                    layout.isPortrait ? 24 : 16,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withAlpha(15),
@@ -58,7 +61,10 @@ class AuthCardContainer extends StatelessWidget {
                   horizontal: layout.cardHorizontalPadding,
                   vertical: layout.cardVerticalPadding,
                 ),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: children),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: children,
+                ),
               ),
             ),
           ),

@@ -63,15 +63,24 @@ class ApiErrorHandler {
 
   static String _mapStatusCodeToMessage(int? statusCode) {
     switch (statusCode) {
-      case 400: return "error_bad_request".tr();
-      case 401: return "error_unauthorized".tr();
-      case 403: return "error_forbidden".tr();
-      case 404: return "error_not_found".tr();
-      case 409: return "error_conflict".tr();
-      case 422: return "error_validation".tr();
-      case 500: return "error_internal_server".tr();
-      case 503: return "error_service_unavailable".tr();
-      default: return "error_something_went_wrong".tr();
+      case 400:
+        return "error_bad_request".tr();
+      case 401:
+        return "error_unauthorized".tr();
+      case 403:
+        return "error_forbidden".tr();
+      case 404:
+        return "error_not_found".tr();
+      case 409:
+        return "error_conflict".tr();
+      case 422:
+        return "error_validation".tr();
+      case 500:
+        return "error_internal_server".tr();
+      case 503:
+        return "error_service_unavailable".tr();
+      default:
+        return "error_something_went_wrong".tr();
     }
   }
 }

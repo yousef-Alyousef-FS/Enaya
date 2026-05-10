@@ -2,10 +2,17 @@ import 'package:equatable/equatable.dart';
 
 import '../../domain/entities/user_entity.dart';
 
+/// Immutable auth UI state.
 class AuthState extends Equatable {
   final bool isLoading;
+
+  /// Last user-facing error message, if any.
   final String? errorMessage;
+
+  /// Operation success flag for one-shot UI feedback.
   final bool isSuccess;
+
+  /// Authenticated user payload when logged in.
   final UserEntity? currentUser;
 
   const AuthState({
@@ -21,9 +28,13 @@ class AuthState extends Equatable {
       isSuccess = false,
       currentUser = null;
 
+  /// `true` when state holds an error message.
   bool get isError => errorMessage != null;
+
+  /// `true` when there is an active authenticated user.
   bool get isLoggedIn => currentUser != null;
 
+  /// Returns updated state with clear flags for nullable fields.
   AuthState copyWith({
     bool? isLoading,
     String? errorMessage,
@@ -34,7 +45,9 @@ class AuthState extends Equatable {
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: clearErrorMessage ? null : errorMessage ?? this.errorMessage,
+      errorMessage: clearErrorMessage
+          ? null
+          : errorMessage ?? this.errorMessage,
       isSuccess: isSuccess ?? this.isSuccess,
       currentUser: clearCurrentUser ? null : currentUser ?? this.currentUser,
     );

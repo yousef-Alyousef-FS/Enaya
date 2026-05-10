@@ -1,1 +1,12 @@
-// Placeholder for lib/features/dashboard/doctor/domain/usecases/get_doctor_dashboard_stats_usecase.dart
+import '../entities/doctor_dashboard_data.dart';
+import '../repositories/doctor_dashboard_repository.dart';
+
+class GetDoctorDashboardStatsUseCase {
+  final DoctorDashboardRepository repo;
+
+  GetDoctorDashboardStatsUseCase(this.repo);
+
+  Future<DoctorDashboardData> call(String doctorId) {
+    return repo.getStats(doctorId);
+  }
+}

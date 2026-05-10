@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../routing/app_router.dart';
 
+/// Developer-only shortcut screen used to jump directly into common flows.
 class DeveloperScreen extends StatelessWidget {
   const DeveloperScreen({super.key});
 
@@ -20,35 +21,20 @@ class DeveloperScreen extends StatelessWidget {
             _buildItem(context, 'Login Screen', AppRouter.login),
             _buildItem(context, 'Signup Screen', AppRouter.signup),
             _buildItem(context, 'Forgot Password', AppRouter.forgotPassword),
-            _buildItem(context, 'Verify Email', '${AppRouter.verifyEmail}?email=test@enaya.com'),
+            _buildItem(
+              context,
+              'Verify Email',
+              '${AppRouter.verifyEmail}?email=test@enaya.com',
+            ),
           ]),
           const SizedBox(height: 20),
           _buildSection('Dashboards', [
             _buildItem(context, 'Doctor Dashboard', AppRouter.doctorHome),
             _buildItem(context, 'Patient Dashboard', AppRouter.patientHome),
-            _buildItem(context, 'Receptionist Dashboard', AppRouter.receptionistHome),
-          ]),
-          const SizedBox(height: 20),
-          _buildSection('Appointments', [
             _buildItem(
               context,
-              'Appointments Overview (Auto Mode)',
-              AppRouter.appointmentsOverview,
-            ),
-            _buildItem(
-              context,
-              'Appointments (Doctor Mode)',
-              '${AppRouter.appointmentsOverview}?mode=doctor',
-            ),
-            _buildItem(
-              context,
-              'Appointments (Patient Mode)',
-              '${AppRouter.appointmentsOverview}?mode=patient',
-            ),
-            _buildItem(
-              context,
-              'Appointments (Receptionist Mode)',
-              '${AppRouter.appointmentsOverview}?mode=receptionist',
+              'Receptionist Dashboard',
+              AppRouter.receptionistHome,
             ),
           ]),
           const SizedBox(height: 20),
@@ -60,7 +46,10 @@ class DeveloperScreen extends StatelessWidget {
           Center(
             child: Text(
               'Dev Mode is ACTIVE',
-              style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.red[700],
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -96,6 +85,7 @@ class DeveloperScreen extends StatelessWidget {
     );
   }
 
+  /// Creates one tappable launcher entry for the requested route.
   Widget _buildItem(BuildContext context, String title, String route) {
     return ListTile(
       title: Text(title),

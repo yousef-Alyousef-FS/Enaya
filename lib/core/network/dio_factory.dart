@@ -14,7 +14,9 @@ const String defaultLanguage = "language";
 
 String platformLocale = PlatformDispatcher.instance.locale.languageCode;
 
+/// Creates and configures Dio clients used by repositories and remote data sources.
 class DioFactory {
+  /// Returns a fully configured Dio instance with base options and interceptors.
   static Dio getDio() {
     final dio = Dio();
     const timeout = Duration(seconds: 45);
@@ -23,7 +25,11 @@ class DioFactory {
       receiveTimeout: timeout,
       sendTimeout: timeout,
       connectTimeout: timeout,
-      headers: {contentType: applicationJson, accept: applicationJson, defaultLanguage: "ar"},
+      headers: {
+        contentType: applicationJson,
+        accept: applicationJson,
+        defaultLanguage: "ar",
+      },
     );
 
     addDioInterceptor(dio);
@@ -31,6 +37,7 @@ class DioFactory {
     return dio;
   }
 
+  /// Adds authentication, localization, refresh-token recovery, and logging interceptors.
   static void addDioInterceptor(Dio dio) {
     final tokenManager = getIt<TokenManager>();
 
@@ -39,7 +46,7 @@ class DioFactory {
         onRequest: (options, handler) async {
           options.headers[defaultLanguage] = platformLocale;
 
-          // إضافة التوكن
+          // Attach the latest access token when available.
           final token = await tokenManager.getToken();
           if (token != null && token.isNotEmpty) {
             options.headers[authorization] = "Bearer $token";
@@ -49,13 +56,13 @@ class DioFactory {
         },
 
         onError: (DioException error, handler) async {
-          // معالجة 401 (انتهاء التوكن)
+          // Attempt transparent token refresh when the access token is expired.
           if (error.response?.statusCode == 401) {
             final refreshToken = await tokenManager.getRefreshToken();
 
             if (refreshToken != null) {
               try {
-                // طلب Refresh Token
+                // Request a new access token using refresh token.
                 final refreshResponse = await dio.post(
                   ApiConstants.refreshToken,
                   data: {"refresh_token": refreshToken},
@@ -63,35 +70,40 @@ class DioFactory {
 
                 final responseData = refreshResponse.data;
                 if (responseData is! Map) {
-                  throw const FormatException('Invalid refresh response format');
+                  throw const FormatException(
+                    'Invalid refresh response format',
+                  );
                 }
 
                 final newToken = responseData["token"]?.toString();
                 final newRefresh = responseData["refresh_token"]?.toString();
 
                 if (newToken == null || newToken.isEmpty) {
-                  throw const FormatException('Missing token in refresh response');
+                  throw const FormatException(
+                    'Missing token in refresh response',
+                  );
                 }
 
-                // حفظ التوكن الجديد
+                // Persist the new token pair before retrying the original request.
                 await tokenManager.saveToken(newToken);
                 if (newRefresh != null && newRefresh.isNotEmpty) {
                   await tokenManager.saveRefreshToken(newRefresh);
                 }
 
-                // إعادة الطلب الأصلي
+                // Replay the original request with refreshed credentials.
                 final retryRequest = error.requestOptions;
                 retryRequest.headers[authorization] = "Bearer $newToken";
 
                 final response = await dio.fetch(retryRequest);
                 return handler.resolve(response);
               } catch (e) {
-                // فشل الـ Refresh → تسجيل خروج
+                // Refresh failed: clear auth state so upper layers can re-login.
                 await tokenManager.clearAll();
               }
             }
           }
 
+          // End error-recovery branch, continue with original Dio error chain.
           return handler.next(error);
         },
       ),

@@ -1,12 +1,22 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 
+/// Dropdown-like selector for filtering appointments by doctor.
 class DoctorSelectorButton extends StatelessWidget {
+  /// Available doctors to pick from.
   final List<DoctorOption> doctors;
+
+  /// Currently selected doctor display name.
   final String? selectedDoctorName;
+
+  /// Triggered when user chooses "all doctors".
   final VoidCallback onClearSelection;
+
+  /// Triggered when user selects a specific doctor option.
   final void Function(DoctorOption doctor) onSelected;
+
+  /// Alignment for the button within its parent. Defaults to start (left).
+  final AlignmentGeometry alignment;
 
   const DoctorSelectorButton({
     super.key,
@@ -14,28 +24,34 @@ class DoctorSelectorButton extends StatelessWidget {
     required this.selectedDoctorName,
     required this.onClearSelection,
     required this.onSelected,
+    this.alignment = AlignmentDirectional.centerStart,
   });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return SizedBox(
-      height: 60,
-      child: OutlinedButton.icon(
-        onPressed: () => _openDoctorsSheet(context),
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.22)),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          backgroundColor: theme.colorScheme.surface,
-          foregroundColor: theme.colorScheme.primary,
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
+    return OutlinedButton.icon(
+      onPressed: () => _openDoctorsSheet(context),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(60, 56),
+        side: BorderSide(
+          color: theme.colorScheme.primary.withValues(alpha: 0.22),
         ),
-        icon: const Icon(Icons.person_search_rounded),
-        label: Text(selectedDoctorName ?? "select_doctor".tr(), overflow: TextOverflow.ellipsis),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.primary,
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+      ),
+      icon: const Icon(Icons.person_search_rounded),
+      label: Text(
+        selectedDoctorName ?? "select_doctor".tr(),
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontSize: 14),
       ),
     );
   }
 
+  /// Opens modal doctor picker with a selectable list.
   Future<void> _openDoctorsSheet(BuildContext context) async {
     final theme = Theme.of(context);
     await showGeneralDialog<void>(
@@ -57,9 +73,15 @@ class DoctorSelectorButton extends StatelessWidget {
               ),
               Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 520, maxHeight: 520),
+                  constraints: const BoxConstraints(
+                    maxWidth: 520,
+                    maxHeight: 520,
+                  ),
                   child: ScaleTransition(
-                    scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
+                    scale: CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutBack,
+                    ),
                     child: FadeTransition(
                       opacity: animation,
                       child: Container(
@@ -68,10 +90,14 @@ class DoctorSelectorButton extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface,
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: theme.colorScheme.outlineVariant),
+                          border: Border.all(
+                            color: theme.colorScheme.outlineVariant,
+                          ),
                           boxShadow: [
                             BoxShadow(
-                              color: theme.colorScheme.shadow.withValues(alpha: 0.1),
+                              color: theme.colorScheme.shadow.withValues(
+                                alpha: 0.1,
+                              ),
                               blurRadius: 30,
                               offset: const Offset(0, 16),
                             ),
@@ -85,7 +111,10 @@ class DoctorSelectorButton extends StatelessWidget {
                               children: [
                                 Text(
                                   'select_doctor'.tr(),
-                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                  ),
                                 ),
                                 const Spacer(),
                                 TextButton(
@@ -104,11 +133,15 @@ class DoctorSelectorButton extends StatelessWidget {
                             const SizedBox(height: 12),
                             if (doctors.isEmpty)
                               Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 24),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 24,
+                                ),
                                 child: Center(
                                   child: Text(
                                     'no_doctors_available'.tr(),
-                                    style: const TextStyle(color: AppColors.gray600),
+                                    style: TextStyle(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
                                   ),
                                 ),
                               )
@@ -117,17 +150,20 @@ class DoctorSelectorButton extends StatelessWidget {
                                 child: ListView.separated(
                                   shrinkWrap: true,
                                   itemCount: doctors.length,
-                                  separatorBuilder: (_, __) => const Divider(height: 1),
+                                  separatorBuilder: (context, index) =>
+                                      const Divider(height: 1),
                                   itemBuilder: (context, index) {
                                     final doctor = doctors[index];
-                                    final isSelected = doctor.name == selectedDoctorName;
+                                    final isSelected =
+                                        doctor.name == selectedDoctorName;
 
                                     return ListTile(
                                       contentPadding: EdgeInsets.zero,
                                       leading: CircleAvatar(
-                                        backgroundColor: theme.colorScheme.primary.withValues(
-                                          alpha: 0.12,
-                                        ),
+                                        backgroundColor: theme
+                                            .colorScheme
+                                            .primary
+                                            .withValues(alpha: 0.12),
                                         child: Icon(
                                           Icons.medical_services_rounded,
                                           color: theme.colorScheme.primary,
@@ -135,7 +171,6 @@ class DoctorSelectorButton extends StatelessWidget {
                                         ),
                                       ),
                                       title: Text(doctor.name),
-                                      subtitle: Text(doctor.id),
                                       trailing: isSelected
                                           ? Icon(
                                               Icons.check_circle,
@@ -163,9 +198,12 @@ class DoctorSelectorButton extends StatelessWidget {
         );
       },
     );
+
+    // End doctor sheet interaction flow.
   }
 }
 
+/// Minimal doctor option model used by [DoctorSelectorButton].
 class DoctorOption {
   final String id;
   final String name;

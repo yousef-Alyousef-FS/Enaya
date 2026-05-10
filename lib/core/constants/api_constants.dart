@@ -1,5 +1,6 @@
 class ApiConstants {
-  static const String baseUrl = "https://enaya-backend-production.up.railway.app/api/";
+  static const String baseUrl =
+      "https://enaya-backend-production.up.railway.app/api/";
   static const String login = "auth/login";
   static const String logout = "auth/logout";
   static const String signup = "auth/signup";
@@ -9,7 +10,7 @@ class ApiConstants {
   static const String sendEmailVerification = "auth/send-email-verification";
   static const String verifyEmail = "auth/verify-email";
   static const String refreshToken = "auth/refresh-token";
-  
+
   // Dashboard
   static const String receptionistDashboard = "/dashboard/receptionist";
 

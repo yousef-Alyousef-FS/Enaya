@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 abstract class DashboardConstants {
   // ==================== ANIMATIONS ====================
   /// Duration for bottom navigation bar animation (expand/collapse)
-  static const Duration bottomNavAnimationDuration = Duration(milliseconds: 420);
+  static const Duration bottomNavAnimationDuration = Duration(
+    milliseconds: 420,
+  );
 
   /// Curve for bottom navigation bar animation
   static const Curve bottomNavAnimationCurve = Curves.easeOutCubic;
@@ -15,7 +17,9 @@ abstract class DashboardConstants {
   static const Duration railTileAnimationDuration = Duration(milliseconds: 200);
 
   /// Duration for rail tile selection indicator animation (line appearance)
-  static const Duration railTileSelectionIndicatorDuration = Duration(milliseconds: 260);
+  static const Duration railTileSelectionIndicatorDuration = Duration(
+    milliseconds: 260,
+  );
 
   /// Curve for rail navigation animations
   static const Curve railTileAnimationCurve = Curves.easeOutCubic;
@@ -28,7 +32,9 @@ abstract class DashboardConstants {
 
   // ==================== BOTTOM NAVIGATION ====================
   /// Duration for bottom navigation tile animations
-  static const Duration bottomTileAnimationDuration = Duration(milliseconds: 220);
+  static const Duration bottomTileAnimationDuration = Duration(
+    milliseconds: 220,
+  );
 
   /// Scale factor when a bottom nav tile is selected
   static const double bottomTileSelectedScale = 1.06;
@@ -38,17 +44,17 @@ abstract class DashboardConstants {
 
   // ==================== DESKTOP RAIL ====================
   /// Minimum width for desktop navigation rail
-  static const double railMinWidth = 200;
+  static const double railMinWidth = 180;
 
   /// Maximum width for desktop navigation rail
-  static const double railMaxWidth = 300;
+  static const double railMaxWidth = 200;
 
   /// Rail animation duration when resizing
   static const Duration railResizeDuration = Duration(milliseconds: 200);
 
   // ==================== SPACING & PADDING ====================
   /// Horizontal padding for bottom nav bar (inside the rounded container)
-  static const double bottomNavHorizontalPadding = 10;
+  static const double bottomNavHorizontalPadding = 8;
 
   /// Vertical padding for bottom nav bar (inside the rounded container)
   static const double bottomNavVerticalPadding = 0;
@@ -68,18 +74,14 @@ abstract class DashboardConstants {
   static const double bottomNavTilePaddingVertical = 8;
 
   /// Rail navigation padding
-  static const EdgeInsetsDirectional railNavigationPadding = EdgeInsetsDirectional.fromSTEB(
-    14,
-    18,
-    14,
-    18,
-  );
+  static const EdgeInsetsDirectional railNavigationPadding =
+      EdgeInsetsDirectional.fromSTEB(2, 18, 1, 18);
 
   /// Rail tile vertical margin
-  static const double railTileVerticalMargin = 4;
+  static const double railTileVerticalMargin = 2;
 
   /// Space between rail tiles (when no divider)
-  static const double railTileSpacing = 10;
+  static const double railTileSpacing = 0;
 
   /// Space between dividers in rail
   static const double railDividerVerticalSpace = 16;
@@ -192,7 +194,12 @@ abstract class DashboardConstants {
 
   // ==================== BODY PADDING ====================
   /// Body padding on desktop (when using rail navigation)
-  static const EdgeInsets desktopBodyPadding = EdgeInsets.fromLTRB(0, 0, 16, 16);
+  static const EdgeInsets desktopBodyPadding = EdgeInsets.fromLTRB(
+    0,
+    0,
+    16,
+    16,
+  );
 
   // ==================== PHYSICS ====================
   /// Scroll physics for rail navigation

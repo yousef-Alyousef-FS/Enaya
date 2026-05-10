@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/appointment_status.dart';
@@ -21,10 +20,12 @@ Future<void> showAppointmentStatusDialog({
       return StatefulBuilder(
         builder: (context, setState) {
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             title: Text(
               'change_appointment_status'.tr(),
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.sp),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             content: SizedBox(
               width: double.maxFinite,
@@ -38,21 +39,39 @@ Future<void> showAppointmentStatusDialog({
                         children: statuses.map((status) {
                           final isSelected = selectedStatus == status;
                           return ListTile(
-                            onTap: () => setState(() => selectedStatus = status),
-                            leading: Icon(status.icon, color: status.color, size: 20.sp),
+                            onTap: () =>
+                                setState(() => selectedStatus = status),
+                            leading: Icon(
+                              status.icon,
+                              color: status.color,
+                              size: 20,
+                            ),
                             title: Text(
                               status.displayName,
                               style: TextStyle(
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                color: isSelected ? status.color : AppColors.gray700,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: isSelected
+                                    ? status.color
+                                    : AppColors.gray700,
+                                fontSize: 14,
                               ),
                             ),
                             trailing: isSelected
-                                ? Icon(Icons.check_circle_rounded, color: AppColors.success, size: 22.sp)
+                                ? const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: AppColors.success,
+                                    size: 22,
+                                  )
                                 : null,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             selected: isSelected,
-                            selectedTileColor: status.color.withValues(alpha: 0.05),
+                            selectedTileColor: status.color.withValues(
+                              alpha: 0.05,
+                            ),
                           );
                         }).toList(),
                       ),
@@ -64,7 +83,12 @@ Future<void> showAppointmentStatusDialog({
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: Text('cancel'.tr(), style: const TextStyle(color: AppColors.gray500)),
+                child: Text(
+                  'cancel'.tr(),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
               ElevatedButton(
                 onPressed: () {
@@ -74,9 +98,11 @@ Future<void> showAppointmentStatusDialog({
                   Navigator.of(context).pop();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
                   foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.r)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 child: Text('save'.tr()),
               ),

@@ -1,25 +1,35 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:easy_stepper/easy_stepper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/services/patient_session.dart';
+import '../../domain/entities/appointment_entity.dart';
 import '../cubit/appointments_cubit_imports.dart';
-import '../widgets/shared/time_slot_picker.dart';
+import '../widgets/form/appointment_form_steps.dart';
+import '../widgets/shared/appointments_feedback_state.dart';
+import '../../../patients/domain/entities/patient_entity.dart';
+
+enum AppointmentScreenMode { create, reschedule }
 
 class ScheduleAppointmentScreen extends StatefulWidget {
-  final String patientId;
-  final String patientName;
-  final String doctorId;
-  final String doctorName;
+  final PatientEntity? patient;
+  final String? doctorId;
+  final String? doctorName;
+  final bool isPatientMode;
+  final AppointmentScreenMode mode;
+  final AppointmentEntity? appointment;
 
   const ScheduleAppointmentScreen({
     super.key,
-    required this.patientId,
-    required this.patientName,
-    required this.doctorId,
-    required this.doctorName,
+    this.patient,
+    this.doctorId,
+    this.doctorName,
+    this.isPatientMode = false,
+    this.mode = AppointmentScreenMode.create,
+    this.appointment,
   });
 
   @override
@@ -29,12 +39,18 @@ class ScheduleAppointmentScreen extends StatefulWidget {
 class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
   late final TextEditingController _reasonController;
   late final TextEditingController _notesController;
+  int _activeStep = 0;
 
   @override
   void initState() {
     super.initState();
     _reasonController = TextEditingController();
     _notesController = TextEditingController();
+
+    // If in reschedule mode, we might want to start at step 1
+    if (widget.mode == AppointmentScreenMode.reschedule) {
+      _activeStep = 1;
+    }
   }
 
   @override
@@ -44,313 +60,324 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
     super.dispose();
   }
 
+  void _nextStep(BuildContext context, AppointmentScheduleState state) {
+    if (_activeStep < 2) {
+      setState(() => _activeStep++);
+    } else {
+      _confirmAppointment(context);
+    }
+  }
+
+  void _previousStep() {
+    if (_activeStep > 0) {
+      setState(() => _activeStep--);
+    } else {
+      context.pop();
+    }
+  }
+
+  bool _isStepValid(int step, AppointmentScheduleState state) {
+    switch (step) {
+      case 0:
+        return state.selectedPatient != null && state.selectedDoctorId != null;
+      case 1:
+        return state.selectedTimeSlot != null;
+      case 2:
+        return !state.isLoading;
+      default:
+        return false;
+    }
+  }
+
+  void _confirmAppointment(BuildContext context) {
+    final cubit = context.read<AppointmentScheduleCubit>();
+    if (widget.mode == AppointmentScreenMode.reschedule && widget.appointment != null) {
+      cubit.rescheduleAppointment(appointmentId: widget.appointment!.id);
+    } else {
+      cubit.createAppointment(
+        reason: _reasonController.text.trim(),
+        notes: _notesController.text.trim(),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return BlocProvider(
-      create: (_) => getIt<AppointmentScheduleCubit>()
-        ..loadAvailableSlots(doctorId: widget.doctorId, date: DateTime.now()),
+      create: (context) {
+        final cubit = getIt<AppointmentScheduleCubit>();
+        cubit.loadAvailableDoctors();
+        final resolvedPatient =
+            widget.patient ?? (widget.isPatientMode ? PatientSession().patientEntity : null);
+
+        if (widget.mode == AppointmentScreenMode.reschedule && widget.appointment != null) {
+          final appointment = widget.appointment!;
+          final reschedulePatient = resolvedPatient ?? _patientFromAppointment(appointment);
+
+          cubit.updateSelectedPatient(reschedulePatient);
+          cubit.updateSelectedDoctor(
+            widget.doctorId ?? appointment.doctorId,
+            widget.doctorName ?? appointment.doctorName,
+            autoLoadSlots: false,
+          );
+          cubit.updateSelectedDate(
+            date: appointment.dateTime,
+            doctorId: widget.doctorId ?? appointment.doctorId,
+          );
+          return cubit;
+        }
+
+        if (resolvedPatient != null) {
+          cubit.updateSelectedPatient(resolvedPatient);
+        }
+        if (widget.doctorId != null) {
+          cubit.updateSelectedDoctor(widget.doctorId!, widget.doctorName ?? '');
+        }
+        return cubit;
+      },
       child: BlocConsumer<AppointmentScheduleCubit, AppointmentScheduleState>(
-        listener: _onStateChanged,
+        listener: (context, state) {
+          if (state.isSuccess) {
+            context.pushReplacement('/appointments/success');
+          }
+          if (state.errorMessage != null && state.errorMessage!.isNotEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage!),
+                backgroundColor: theme.colorScheme.error,
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        },
         builder: (context, state) {
           return Scaffold(
-            appBar: AppBar(title: Text('schedule_appointment'.tr())),
-            body: _buildBody(context, state),
+            backgroundColor: theme.colorScheme.surface,
+            appBar: AppBar(
+              title: Text(
+                widget.mode == AppointmentScreenMode.reschedule
+                    ? 'edit_appointment'.tr()
+                    : 'schedule_appointment'.tr(),
+              ),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                onPressed: _previousStep,
+              ),
+            ),
+            body: Column(
+              children: [
+                _buildStepper(context),
+                Expanded(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 500),
+                    transitionBuilder: (child, animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0.05, 0),
+                            end: Offset.zero,
+                          ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+                          child: child,
+                        ),
+                      );
+                    },
+                    child: SingleChildScrollView(
+                      key: ValueKey(_activeStep),
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+                      physics: const BouncingScrollPhysics(),
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 800),
+                          child: Column(
+                            children: [
+                              _buildCurrentStep(state),
+                              if (state.errorMessage != null) _buildErrorWidget(context, state),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+            floatingActionButton: _buildFloatingAction(context, state),
           );
         },
       ),
     );
   }
 
-  void _onStateChanged(BuildContext context, AppointmentScheduleState state) {
-    if (state.isSuccess) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('appointment_created_success'.tr()),
-          backgroundColor: AppColors.success,
-        ),
-      );
-      Navigator.pop(context, true);
-    }
-  }
-
-  Widget _buildBody(BuildContext context, AppointmentScheduleState state) {
-    if (state.isLoading && state.availableSlots.isEmpty) {
-      return _buildInitialLoadingState();
-    }
-
-    return SingleChildScrollView(
-      padding: EdgeInsets.all(16.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildPatientInfoSection(),
-          SizedBox(height: 24.h),
-
-          _buildSectionTitle('select_date'),
-          SizedBox(height: 8.h),
-          _buildDatePicker(context, state),
-          const Divider(),
-          SizedBox(height: 16.h),
-
-          _buildSectionTitle('select_time'),
-          SizedBox(height: 16.h),
-          _buildTimeSlotPicker(context, state),
-          SizedBox(height: 12.h),
-          _buildSelectionSummary(state),
-          SizedBox(height: 24.h),
-
-          _buildSectionTitle('reason'),
-          SizedBox(height: 8.h),
-          _buildReasonInput(),
-          SizedBox(height: 16.h),
-
-          _buildSectionTitle('notes'),
-          SizedBox(height: 8.h),
-          _buildNotesInput(),
-          SizedBox(height: 40.h),
-
-          _buildConfirmButton(context, state),
-          _buildErrorWidget(context, state),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildInitialLoadingState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(),
-          SizedBox(height: 14.h),
-          Text(
-            'loading_slots'.tr(),
-            style: const TextStyle(color: AppColors.gray600, fontSize: 14),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSectionTitle(String key) {
-    return Text(key.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
-  }
-
-  Widget _buildPatientInfoSection() {
+  Widget _buildStepper(BuildContext context) {
+    final theme = Theme.of(context);
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.primaryExtraLight,
-        borderRadius: BorderRadius.circular(12.r),
+        color: theme.colorScheme.surface,
+        border: Border(bottom: BorderSide(color: theme.colorScheme.outlineVariant.withAlpha(40))),
       ),
-      child: Row(
-        children: [
-          const Icon(Icons.person, color: AppColors.primaryDark),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '${'patient'.tr()}: ${widget.patientName}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.secondary,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  '${'doctor'.tr()}: ${widget.doctorName}',
-                  style: const TextStyle(fontSize: 14, color: AppColors.gray700),
-                ),
-              ],
-            ),
+      child: EasyStepper(
+        activeStep: _activeStep,
+        lineStyle: LineStyle(
+          lineLength: 70,
+          lineType: LineType.normal,
+          defaultLineColor: theme.colorScheme.outlineVariant.withAlpha(100),
+          finishedLineColor: theme.colorScheme.primary,
+        ),
+        activeStepTextColor: theme.colorScheme.primary,
+        finishedStepTextColor: theme.colorScheme.primary,
+        unreachedStepTextColor: theme.colorScheme.onSurfaceVariant,
+        internalPadding: 0,
+        showLoadingAnimation: false,
+        stepRadius: 22,
+        showStepBorder: false,
+        enableStepTapping: false,
+        steps: [
+          EasyStep(
+            customStep: _buildStepIcon(Icons.person_outline_rounded, 0),
+            title: 'patient_and_doctor_info'.tr(),
+          ),
+          EasyStep(
+            customStep: _buildStepIcon(Icons.calendar_month_rounded, 1),
+            title: 'select_schedule'.tr(),
+          ),
+          EasyStep(
+            customStep: _buildStepIcon(Icons.assignment_turned_in_rounded, 2),
+            title: 'visit_details'.tr(),
           ),
         ],
+        onStepReached: (index) => setState(() => _activeStep = index),
       ),
     );
   }
 
-  Widget _buildDatePicker(BuildContext context, AppointmentScheduleState state) {
-    final cubit = context.read<AppointmentScheduleCubit>();
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      title: Text(
-        DateFormat('EEEE, d MMMM yyyy').format(state.selectedDate),
-        style: const TextStyle(fontSize: 16),
+  Widget _buildStepIcon(IconData icon, int step) {
+    final theme = Theme.of(context);
+    final isFinished = _activeStep > step;
+    final isActive = _activeStep == step;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: isActive
+            ? theme.colorScheme.primary
+            : (isFinished
+                  ? theme.colorScheme.primary.withAlpha(30)
+                  : theme.colorScheme.surfaceContainerHighest),
+        shape: BoxShape.circle,
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: theme.colorScheme.primary.withAlpha(60),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
-      trailing: const Icon(Icons.calendar_month, color: AppColors.primary),
-      onTap: () async {
-        final picked = await showDatePicker(
-          context: context,
-          initialDate: state.selectedDate,
-          firstDate: DateTime.now(),
-          lastDate: DateTime.now().add(const Duration(days: 90)),
+      child: Icon(
+        icon,
+        size: 20,
+        color: isActive
+            ? theme.colorScheme.onPrimary
+            : (isFinished ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant),
+      ),
+    );
+  }
+
+  Widget _buildCurrentStep(AppointmentScheduleState state) {
+    switch (_activeStep) {
+      case 0:
+        return StepParticipants(
+          isPatientMode: widget.isPatientMode,
+          initialPatient: widget.patient,
         );
-        if (picked != null) {
-          cubit.updateSelectedDate(date: picked, doctorId: widget.doctorId);
-        }
-      },
-    );
-  }
-
-  Widget _buildTimeSlotPicker(BuildContext context, AppointmentScheduleState state) {
-    return TimeSlotPicker(
-      slots: state.availableSlots,
-      selectedSlot: state.selectedTimeSlot,
-      onSlotSelected: context.read<AppointmentScheduleCubit>().updateSelectedTimeSlot,
-      showStatusLabels: true,
-    );
-  }
-
-  Widget _buildSelectionSummary(AppointmentScheduleState state) {
-    final selected = state.selectedTimeSlot;
-    if (selected == null) {
-      return Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: AppColors.gray100,
-          borderRadius: BorderRadius.circular(10.r),
-        ),
-        child: Text(
-          'select_slot_hint'.tr(),
-          style: const TextStyle(color: AppColors.gray600, fontSize: 13),
-        ),
-      );
+      case 1:
+        return const StepDateTime();
+      case 2:
+        return StepDetails(reasonController: _reasonController, notesController: _notesController);
+      default:
+        return const SizedBox.shrink();
     }
+  }
 
-    final dateText = DateFormat('EEEE, d MMMM yyyy').format(selected.dateTime);
-    final timeText = DateFormat('HH:mm').format(selected.dateTime);
+  Widget _buildFloatingAction(BuildContext context, AppointmentScheduleState state) {
+    final theme = Theme.of(context);
+    final isValid = _isStepValid(_activeStep, state);
+    final isLastStep = _activeStep == 2;
 
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(12.w),
-      decoration: BoxDecoration(
-        color: AppColors.primaryExtraLight,
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(color: AppColors.primary.withAlpha(40)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.check_circle, color: AppColors.primaryDark),
-          SizedBox(width: 10.w),
-          Expanded(
-            child: Text(
-              '$dateText • $timeText',
-              style: const TextStyle(
-                color: AppColors.primaryDark,
-                fontWeight: FontWeight.w600,
-                fontSize: 13,
-              ),
-            ),
+    return AnimatedScale(
+      scale: isValid || state.isLoading ? 1.0 : 0.9,
+      duration: const Duration(milliseconds: 200),
+      child: AnimatedOpacity(
+        opacity: isValid || state.isLoading ? 1.0 : 0.6,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          width: 280,
+          height: 56,
+          margin: const EdgeInsets.only(bottom: 8),
+          child: FloatingActionButton.extended(
+            onPressed: isValid ? () => _nextStep(context, state) : null,
+            backgroundColor: isValid ? theme.colorScheme.primary : theme.disabledColor,
+            elevation: isValid ? 6 : 0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            label: state.isLoading
+                ? const SizedBox(
+                    height: 22,
+                    width: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                  )
+                : Text(
+                    isLastStep
+                        ? (widget.mode == AppointmentScreenMode.reschedule
+                              ? 'save_changes'.tr()
+                              : 'confirm_appointment'.tr())
+                        : 'next'.tr(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildConfirmButton(BuildContext context, AppointmentScheduleState state) {
-    final isEnabled = state.selectedTimeSlot != null && !state.isLoading;
-
-    return SizedBox(
-      width: double.infinity,
-      child: FilledButton(
-        onPressed: isEnabled ? () => _onConfirm(context) : null,
-        style: FilledButton.styleFrom(
-          padding: EdgeInsets.symmetric(vertical: 16.h),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
         ),
-        child: state.isLoading
-            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-            : Text('confirm_appointment'.tr(), style: const TextStyle(fontSize: 16)),
       ),
-    );
-  }
-
-  void _onConfirm(BuildContext context) {
-    // يمكن إضافة تأكيد اختياري
-    _createAppointment(context);
-  }
-
-  void _createAppointment(BuildContext context) {
-    context.read<AppointmentScheduleCubit>().createAppointment(
-      patientId: widget.patientId,
-      patientName: widget.patientName,
-      doctorId: widget.doctorId,
-      doctorName: widget.doctorName,
-      reason: _reasonController.text.trim().isEmpty ? null : _reasonController.text.trim(),
-      notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
-    );
-  }
-
-  Widget _buildReasonInput() {
-    return TextFormField(
-      controller: _reasonController,
-      textInputAction: TextInputAction.next,
-      decoration: InputDecoration(
-        labelText: 'reason'.tr(),
-        hintText: 'reason_hint'.tr(),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
-      ),
-      maxLines: 2,
-    );
-  }
-
-  Widget _buildNotesInput() {
-    return TextFormField(
-      controller: _notesController,
-      textInputAction: TextInputAction.newline,
-      decoration: InputDecoration(
-        labelText: 'notes'.tr(),
-        hintText: 'notes_hint'.tr(),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
-      ),
-      maxLines: 4,
     );
   }
 
   Widget _buildErrorWidget(BuildContext context, AppointmentScheduleState state) {
-    if (!state.isError || state.errorMessage == null) return const SizedBox.shrink();
-
     return Padding(
-      padding: EdgeInsets.only(top: 12.h),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.all(12.w),
-        decoration: BoxDecoration(
-          color: AppColors.error.withAlpha(18),
-          borderRadius: BorderRadius.circular(10.r),
-          border: Border.all(color: AppColors.error.withAlpha(50)),
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 2),
-              child: Icon(Icons.error_outline, color: AppColors.error, size: 18),
-            ),
-            SizedBox(width: 8.w),
-            Expanded(
-              child: Text(
-                state.errorMessage!,
-                style: const TextStyle(color: AppColors.error, fontSize: 13),
-              ),
-            ),
-            // ✅ إصلاح الخطر: استخدام doctorId الصحيح
-            TextButton(
-              onPressed: () {
-                context.read<AppointmentScheduleCubit>().loadAvailableSlots(
-                  doctorId: widget.doctorId, // ✅ تم التصحيح
-                  date: state.selectedDate,
-                );
-              },
-              child: Text('retry'.tr()),
-            ),
-          ],
-        ),
+      padding: const EdgeInsets.only(top: 24),
+      child: AppointmentsInlineError(
+        message: state.errorMessage,
+        onRetry: () {
+          if (state.selectedDoctorId != null) {
+            context.read<AppointmentScheduleCubit>().updateSelectedDate(
+              date: state.selectedDate,
+              doctorId: state.selectedDoctorId!,
+            );
+          }
+        },
       ),
+    );
+  }
+
+  PatientEntity _patientFromAppointment(AppointmentEntity appointment) {
+    return PatientEntity(
+      id: appointment.patientId,
+      name: appointment.patientName,
+      email: '',
+      phone: appointment.patientPhone ?? '',
+      dateOfBirth: DateTime(1970),
+      medicalHistory: '',
+      address: '',
     );
   }
 }

@@ -1,10 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:intl/intl.dart';
-import '../../../../../core/theme/app_colors.dart';
 import '../../../data/models/appointments_overview_view_mode.dart';
 import '../../../domain/entities/appointment_entity.dart';
 import 'appointment_status_chip.dart';
+
+import 'package:enaya/core/widgets/cards/app_base_card.dart';
 
 class AppointmentCard extends StatelessWidget {
   final AppointmentEntity appointment;
@@ -15,100 +15,92 @@ class AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final time = DateFormat('hh:mm a').format(appointment.dateTime);
-    final isRtl = Directionality.of(context).index == 1; // 0 = ltr, 1 = rtl
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final locale = context.locale.toString();
+    final time = DateFormat.jm(locale).format(appointment.dateTime);
+    final isRtl = Directionality.of(context).name == 'rtl';
+    final primaryName = mode == AppointmentsOverviewMode.patient
+        ? appointment.doctorName
+        : appointment.patientName;
+    final secondaryText = mode == AppointmentsOverviewMode.patient
+        ? (appointment.reason?.trim().isNotEmpty == true ? appointment.reason! : 'no_reason'.tr())
+        : appointment.doctorName;
+    final secondaryIcon = mode == AppointmentsOverviewMode.patient
+        ? Icons.note_alt_outlined
+        : Icons.person_outline;
 
-    return InkWell(
+    return AppBaseCard(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16.r),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: EdgeInsets.all(16.w),
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: AppColors.gray200.withAlpha(100)),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withAlpha(5), blurRadius: 10, offset: const Offset(0, 4)),
-          ],
-        ),
-        child: Row(
-          children: [
-            // TIME BOX
-            Container(
-              width: 64.w,
-              padding: EdgeInsets.symmetric(vertical: 8.h),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withAlpha(12),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Column(
-                children: [
-                  Text(
-                    time.split(' ')[0],
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15.sp,
-                    ),
-                  ),
-                  Text(
-                    time.split(' ')[1], // AM / PM
-                    style: TextStyle(color: AppColors.gray500, fontSize: 10.sp),
-                  ),
-                ],
+      elevation: isDark ? 0 : 4,
+      borderSide: isDark ? BorderSide(color: Theme.of(context).colorScheme.outlineVariant) : null,
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          // Time box
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withAlpha(isDark ? 35 : 12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              time,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.primary,
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
               ),
             ),
+          ),
 
-            SizedBox(width: 16.w),
+          const SizedBox(width: 16),
 
-            // MAIN INFO
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    appointment.patientName,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.secondary,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Row(
-                    children: [
-                      Icon(Icons.person_outline, size: 14.sp, color: AppColors.gray500),
-                      SizedBox(width: 4.w),
-                      Expanded(
-                        child: Text(
-                          appointment.doctorName,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 12.sp, color: AppColors.gray600),
+          // Main info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  primaryName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(secondaryIcon, size: 14, color: theme.colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        secondaryText,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
                         ),
                       ),
-                    ],
-                  ),
-                ],
-              ),
+                    ),
+                  ],
+                ),
+              ],
             ),
+          ),
 
-            SizedBox(width: 12.w),
+          const SizedBox(width: 12),
 
-            AppointmentStatusChip(status: appointment.status),
+          AppointmentStatusChip(status: appointment.status),
 
-            SizedBox(width: 8.w),
+          const SizedBox(width: 8),
 
-            Icon(
-              isRtl ? Icons.chevron_left : Icons.chevron_right,
-              color: AppColors.gray400,
-              size: 20.sp,
-            ),
-          ],
-        ),
+          Icon(
+            isRtl ? Icons.chevron_left : Icons.chevron_right,
+            color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+            size: 20,
+          ),
+        ],
       ),
     );
   }

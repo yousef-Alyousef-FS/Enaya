@@ -45,7 +45,9 @@ class _BaseDashboardPageState extends State<BaseDashboardPage> {
   Widget build(BuildContext context) {
     final appBar =
         widget.appBar ??
-        DashboardAppBar(titleText: widget.navigationItems[_selectedIndex].labelKey.tr());
+        DashboardAppBar(
+          titleText: widget.navigationItems[_selectedIndex].labelKey.tr(),
+        );
 
     return DashboardShell(
       appBar: appBar,
@@ -56,6 +58,50 @@ class _BaseDashboardPageState extends State<BaseDashboardPage> {
         duration: const Duration(milliseconds: 300),
         child: widget.bodyBuilder(context, _selectedIndex),
       ),
+    );
+  }
+}
+
+abstract class AbstractDashboardPage extends StatefulWidget {
+  const AbstractDashboardPage({super.key});
+
+  List<DashboardNavItem> get navigationItems;
+
+  Widget buildContent(BuildContext context, int selectedIndex);
+
+  PreferredSizeWidget? get customAppBar => null;
+
+  int get initialSelectedIndex => 0;
+
+  bool get autoCenterBottomNav => true;
+
+  @override
+  State<AbstractDashboardPage> createState() => _AbstractDashboardPageState();
+}
+
+class _AbstractDashboardPageState extends State<AbstractDashboardPage> {
+  late int _selectedIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialSelectedIndex;
+  }
+
+  void _handleNavigationSelected(int index) {
+    if (_selectedIndex == index) return;
+    setState(() => _selectedIndex = index);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BaseDashboardPage(
+      navigationItems: widget.navigationItems,
+      initialIndex: _selectedIndex,
+      appBar: widget.customAppBar,
+      onItemSelected: _handleNavigationSelected,
+      bodyBuilder: (context, selectedIndex) =>
+          widget.buildContent(context, selectedIndex),
     );
   }
 }

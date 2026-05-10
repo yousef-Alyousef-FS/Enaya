@@ -1,38 +1,35 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import '../../../../../core/theme/app_colors.dart';
+
 import '../../../domain/entities/appointment_entity.dart';
+import '../../../domain/entities/appointment_status.dart';
 import '../shared/appointment_status_chip.dart';
+
+import 'package:enaya/core/widgets/cards/app_base_card.dart';
 
 class CurrentAppointmentCard extends StatelessWidget {
   final AppointmentEntity appointment;
-  final VoidCallback? onStartSession;
-  final VoidCallback? onEndSession;
+  final VoidCallback? onStart;
+  final VoidCallback? onComplete;
 
   const CurrentAppointmentCard({
     super.key,
     required this.appointment,
-    this.onStartSession,
-    this.onEndSession,
+    this.onStart,
+    this.onComplete,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(24.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(color: AppColors.primary.withAlpha(50), width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primary.withAlpha(10),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          )
-        ],
-      ),
+    final canStartSession = appointment.status == AppointmentStatus.arrived;
+    final canEndSession = appointment.status == AppointmentStatus.inProgress;
+    final theme = Theme.of(context);
+
+    return AppBaseCard(
+      borderRadius: 20,
+      elevation: 6,
+      padding: const EdgeInsets.all(20),
+      borderSide: BorderSide(color: theme.primaryColor.withAlpha(40), width: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -40,32 +37,35 @@ class CurrentAppointmentCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withAlpha(20),
-                  borderRadius: BorderRadius.circular(12.r),
+                  color: theme.primaryColor.withAlpha(20),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   'current_appointment'.tr(),
                   style: TextStyle(
-                    color: AppColors.primary,
+                    color: theme.primaryColor,
                     fontWeight: FontWeight.bold,
-                    fontSize: 12.sp,
+                    fontSize: 11,
                   ),
                 ),
               ),
               AppointmentStatusChip(status: appointment.status),
             ],
           ),
-          SizedBox(height: 20.h),
+          const SizedBox(height: 16),
           Row(
             children: [
-              CircleAvatar(
-                radius: 30.r,
-                backgroundColor: AppColors.gray100,
-                child: Icon(Icons.person, size: 30.sp, color: AppColors.gray400),
+              const CircleAvatar(
+                radius: 28,
+                backgroundColor: Colors.grey,
+                child: Icon(Icons.person, size: 28, color: Colors.grey),
               ),
-              SizedBox(width: 16.w),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,44 +73,47 @@ class CurrentAppointmentCard extends StatelessWidget {
                     Text(
                       appointment.patientName,
                       style: TextStyle(
-                        fontSize: 20.sp,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: AppColors.secondary,
+                        color: theme.colorScheme.onSurface,
                       ),
                     ),
-                    SizedBox(height: 4.h),
+                    const SizedBox(height: 2),
                     Text(
-                      '${'file_no'.tr()}: #12345 | ${'visit_type'.tr()}: ${appointment.reason ?? 'general'.tr()}',
-                      style: TextStyle(fontSize: 14.sp, color: AppColors.gray600),
+                      [
+                        if (appointment.queueNumber != null)
+                          '${'queue_number'.tr()}: #${appointment.queueNumber}',
+                        appointment.reason?.trim().isNotEmpty == true
+                            ? appointment.reason!
+                            : 'general'.tr(),
+                      ].join(' | '),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          SizedBox(height: 24.h),
-          const Divider(),
-          SizedBox(height: 16.h),
+          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: onEndSession,
+                  onPressed: canEndSession ? onComplete : null,
                   style: OutlinedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                    side: const BorderSide(color: AppColors.error),
-                    foregroundColor: AppColors.error,
+                    side: BorderSide(color: theme.colorScheme.error),
+                    foregroundColor: theme.colorScheme.error,
                   ),
                   child: Text('end_session'.tr()),
                 ),
               ),
-              SizedBox(width: 16.w),
+              const SizedBox(width: 12),
               Expanded(
                 child: FilledButton(
-                  onPressed: onStartSession,
-                  style: FilledButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 16.h),
-                  ),
+                  onPressed: canStartSession ? onStart : null,
                   child: Text('start_session'.tr()),
                 ),
               ),

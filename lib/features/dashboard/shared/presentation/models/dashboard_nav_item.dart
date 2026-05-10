@@ -1,12 +1,15 @@
 import 'package:flutter/cupertino.dart';
 
+/// Navigation descriptor used by [DashboardShell] for rail/bottom items.
 class DashboardNavItem {
   final IconData icon;
   final IconData selectedIcon;
   final String labelKey;
   final bool isEnabled;
   final bool showDividerAfter;
-  final int? badgeCount;  // أضف هذا السطر
+
+  /// Optional badge count shown beside the item.
+  final int? badgeCount;
 
   const DashboardNavItem({
     required this.icon,
@@ -14,6 +17,6 @@ class DashboardNavItem {
     required this.labelKey,
     this.isEnabled = true,
     this.showDividerAfter = false,
-    this.badgeCount,      // أضفه هنا
+    this.badgeCount,
   });
 }

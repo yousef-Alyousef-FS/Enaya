@@ -1,14 +1,15 @@
-import '../../domain/entities/patient_dashboard_stats.dart';
+import '../../domain/entities/patient_dashboard_data.dart';
 import '../../domain/repositories/patient_dashboard_repository.dart';
 import '../datasources/patient_dashboard_remote_data_source.dart';
 
 class PatientDashboardRepositoryImpl implements PatientDashboardRepository {
   final PatientDashboardRemoteDataSource remoteDataSource;
 
-  PatientDashboardRepositoryImpl({required this.remoteDataSource});
+  PatientDashboardRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<PatientDashboardStats> getPatientDashboardStats() async {
-    return await remoteDataSource.getStats();
+  Future<PatientDashboardData> getPatientDashboardStats() async {
+    final model = await remoteDataSource.getPatientDashboardStats();
+    return model.toEntity();
   }
 }

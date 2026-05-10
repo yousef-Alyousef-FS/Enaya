@@ -1,7 +1,1 @@
-enum QueueStatus {
-  waiting,
-  calling,
-  inConsultation,
-  skipped,
-  completed
-}
+enum QueueStatus { waiting, calling, inConsultation, skipped, completed }

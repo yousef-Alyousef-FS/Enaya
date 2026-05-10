@@ -28,7 +28,8 @@ class DashboardConfig {
 
   const DashboardConfig({
     required this.navigationItems,
-    this.bottomNavAnimationDuration = DashboardConstants.bottomNavAnimationDuration,
+    this.bottomNavAnimationDuration =
+        DashboardConstants.bottomNavAnimationDuration,
     this.bottomNavAnimationCurve = DashboardConstants.bottomNavAnimationCurve,
     this.autoCenterBottomNav = true,
     this.enableEffects = true,
@@ -46,8 +47,10 @@ class DashboardConfig {
   }) {
     return DashboardConfig(
       navigationItems: navigationItems ?? this.navigationItems,
-      bottomNavAnimationDuration: bottomNavAnimationDuration ?? this.bottomNavAnimationDuration,
-      bottomNavAnimationCurve: bottomNavAnimationCurve ?? this.bottomNavAnimationCurve,
+      bottomNavAnimationDuration:
+          bottomNavAnimationDuration ?? this.bottomNavAnimationDuration,
+      bottomNavAnimationCurve:
+          bottomNavAnimationCurve ?? this.bottomNavAnimationCurve,
       autoCenterBottomNav: autoCenterBottomNav ?? this.autoCenterBottomNav,
       enableEffects: enableEffects ?? this.enableEffects,
       themeConfig: themeConfig ?? this.themeConfig,
@@ -94,9 +97,11 @@ class DashboardThemeConfig {
     return DashboardThemeConfig(
       primaryColor: primaryColor ?? this.primaryColor,
       railBackgroundColor: railBackgroundColor ?? this.railBackgroundColor,
-      bottomNavBackgroundColor: bottomNavBackgroundColor ?? this.bottomNavBackgroundColor,
+      bottomNavBackgroundColor:
+          bottomNavBackgroundColor ?? this.bottomNavBackgroundColor,
       railWidth: railWidth ?? this.railWidth,
-      navigationTileBorderRadius: navigationTileBorderRadius ?? this.navigationTileBorderRadius,
+      navigationTileBorderRadius:
+          navigationTileBorderRadius ?? this.navigationTileBorderRadius,
     );
   }
 }

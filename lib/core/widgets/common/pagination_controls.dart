@@ -38,7 +38,11 @@ class AppPaginationControls extends StatelessWidget {
             ),
             child: Text(
               '${'page'.tr()} $currentPage',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: AppColors.primary),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: AppColors.primary,
+              ),
             ),
           ),
           _buildButton(
@@ -64,7 +68,9 @@ class AppPaginationControls extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          border: Border.all(color: onPressed != null ? AppColors.primary : AppColors.gray300),
+          border: Border.all(
+            color: onPressed != null ? AppColors.primary : AppColors.gray300,
+          ),
           borderRadius: BorderRadius.circular(12),
           color: onPressed != null ? Colors.white : AppColors.gray50,
         ),
@@ -75,7 +81,9 @@ class AppPaginationControls extends StatelessWidget {
               Icon(
                 icon,
                 size: 16,
-                color: onPressed != null ? AppColors.primary : AppColors.gray400,
+                color: onPressed != null
+                    ? AppColors.primary
+                    : AppColors.gray400,
               ),
             if (!isForward) const SizedBox(width: 8),
             Text(
@@ -83,7 +91,9 @@ class AppPaginationControls extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: onPressed != null ? AppColors.primary : AppColors.gray400,
+                color: onPressed != null
+                    ? AppColors.primary
+                    : AppColors.gray400,
               ),
             ),
             if (isForward) const SizedBox(width: 8),
@@ -91,7 +101,9 @@ class AppPaginationControls extends StatelessWidget {
               Icon(
                 icon,
                 size: 16,
-                color: onPressed != null ? AppColors.primary : AppColors.gray400,
+                color: onPressed != null
+                    ? AppColors.primary
+                    : AppColors.gray400,
               ),
           ],
         ),

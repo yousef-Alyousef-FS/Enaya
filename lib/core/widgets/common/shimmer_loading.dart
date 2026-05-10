@@ -56,7 +56,9 @@ class TableRowSkeleton extends StatelessWidget {
         children: [
           const SkeletonLoader(width: 60, height: 18),
           const SizedBox(width: 20),
-          const Expanded(child: SkeletonLoader(width: double.infinity, height: 18)),
+          const Expanded(
+            child: SkeletonLoader(width: double.infinity, height: 18),
+          ),
           const SizedBox(width: 20),
           const SkeletonLoader(width: 80, height: 18),
         ],

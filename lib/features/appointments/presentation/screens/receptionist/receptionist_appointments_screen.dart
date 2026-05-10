@@ -1,195 +1,133 @@
 import 'package:easy_localization/easy_localization.dart';
-import '../../../../appointments/domain/entities/appointment_stats_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../core/widgets/common/section_header.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/routing/app_router.dart';
+import '../../../../../core/widgets/section_header.dart';
 import '../../widgets/receptionist/appointment_table_config.dart';
-import '../../../../../core/widgets/tables/appointments_table/generic_table_shell.dart';
-import '../../widgets/shared/app_filter_date_range_picker.dart';
+import '../../widgets/tables/generic_table.dart';
 import '../../cubit/appointments_overview_cubit.dart';
 import '../../cubit/appointments_overview_state.dart';
+import '../../../data/models/appointments_overview_view_mode.dart';
 import 'package:enaya/features/appointments/domain/entities/appointment_entity.dart';
-import 'package:enaya/features/appointments/presentation/widgets/receptionist/doctor_selector_button.dart';
+import 'package:enaya/features/appointments/presentation/widgets/receptionist/appointments_filter.dart';
+import '../../widgets/shared/appointments_feedback_state.dart';
 import '../../widgets/receptionist/receptionist_stats_grid.dart';
-import '../../widgets/receptionist/appointment_search_bar.dart';
-import '../../widgets/receptionist/sort_indicator.dart';
-import '../appointment_details_screen.dart';
 
-// Appointments Overview Screen
+/// Receptionist-facing appointments overview with filters, stats, and table actions.
 class ReceptionistAppointmentsScreen extends StatelessWidget {
-  final VoidCallback? onAddAppointment;
+  /// Whether it's embedded in another scrollable view (e.g., Home Page).
+  final bool isEmbedded;
 
-  const ReceptionistAppointmentsScreen({super.key, this.onAddAppointment});
+  /// Keeps the search/filter row visible inside embedded dashboard content.
+  final bool showFiltersWhenEmbedded;
+
+  const ReceptionistAppointmentsScreen({
+    super.key,
+    this.isEmbedded = false,
+    this.showFiltersWhenEmbedded = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AppointmentsManagerCubit, AppointmentsOverviewState>(
       builder: (context, state) {
         final theme = Theme.of(context);
-        final doctorMap = <String, String>{};
-        for (final appointment in state.appointments) {
-          doctorMap.putIfAbsent(appointment.doctorId, () => appointment.doctorName);
-        }
 
-        final doctorOptions =
-            doctorMap.entries
-                .map((entry) => DoctorOption(id: entry.key, name: entry.value))
-                .toList()
-              ..sort((a, b) => a.name.compareTo(b.name));
-
-        return Scaffold(
-          body: Center(
-            child: Container(
-              constraints: const BoxConstraints(maxWidth: 1400),
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-                physics: const BouncingScrollPhysics(),
-                children: [
-                  // 1. Stats Sections
-                  ReceptionistStatsGrid(
-                    data: const AppointmentStats(
-                      totalAppointments: 11,
-                      scheduled: 3,
-                      confirmed: 0,
-                      completed: 7,
-                      cancelled: 1,
-                      noShow: 0,
-                      utilizationRate: 0,
-                      completionRate: 0,
-                      byDoctor: [],
-                    ),
-                  ),
+        final content = Center(
+          child: Container(
+            constraints: isEmbedded
+                ? null
+                : const BoxConstraints(maxWidth: 1400),
+            child: ListView(
+              padding: isEmbedded
+                  ? EdgeInsets.zero
+                  : const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              shrinkWrap: isEmbedded,
+              physics: isEmbedded
+                  ? const NeverScrollableScrollPhysics()
+                  : const BouncingScrollPhysics(),
+              children: [
+                // 1. Stats Sections (Only in standalone page)
+                if (!isEmbedded) ...[
+                  if (state.stats != null)
+                    ReceptionistStatsGrid(data: state.stats!)
+                  else
+                    const Center(child: LinearProgressIndicator()),
                   const SizedBox(height: 24),
-                  AppSectionHeader(title: 'appointments_list'.tr(), isLoading: state.isLoading),
-                  const SizedBox(height: 16),
-                  // 2. Search, Date Range & Doctor Picker - Responsive Layout
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final isMobile = constraints.maxWidth < 768;
+                ],
 
-                      if (isMobile) {
-                        // Mobile: Stack layout - Search full width, then Date + Doctor below
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            AppointmentSearchBar(
-                              onSearch: (query) {
-                                context.read<AppointmentsManagerCubit>().updateSearchQuery(query);
-                              },
-                              onClear: () {
-                                context.read<AppointmentsManagerCubit>().clearSearch();
-                              },
-                            ),
-                            const SizedBox(height: 12),
-                            Row(
-                              children: [
-                                Expanded(
-                                  flex: 2,
-                                  child: AppFilterDateRangePicker(
-                                    label: 'appointment_date',
-                                    startDate: state.selectedDate,
-                                    endDate: state.endDate,
-                                    onRangeSelected: (range) {
-                                      context.read<AppointmentsManagerCubit>().updateDateRange(
-                                        range.start,
-                                        range.end,
-                                      );
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: DoctorSelectorButton(
-                                    doctors: doctorOptions,
-                                    selectedDoctorName: state.selectedDoctorName,
-                                    onClearSelection: () {
-                                      context
-                                          .read<AppointmentsManagerCubit>()
-                                          .clearDoctorSelection();
-                                    },
-                                    onSelected: (doctor) {
-                                      context.read<AppointmentsManagerCubit>().selectDoctor(
-                                        doctorId: doctor.id,
-                                        doctorName: doctor.name,
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        );
-                      } else {
-                        // Desktop: Original Row layout
-                        return Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              flex: 3,
-                              child: AppointmentSearchBar(
-                                onSearch: (query) {
-                                  context.read<AppointmentsManagerCubit>().updateSearchQuery(query);
-                                },
-                                onClear: () {
-                                  context.read<AppointmentsManagerCubit>().clearSearch();
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            SizedBox(
-                              width: 260,
-                              child: AppFilterDateRangePicker(
-                                label: 'appointment_date',
-                                startDate: state.selectedDate,
-                                endDate: state.endDate,
-                                onRangeSelected: (range) {
-                                  context.read<AppointmentsManagerCubit>().updateDateRange(
-                                    range.start,
-                                    range.end,
-                                  );
-                                },
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            SizedBox(
-                              width: 260,
-                              child: DoctorSelectorButton(
-                                doctors: doctorOptions,
-                                selectedDoctorName: state.selectedDoctorName,
-                                onClearSelection: () {
-                                  context.read<AppointmentsManagerCubit>().clearDoctorSelection();
-                                },
-                                onSelected: (doctor) {
-                                  context.read<AppointmentsManagerCubit>().selectDoctor(
-                                    doctorId: doctor.id,
-                                    doctorName: doctor.name,
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        );
-                      }
-                    },
+                // 2. Section Header
+                Builder(
+                  builder: (context) {
+                    final now = DateTime.now();
+                    final selected = state.filter.startDate;
+                    final isToday =
+                        now.year == selected.year &&
+                        now.month == selected.month &&
+                        now.day == selected.day;
+                    final headerTitle = !isToday
+                        ? DateFormat.yMMMd(
+                            context.locale.toString(),
+                          ).format(selected)
+                        : (isEmbedded
+                              ? 'today_appointments'.tr()
+                              : 'appointments_list'.tr());
+
+                    return AppSectionHeader(
+                      title: headerTitle,
+                      isLoading: state.isLoading,
+                    );
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                if (state.errorMessage != null) ...[
+                  AppointmentsInlineError(
+                    message: state.errorMessage,
+                    onRetry: () => context
+                        .read<AppointmentsManagerCubit>()
+                        .refreshCurrentView(),
                   ),
                   const SizedBox(height: 16),
+                ],
 
-                  // 3. Selected Doctor Indicator
-                  if (state.selectedDoctorName != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: SortIndicator(
-                        selectedDoctorName: state.selectedDoctorName,
-                        onClear: () {
-                          context.read<AppointmentsManagerCubit>().clearDoctorSelection();
-                        },
-                      ),
+                // 3. Conditional Filters (Modular & Responsive)
+                if (!isEmbedded || showFiltersWhenEmbedded) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: AppointmentsFilter(
+                      appointments: state.appointments,
+                      showDateRange: !isEmbedded, // 🚨 Hidden in Home Page
+                      showStatusChips:
+                          !isEmbedded, // Hidden in Home Page for cleaner look
+                      showSearch: true, // Always visible
+                      showDoctorSelector: true, // Always visible
                     ),
+                  ),
+                ],
 
-                  // 4. Table Header (Using Shared AppSectionHeader)
-                  const SizedBox(height: 16),
-
-                  // 5. Table Widget
+                // 4. The Table
+                if (!state.isLoading &&
+                    state.errorMessage == null &&
+                    state.filteredAppointments.isEmpty) ...[
+                  AppointmentsInlineEmpty(
+                    title: 'no_appointments_found'.tr(),
+                    subtitle: (() {
+                      final selected = state.filter.startDate;
+                      final now = DateTime.now();
+                      final isToday =
+                          now.year == selected.year &&
+                          now.month == selected.month &&
+                          now.day == selected.day;
+                      if (isToday) {
+                        return 'adjust_filters_to_find_appointments'.tr();
+                      }
+                      return '${DateFormat.yMMMd(context.locale.toString()).format(selected)} • ${'adjust_filters_to_find_appointments'.tr()}';
+                    })(),
+                    icon: Icons.filter_alt_off_outlined,
+                  ),
+                ] else
                   GenericTableShell<AppointmentEntity>(
                     data: state.filteredAppointments,
                     isLoading: state.isLoading,
@@ -197,25 +135,55 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
                       context: context,
                       appointments: state.filteredAppointments,
                       onView: (app) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => AppointmentDetailsScreen(appointment: app),
-                          ),
+                        context.push(
+                          AppRouter.appointmentDetails,
+                          extra: {
+                            'appointment': app,
+                            'role': AppointmentsOverviewMode.receptionist,
+                            'onDataChanged': () => context
+                                .read<AppointmentsManagerCubit>()
+                                .refreshCurrentView(),
+                          },
                         );
                       },
-                      onEdit: (app) {},
-                      onCheckIn: (app) {},
+                      onEdit: (app) async {
+                        final result = await context.push(
+                          AppRouter.editAppointment,
+                          extra: {'appointment': app},
+                        );
+
+                        if (result == true && context.mounted) {
+                          context
+                              .read<AppointmentsManagerCubit>()
+                              .refreshCurrentView();
+                        }
+                      },
+                      onStatusChange: (app, status, reason) {
+                        context.read<AppointmentsManagerCubit>().updateStatus(
+                          app.id,
+                          status,
+                          reason: reason,
+                        );
+                      },
                     ),
                   ),
-                  const SizedBox(height: 10),
-                ],
-              ),
+                const SizedBox(height: 10),
+              ],
             ),
           ),
+        );
+
+        if (isEmbedded) {
+          return content;
+        }
+
+        return Scaffold(
+          body: content,
           floatingActionButton: FloatingActionButton.extended(
-            onPressed: onAddAppointment,
-            backgroundColor: theme.colorScheme.primary,
+            onPressed: () {
+              context.push(AppRouter.scheduleAppointment);
+            },
+            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.8),
             elevation: 4,
             icon: const Icon(Icons.add_rounded, color: Colors.white),
             label: Text(

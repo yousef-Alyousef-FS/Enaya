@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
 
 class StatCard extends StatefulWidget {
   final String title;
@@ -37,7 +36,9 @@ class _StatCardState extends State<StatCard> {
     final theme = Theme.of(context);
 
     return MouseRegion(
-      cursor: widget.onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
+      cursor: widget.onTap != null
+          ? SystemMouseCursors.click
+          : SystemMouseCursors.basic,
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: GestureDetector(
@@ -46,16 +47,14 @@ class _StatCardState extends State<StatCard> {
           borderRadius: BorderRadius.circular(16),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
+              color: theme.colorScheme.surfaceContainerLow,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: widget.color.withValues(alpha: 0.2)),
               boxShadow: [
                 BoxShadow(
-                  color: (_hovered ? widget.color : AppColors.shadow).withValues(
-                    alpha: _hovered ? 0.15 : 0.05,
-                  ),
+                  color: (_hovered ? widget.color : theme.shadowColor)
+                      .withValues(alpha: _hovered ? 0.15 : 0.05),
                   blurRadius: _hovered ? 16 : 8,
                   offset: const Offset(0, 4),
                 ),
@@ -72,15 +71,17 @@ class _StatCardState extends State<StatCard> {
                         widget.title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 6),
                     Icon(widget.icon, color: widget.color, size: 24),
                   ],
                 ),
-
-                const SizedBox(height: 8),
 
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -97,12 +98,12 @@ class _StatCardState extends State<StatCard> {
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     color: widget.accentColor ?? widget.color,
-                                    fontSize: 28,
+                                    fontSize: 24,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
                                 if (widget.subtitle != null) ...[
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: 2),
                                   Text(
                                     widget.subtitle!,
                                     maxLines: 1,

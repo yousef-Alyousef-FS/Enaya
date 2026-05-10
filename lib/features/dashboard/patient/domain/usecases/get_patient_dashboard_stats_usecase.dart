@@ -1,4 +1,4 @@
-import '../entities/patient_dashboard_stats.dart';
+import '../entities/patient_dashboard_data.dart';
 import '../repositories/patient_dashboard_repository.dart';
 
 class GetPatientDashboardStatsUseCase {
@@ -6,7 +6,7 @@ class GetPatientDashboardStatsUseCase {
 
   GetPatientDashboardStatsUseCase(this.repository);
 
-  Future<PatientDashboardStats> call() async {
+  Future<PatientDashboardData> call() async {
     return await repository.getPatientDashboardStats();
   }
 }
