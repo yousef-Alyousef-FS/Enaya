@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/buttons/action_button.dart';
-import 'package:enaya/features/dashboard/shared/presentation/widgets/responsive_stats_grid.dart';
+
+import '../../../../../core/widgets/common/responsive_stats_grid.dart';
 
 class QuickActions extends StatelessWidget {
   const QuickActions({super.key});

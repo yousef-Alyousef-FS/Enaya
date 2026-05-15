@@ -4,7 +4,8 @@ import 'package:enaya/features/appointments/domain/entities/appointment_status.d
 import 'package:enaya/features/dashboard/shared/presentation/models/dashboard_nav_item.dart';
 import 'package:enaya/features/dashboard/shared/presentation/pages/base_dashboard_page.dart';
 import 'package:enaya/features/dashboard/shared/presentation/widgets/dashboard_overview_builder.dart';
-import 'package:enaya/features/dashboard/shared/presentation/widgets/stat_card.dart';
+import '../../../../../core/widgets/cards/stat_card.dart';
+import '../../../../../core/widgets/common/responsive_stats_grid.dart';
 import '../../../../../core/widgets/feature_coming_soon_state.dart';
 import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
 import 'package:flutter/material.dart';
@@ -18,7 +19,6 @@ import '../../../../appointments/presentation/cubit/patient_appointments_cubit.d
 import '../../../../appointments/presentation/cubit/patient_appointments_state.dart';
 import '../../../../appointments/presentation/widgets/patient/patient_next_appointment_card.dart';
 
-import 'package:enaya/features/dashboard/shared/presentation/widgets/responsive_stats_grid.dart';
 
 class PatientDashboardPage extends StatefulWidget {
   const PatientDashboardPage({super.key});
@@ -132,10 +132,10 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
         const whiteColor = Color(0xFFFFFFFF);
 
         return Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [primaryColor, primaryColor.withAlpha(220)],
+              colors: [primaryColor.withAlpha(240), primaryColor.withAlpha(120)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),

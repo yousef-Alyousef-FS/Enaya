@@ -10,8 +10,7 @@ class DoctorWorkScheduleScreen extends StatefulWidget {
   const DoctorWorkScheduleScreen({super.key});
 
   @override
-  State<DoctorWorkScheduleScreen> createState() =>
-      _DoctorWorkScheduleScreenState();
+  State<DoctorWorkScheduleScreen> createState() => _DoctorWorkScheduleScreenState();
 }
 
 class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
@@ -36,8 +35,7 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
                 )
               else
                 TextButton(
-                  onPressed: () =>
-                      context.read<DoctorScheduleCubit>().saveSchedule(),
+                  onPressed: () => context.read<DoctorScheduleCubit>().saveSchedule(),
                   child: Text(
                     'save'.tr(),
                     style: TextStyle(
@@ -49,7 +47,7 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
             ],
           ),
           body: state.schedule.isEmpty && !state.isLoading
-              ? const Center(child: Text('No schedule data'))
+              ? Center(child: Text('no_schedule_data'.tr()))
               : ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: state.schedule.length,
@@ -59,9 +57,7 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
                     return _ScheduleEntryTile(
                       entry: entry,
                       onChanged: (updated) {
-                        context.read<DoctorScheduleCubit>().updateEntry(
-                          updated,
-                        );
+                        context.read<DoctorScheduleCubit>().updateEntry(updated);
                       },
                     );
                   },
@@ -104,19 +100,12 @@ class _ScheduleEntryTile extends StatelessWidget {
                 children: [
                   _TimeButton(
                     time: entry.startTime,
-                    onTap: entry.enabled
-                        ? () => _pickTime(context, true)
-                        : null,
+                    onTap: entry.enabled ? () => _pickTime(context, true) : null,
                   ),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: Text('-'),
-                  ),
+                  const Padding(padding: EdgeInsets.symmetric(horizontal: 8), child: Text('-')),
                   _TimeButton(
                     time: entry.endTime,
-                    onTap: entry.enabled
-                        ? () => _pickTime(context, false)
-                        : null,
+                    onTap: entry.enabled ? () => _pickTime(context, false) : null,
                   ),
                 ],
               ),
@@ -131,15 +120,10 @@ class _ScheduleEntryTile extends StatelessWidget {
     final picked = await showTimePicker(
       context: context,
       initialTime:
-          (isStart ? entry.startTime : entry.endTime) ??
-          const TimeOfDay(hour: 9, minute: 0),
+          (isStart ? entry.startTime : entry.endTime) ?? const TimeOfDay(hour: 9, minute: 0),
     );
     if (picked != null) {
-      onChanged(
-        isStart
-            ? entry.copyWith(startTime: picked)
-            : entry.copyWith(endTime: picked),
-      );
+      onChanged(isStart ? entry.copyWith(startTime: picked) : entry.copyWith(endTime: picked));
     }
   }
 }
@@ -157,15 +141,10 @@ class _TimeButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-          ),
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Text(
-          time?.format(context) ?? '--:--',
-          style: const TextStyle(fontSize: 14),
-        ),
+        child: Text(time?.format(context) ?? '--:--', style: const TextStyle(fontSize: 14)),
       ),
     );
   }

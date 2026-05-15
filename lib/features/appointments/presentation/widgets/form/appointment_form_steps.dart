@@ -189,7 +189,8 @@ class StepDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AppointmentScheduleCubit, AppointmentScheduleState>(
       builder: (context, state) {
-        return Column(
+        return
+          Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSectionLabel(context, 'visit_details'.tr()),

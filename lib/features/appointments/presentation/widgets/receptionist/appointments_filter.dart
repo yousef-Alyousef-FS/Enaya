@@ -10,7 +10,9 @@ import '../../../../appointments/presentation/widgets/shared/app_filter_date_ran
 import '../../../domain/entities/appointment_entity.dart';
 
 /// Clean, responsive filters using Wrap and card-based status toggles.
-class AppointmentsFilter extends StatelessWidget {
+///
+/// Renamed to `AppointmentsFilterWidget` to avoid collision with the filter model.
+class AppointmentsFilterWidget extends StatelessWidget {
   static const double _kControlHeight = 57;
 
   final List<AppointmentEntity> appointments;
@@ -20,7 +22,7 @@ class AppointmentsFilter extends StatelessWidget {
   final bool showDateRange;
   final bool showStatusChips;
 
-  const AppointmentsFilter({
+  const AppointmentsFilterWidget({
     super.key,
     this.appointments = const [],
     this.doctors,
@@ -250,13 +252,9 @@ class AppointmentsFilter extends StatelessWidget {
         ? accentColor.withAlpha(220)
         : accentColor.withAlpha(isNeutral ? 60 : 120);
 
-    final labelColor = isSelected
-        ? accentColor
-        : theme.colorScheme.onSurface.withAlpha(220);
+    final labelColor = isSelected ? accentColor : theme.colorScheme.onSurface.withAlpha(220);
 
-    final countBackground = isSelected
-        ? accentColor.withAlpha(50)
-        : accentColor.withAlpha(30);
+    final countBackground = isSelected ? accentColor.withAlpha(50) : accentColor.withAlpha(30);
 
     final countColor = isSelected ? accentColor : accentColor.withAlpha(240);
 
@@ -274,12 +272,12 @@ class AppointmentsFilter extends StatelessWidget {
             border: Border.all(color: borderColor, width: isSelected ? 2.2 : 1.2),
             boxShadow: isSelected
                 ? [
-                  BoxShadow(
-                    color: accentColor.withAlpha(40),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ]
+                    BoxShadow(
+                      color: accentColor.withAlpha(40),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
                 : null,
           ),
           child: Row(
@@ -293,11 +291,7 @@ class AppointmentsFilter extends StatelessWidget {
                     color: accentColor,
                     shape: BoxShape.circle,
                     boxShadow: [
-                      BoxShadow(
-                        color: accentColor.withAlpha(120),
-                        blurRadius: 5,
-                        spreadRadius: 1,
-                      ),
+                      BoxShadow(color: accentColor.withAlpha(120), blurRadius: 5, spreadRadius: 1),
                     ],
                   ),
                 ),
@@ -319,11 +313,7 @@ class AppointmentsFilter extends StatelessWidget {
                 ),
                 child: Text(
                   '$count',
-                  style: TextStyle(
-                    color: countColor,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w900,
-                  ),
+                  style: TextStyle(color: countColor, fontSize: 11, fontWeight: FontWeight.w900),
                 ),
               ),
             ],

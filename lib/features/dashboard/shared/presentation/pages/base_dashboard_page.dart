@@ -36,6 +36,14 @@ class _BaseDashboardPageState extends State<BaseDashboardPage> {
     _selectedIndex = widget.initialIndex;
   }
 
+  @override
+  void didUpdateWidget(covariant BaseDashboardPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialIndex != widget.initialIndex && _selectedIndex != widget.initialIndex) {
+      setState(() => _selectedIndex = widget.initialIndex);
+    }
+  }
+
   void _handleSelected(int index) {
     setState(() => _selectedIndex = index);
     widget.onItemSelected?.call(index);
@@ -86,6 +94,15 @@ class _AbstractDashboardPageState extends State<AbstractDashboardPage> {
   void initState() {
     super.initState();
     _selectedIndex = widget.initialSelectedIndex;
+  }
+
+  @override
+  void didUpdateWidget(covariant AbstractDashboardPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialSelectedIndex != widget.initialSelectedIndex &&
+        _selectedIndex != widget.initialSelectedIndex) {
+      setState(() => _selectedIndex = widget.initialSelectedIndex);
+    }
   }
 
   void _handleNavigationSelected(int index) {

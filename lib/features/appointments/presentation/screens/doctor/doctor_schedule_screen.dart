@@ -188,7 +188,6 @@ class DoctorScheduleScreen extends StatelessWidget {
         final colorScheme = Theme.of(context).colorScheme;
         return Scaffold(
           backgroundColor: colorScheme.surfaceContainerLowest,
-          appBar: _buildAppBar(context),
           body: SafeArea(child: content),
         );
       },

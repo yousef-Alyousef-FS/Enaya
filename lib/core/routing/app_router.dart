@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:enaya/features/appointments/data/models/appointments_overview_view_mode.dart';
 import 'package:go_router/go_router.dart';
@@ -107,14 +108,14 @@ class AppRouter {
         builder: (context, state) {
           final extra = state.extra;
           if (extra is! Map<String, dynamic>) {
-            return const Scaffold(body: Center(child: Text('Missing appointment details data')));
+            return Scaffold(body: Center(child: Text('missing_appointment_details_data'.tr())));
           }
 
           final appointment = extra['appointment'];
           final role = extra['role'];
 
           if (appointment is! AppointmentEntity || role is! AppointmentsOverviewMode) {
-            return const Scaffold(body: Center(child: Text('Invalid appointment details data')));
+            return Scaffold(body: Center(child: Text('invalid_appointment_details_data'.tr())));
           }
 
           return AppointmentDetailsScreen(
@@ -129,12 +130,12 @@ class AppRouter {
         builder: (context, state) {
           final extra = state.extra;
           if (extra is! Map<String, dynamic>) {
-            return const Scaffold(body: Center(child: Text('Missing appointment edit data')));
+            return Scaffold(body: Center(child: Text('missing_appointment_edit_data'.tr())));
           }
 
           final appointment = extra['appointment'];
           if (appointment is! AppointmentEntity) {
-            return const Scaffold(body: Center(child: Text('Invalid appointment edit data')));
+            return Scaffold(body: Center(child: Text('invalid_appointment_edit_data'.tr())));
           }
 
           return EditAppointmentScreen(appointment: appointment);

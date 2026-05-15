@@ -1,9 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import 'package:enaya/features/dashboard/shared/presentation/widgets/responsive_stats_grid.dart';
-import 'package:enaya/features/dashboard/shared/presentation/widgets/stat_card.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/widgets/cards/stat_card.dart';
+import '../../../../../core/widgets/common/responsive_stats_grid.dart';
 import '../../domain/entities/receptionist_dashboard_data.dart';
 
 class StatsSection extends StatelessWidget {

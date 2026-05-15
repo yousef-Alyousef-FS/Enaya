@@ -23,44 +23,64 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
     required this.rescheduleAppointmentUseCase,
   }) : super(DoctorAppointmentsState.initial());
 
-  Future<void> loadAppointments(
-    String doctorId, {
-    DateTime? date,
-    bool silent = false,
-  }) async {
+  Future<void> loadAppointments(String doctorId, {DateTime? date, bool silent = false}) async {
+    final anchorDate = date ?? DateTime.now();
+    final startOfDay = DateTime(anchorDate.year, anchorDate.month, anchorDate.day);
+    final futureRangeEnd = startOfDay.add(const Duration(days: 365));
+
     if (!silent) {
-      emit(
-        state.copyWith(
-          status: DoctorAppointmentsStatus.loading,
-          selectedDate: date,
-        ),
-      );
+      emit(state.copyWith(status: DoctorAppointmentsStatus.loading, selectedDate: startOfDay));
     }
 
-    final result = await getAppointmentsUseCase(
-      GetAppointmentsParams(
-        doctorId: doctorId,
-        date: date ?? state.selectedDate,
-      ),
-    );
+    // Fetch in pages to avoid truncation for busy doctors. We cap pages to avoid runaway loops.
+    const int pageSize = 100;
+    int page = 1;
+    final List<AppointmentEntity> accumulated = [];
+    String? failureMessage;
 
-    result.fold(
-      (failure) => emit(
-        state.copyWith(
-          status: DoctorAppointmentsStatus.failure,
-          errorMessage: failure.message,
+    while (true) {
+      final result = await getAppointmentsUseCase(
+        GetAppointmentsParams(
+          doctorId: doctorId,
+          date: startOfDay,
+          endDate: futureRangeEnd,
+          page: page,
+          limit: pageSize,
         ),
-      ),
-      (appointments) {
-        emit(
-          state.copyWith(
-            status: DoctorAppointmentsStatus.success,
-            appointments: appointments,
-          ),
-        );
-        _applyFilters();
-      },
+      );
+
+      var didBreak = false;
+      result.fold(
+        (failure) {
+          failureMessage = failure.message;
+          didBreak = true;
+        },
+        (appointments) {
+          accumulated.addAll(appointments);
+          // stop when page returned less than pageSize or we've retrieved 10 pages (~1000 items)
+          if (appointments.length < pageSize || page >= 10) {
+            didBreak = true;
+          }
+        },
+      );
+
+      if (didBreak) break;
+      page++;
+    }
+
+    if (failureMessage != null) {
+      emit(state.copyWith(status: DoctorAppointmentsStatus.failure, errorMessage: failureMessage));
+      return;
+    }
+
+    final futureAppointments = accumulated.where((appointment) {
+      return !appointment.dateTime.isBefore(DateTime.now());
+    }).toList();
+
+    emit(
+      state.copyWith(status: DoctorAppointmentsStatus.success, appointments: futureAppointments),
     );
+    _applyFilters();
   }
 
   void updateSearchQuery(String query) {
@@ -69,17 +89,13 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
   }
 
   void updateStatusFilter(AppointmentStatus? status) {
-    emit(
-      state.copyWith(statusFilter: status, clearStatusFilter: status == null),
-    );
+    emit(state.copyWith(statusFilter: status, clearStatusFilter: status == null));
     _applyFilters();
   }
 
   AppointmentEntity? _findAppointment(String appointmentId) {
     try {
-      return state.appointments.firstWhere(
-        (appointment) => appointment.id == appointmentId,
-      );
+      return state.appointments.firstWhere((appointment) => appointment.id == appointmentId);
     } catch (_) {
       return null;
     }
@@ -93,8 +109,7 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
       filtered = filtered
           .where(
             (a) =>
-                a.patientName.toLowerCase().contains(query) ||
-                a.id.toLowerCase().contains(query),
+                a.patientName.toLowerCase().contains(query) || a.id.toLowerCase().contains(query),
           )
           .toList();
     }
@@ -103,20 +118,17 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
       filtered = filtered.where((a) {
         // Logical Fix: If filtering by "Waiting" (Arrived), ALWAYS keep the active patient (inProgress) visible
         if (state.statusFilter == AppointmentStatus.arrived) {
-          return a.status == AppointmentStatus.arrived ||
-              a.status == AppointmentStatus.inProgress;
+          return a.status == AppointmentStatus.arrived || a.status == AppointmentStatus.inProgress;
         }
         return a.status == state.statusFilter;
       }).toList();
     }
 
     filtered.sort((a, b) {
-      if (a.status == AppointmentStatus.inProgress &&
-          b.status != AppointmentStatus.inProgress) {
+      if (a.status == AppointmentStatus.inProgress && b.status != AppointmentStatus.inProgress) {
         return -1;
       }
-      if (b.status == AppointmentStatus.inProgress &&
-          a.status != AppointmentStatus.inProgress) {
+      if (b.status == AppointmentStatus.inProgress && a.status != AppointmentStatus.inProgress) {
         return 1;
       }
       return a.dateTime.compareTo(b.dateTime);
@@ -136,20 +148,14 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
       return;
     }
 
-    final validationMessage = _policy.validateStatusTransition(
-      appointment,
-      status,
-    );
+    final validationMessage = _policy.validateStatusTransition(appointment, status);
     if (validationMessage != null) {
       emit(state.copyWith(errorMessage: validationMessage));
       return;
     }
 
     final result = await updateStatusUseCase(
-      UpdateAppointmentStatusParams(
-        appointmentId: appointmentId,
-        status: status,
-      ),
+      UpdateAppointmentStatusParams(appointmentId: appointmentId, status: status),
     );
 
     result.fold(
@@ -171,17 +177,9 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
     );
   }
 
-  Future<void> cancelAppointment(
-    String doctorId,
-    String appointmentId, {
-    String? reason,
-  }) async {
+  Future<void> cancelAppointment(String doctorId, String appointmentId, {String? reason}) async {
     final result = await cancelAppointmentUseCase(
-      CancelAppointmentParams(
-        appointmentId: appointmentId,
-        cancelledBy: 'doctor',
-        reason: reason,
-      ),
+      CancelAppointmentParams(appointmentId: appointmentId, cancelledBy: 'doctor', reason: reason),
     );
     result.fold(
       (failure) => emit(state.copyWith(errorMessage: failure.message)),
@@ -195,10 +193,7 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
     DateTime newDateTime,
   ) async {
     final result = await rescheduleAppointmentUseCase(
-      RescheduleAppointmentParams(
-        appointmentId: appointmentId,
-        newDateTime: newDateTime,
-      ),
+      RescheduleAppointmentParams(appointmentId: appointmentId, newDateTime: newDateTime),
     );
     result.fold(
       (failure) => emit(state.copyWith(errorMessage: failure.message)),

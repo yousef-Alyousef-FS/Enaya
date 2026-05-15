@@ -48,7 +48,5 @@ export 'appointments_page.dart';
 // Screens
 export 'screens/schedule_appointment_screen.dart';
 export 'screens/appointment_details_screen.dart';
-export 'screens/doctor_work_schedule_screen.dart';
 export 'screens/receptionist/receptionist_appointments_screen.dart';
-export 'screens/doctor/doctor_schedule_screen.dart';
 export 'screens/patient/patient_appointments_screen.dart';

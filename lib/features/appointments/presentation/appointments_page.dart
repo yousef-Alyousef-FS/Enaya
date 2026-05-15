@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import '../../../core/di/injection.dart';
 import '../../../core/services/patient_session.dart';
@@ -5,7 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../data/models/appointments_overview_view_mode.dart';
 import 'cubit/appointments_cubit_imports.dart';
 import 'screens/receptionist/receptionist_appointments_screen.dart';
-import 'screens/doctor/doctor_schedule_screen.dart';
+import 'screens/doctor/doctor_appointments_screen.dart';
 import 'screens/patient/patient_appointments_screen.dart';
 
 /// Entry point that selects the appointments experience based on the active role.
@@ -57,10 +58,7 @@ class AppointmentsPage extends StatelessWidget {
 
   /// Resolves the final mode by preferring a developer override and falling
   /// back to the authenticated user's role.
-  static AppointmentsOverviewMode resolveMode({
-    String? requestedMode,
-    int? roleId,
-  }) {
+  static AppointmentsOverviewMode resolveMode({String? requestedMode, int? roleId}) {
     if (requestedMode != null) {
       switch (requestedMode.toLowerCase()) {
         case 'receptionist':
@@ -83,8 +81,7 @@ class AppointmentsPage extends StatelessWidget {
       case AppointmentsOverviewMode.receptionist:
         return provideCubit
             ? BlocProvider(
-                create: (_) =>
-                    getIt<AppointmentsManagerCubit>()..loadInitialData(),
+                create: (_) => getIt<AppointmentsManagerCubit>()..loadInitialData(),
                 child: ReceptionistAppointmentsScreen(
                   isEmbedded: isEmbedded,
                   showFiltersWhenEmbedded: showFiltersWhenEmbedded,
@@ -96,36 +93,26 @@ class AppointmentsPage extends StatelessWidget {
               );
 
       case AppointmentsOverviewMode.doctor:
-        final doctorId =
-            specificDoctorId ??
-            currentUserId ??
-            'd1'; // Fallback to default doctor
+        final doctorId = specificDoctorId ?? currentUserId ?? 'd1'; // Fallback to default doctor
         return provideCubit
             ? BlocProvider(
-                create: (_) =>
-                    getIt<DoctorAppointmentsCubit>()
-                      ..loadAppointments(doctorId),
-                child: DoctorScheduleScreen(
-                  doctorId: doctorId,
-                  isEmbedded: isEmbedded,
-                ),
+                create: (_) => getIt<DoctorAppointmentsCubit>()..loadAppointments(doctorId),
+                child: DoctorAppointmentsScreen(doctorId: doctorId, isEmbedded: isEmbedded),
               )
-            : DoctorScheduleScreen(doctorId: doctorId, isEmbedded: isEmbedded);
+            : DoctorAppointmentsScreen(doctorId: doctorId, isEmbedded: isEmbedded);
 
       case AppointmentsOverviewMode.patient:
         // Prefer explicitly passed patientId, then session, then fallback to 'p1'
         final patientId = specificPatientId ?? currentUserId ?? 'p1';
         return provideCubit
             ? BlocProvider(
-                create: (_) =>
-                    getIt<PatientAppointmentsCubit>()
-                      ..loadAppointments(patientId),
+                create: (_) => getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
                 child: PatientAppointmentsScreen(isEmbedded: isEmbedded),
               )
             : PatientAppointmentsScreen(isEmbedded: isEmbedded);
 
       default:
-        return const Center(child: Text('Invalid View Mode'));
+        return Center(child: Text('invalid_view_mode'.tr()));
     }
   }
 }

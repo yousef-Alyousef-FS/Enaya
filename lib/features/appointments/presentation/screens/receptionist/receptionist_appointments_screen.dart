@@ -36,9 +36,7 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
 
         final content = Center(
           child: Container(
-            constraints: isEmbedded
-                ? null
-                : const BoxConstraints(maxWidth: 1400),
+            constraints: isEmbedded ? null : const BoxConstraints(maxWidth: 1400),
             child: ListView(
               padding: isEmbedded
                   ? EdgeInsets.zero
@@ -67,17 +65,10 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
                         now.month == selected.month &&
                         now.day == selected.day;
                     final headerTitle = !isToday
-                        ? DateFormat.yMMMd(
-                            context.locale.toString(),
-                          ).format(selected)
-                        : (isEmbedded
-                              ? 'today_appointments'.tr()
-                              : 'appointments_list'.tr());
+                        ? DateFormat.yMMMd(context.locale.toString()).format(selected)
+                        : (isEmbedded ? 'today_appointments'.tr() : 'appointments_list'.tr());
 
-                    return AppSectionHeader(
-                      title: headerTitle,
-                      isLoading: state.isLoading,
-                    );
+                    return AppSectionHeader(title: headerTitle, isLoading: state.isLoading);
                   },
                 ),
                 const SizedBox(height: 16),
@@ -85,9 +76,7 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
                 if (state.errorMessage != null) ...[
                   AppointmentsInlineError(
                     message: state.errorMessage,
-                    onRetry: () => context
-                        .read<AppointmentsManagerCubit>()
-                        .refreshCurrentView(),
+                    onRetry: () => context.read<AppointmentsManagerCubit>().refreshCurrentView(),
                   ),
                   const SizedBox(height: 16),
                 ],
@@ -96,11 +85,10 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
                 if (!isEmbedded || showFiltersWhenEmbedded) ...[
                   Padding(
                     padding: const EdgeInsets.only(bottom: 16),
-                    child: AppointmentsFilter(
+                    child: AppointmentsFilterWidget(
                       appointments: state.appointments,
                       showDateRange: !isEmbedded, // 🚨 Hidden in Home Page
-                      showStatusChips:
-                          !isEmbedded, // Hidden in Home Page for cleaner look
+                      showStatusChips: !isEmbedded, // Hidden in Home Page for cleaner look
                       showSearch: true, // Always visible
                       showDoctorSelector: true, // Always visible
                     ),
@@ -140,9 +128,8 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
                           extra: {
                             'appointment': app,
                             'role': AppointmentsOverviewMode.receptionist,
-                            'onDataChanged': () => context
-                                .read<AppointmentsManagerCubit>()
-                                .refreshCurrentView(),
+                            'onDataChanged': () =>
+                                context.read<AppointmentsManagerCubit>().refreshCurrentView(),
                           },
                         );
                       },
@@ -153,9 +140,7 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
                         );
 
                         if (result == true && context.mounted) {
-                          context
-                              .read<AppointmentsManagerCubit>()
-                              .refreshCurrentView();
+                          context.read<AppointmentsManagerCubit>().refreshCurrentView();
                         }
                       },
                       onStatusChange: (app, status, reason) {

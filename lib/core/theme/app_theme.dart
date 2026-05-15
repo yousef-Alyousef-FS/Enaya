@@ -30,7 +30,7 @@ class AppTheme {
       useMaterial3: true,
       fontFamily: appFontFamily,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: colorScheme.surface,
+      scaffoldBackgroundColor: AppColors.background,
       dividerColor: colorScheme.outline,
 
       // Cards
@@ -149,7 +149,7 @@ class AppTheme {
       useMaterial3: true,
       fontFamily: appFontFamily,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: colorScheme.surface,
+      scaffoldBackgroundColor: AppColors.darkBackground,
 
       cardTheme: CardThemeData(
         color: colorScheme.surface,

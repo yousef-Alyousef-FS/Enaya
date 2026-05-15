@@ -10,9 +10,10 @@ import 'package:enaya/core/theme/app_colors.dart';
 import 'package:enaya/features/dashboard/shared/presentation/models/dashboard_nav_item.dart';
 import 'package:enaya/features/dashboard/shared/presentation/pages/base_dashboard_page.dart';
 import 'package:enaya/features/dashboard/shared/presentation/widgets/dashboard_overview_builder.dart';
-import 'package:enaya/features/dashboard/shared/presentation/widgets/stat_card.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../../core/widgets/cards/stat_card.dart';
+import '../../../../../core/widgets/common/responsive_stats_grid.dart';
 import '../../../../../core/widgets/feature_coming_soon_state.dart';
 import '../../../../appointments/presentation/appointments_page.dart';
 import '../../../../appointments/domain/entities/appointment_status.dart';
@@ -22,7 +23,6 @@ import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
 import '../cubit/doctor_dashboard_cubit.dart';
 import '../cubit/doctor_dashboard_state.dart';
 
-import 'package:enaya/features/dashboard/shared/presentation/widgets/responsive_stats_grid.dart';
 
 class DoctorDashboardPage extends StatefulWidget {
   const DoctorDashboardPage({super.key});
@@ -68,7 +68,6 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
         return AppointmentsPage(
           mode: AppointmentsOverviewMode.doctor,
           specificDoctorId: doctorId,
-          isEmbedded: false,
         );
       case 2:
         return FeatureComingSoonState(
@@ -108,7 +107,6 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
     }
 
     return DashboardOverviewBuilder(
-      header: _buildGreeting(state),
       stats: _buildStatsGrid(state),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -143,33 +141,6 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
           _buildUpcomingList(context, state, doctorId),
         ],
       ),
-    );
-  }
-
-  Widget _buildGreeting(DoctorDashboardState state) {
-    return Builder(
-      builder: (context) {
-        final theme = Theme.of(context);
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'welcome_doctor'.tr(),
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 28,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              state.stats != null
-                  ? 'doctor_overview_subtitle'.tr()
-                  : 'loading'.tr(),
-              style: theme.textTheme.bodyMedium?.copyWith(fontSize: 16),
-            ),
-          ],
-        );
-      },
     );
   }
 

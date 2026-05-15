@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../routing/app_router.dart';
@@ -10,46 +11,43 @@ class DeveloperScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Developer Sandbox'),
+        title: Text('developer_sandbox'.tr()),
         backgroundColor: Colors.black87,
         foregroundColor: Colors.white,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildSection('Authentication', [
-            _buildItem(context, 'Login Screen', AppRouter.login),
-            _buildItem(context, 'Signup Screen', AppRouter.signup),
-            _buildItem(context, 'Forgot Password', AppRouter.forgotPassword),
+          _buildSection('developer_authentication'.tr(), [
+            _buildItem(context, 'developer_login_screen'.tr(), AppRouter.login),
+            _buildItem(context, 'developer_signup_screen'.tr(), AppRouter.signup),
+            _buildItem(context, 'developer_forgot_password'.tr(), AppRouter.forgotPassword),
             _buildItem(
               context,
-              'Verify Email',
+              'developer_verify_email'.tr(),
               '${AppRouter.verifyEmail}?email=test@enaya.com',
             ),
           ]),
           const SizedBox(height: 20),
-          _buildSection('Dashboards', [
-            _buildItem(context, 'Doctor Dashboard', AppRouter.doctorHome),
-            _buildItem(context, 'Patient Dashboard', AppRouter.patientHome),
+          _buildSection('developer_dashboards'.tr(), [
+            _buildItem(context, 'developer_doctor_dashboard'.tr(), AppRouter.doctorHome),
+            _buildItem(context, 'developer_patient_dashboard'.tr(), AppRouter.patientHome),
             _buildItem(
               context,
-              'Receptionist Dashboard',
+              'developer_receptionist_dashboard'.tr(),
               AppRouter.receptionistHome,
             ),
           ]),
           const SizedBox(height: 20),
-          _buildSection('System & Misc', [
-            _buildItem(context, 'Splash Screen', AppRouter.splash),
-            _buildItem(context, 'No Internet Screen', AppRouter.noInternet),
+          _buildSection('developer_system_misc'.tr(), [
+            _buildItem(context, 'developer_splash_screen'.tr(), AppRouter.splash),
+            _buildItem(context, 'developer_no_internet_screen'.tr(), AppRouter.noInternet),
           ]),
           const SizedBox(height: 40),
           Center(
             child: Text(
-              'Dev Mode is ACTIVE',
-              style: TextStyle(
-                color: Colors.red[700],
-                fontWeight: FontWeight.bold,
-              ),
+              'developer_dev_mode_active'.tr(),
+              style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
             ),
           ),
         ],

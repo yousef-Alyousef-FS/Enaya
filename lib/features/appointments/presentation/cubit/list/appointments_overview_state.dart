@@ -74,11 +74,7 @@ class AppointmentsOverviewState extends Equatable {
     // If the user selected another day, use that day's start as the reference.
     final reference = isTodaySelected
         ? DateTime.now()
-        : DateTime(
-            filter.startDate.year,
-            filter.startDate.month,
-            filter.startDate.day,
-          );
+        : DateTime(filter.startDate.year, filter.startDate.month, filter.startDate.day);
 
     return appointments
         .where(
@@ -94,25 +90,26 @@ class AppointmentsOverviewState extends Equatable {
     if (appointments.isEmpty) return null;
     final reference = isTodaySelected
         ? DateTime.now()
-        : DateTime(
-            filter.startDate.year,
-            filter.startDate.month,
-            filter.startDate.day,
-          );
+        : DateTime(filter.startDate.year, filter.startDate.month, filter.startDate.day);
 
-    return appointments.firstWhere(
-      (a) => a.status == AppointmentStatus.inProgress,
-      orElse: () => appointments.firstWhere(
-        (a) => a.status == AppointmentStatus.arrived,
-        orElse: () => appointments.firstWhere(
-          (a) =>
-              (a.status == AppointmentStatus.scheduled ||
-                  a.status == AppointmentStatus.confirmed) &&
-              !a.dateTime.isBefore(reference),
-          orElse: () => appointments.first,
-        ),
-      ),
-    );
+    // Prefer in-progress, then arrived, then upcoming scheduled/confirmed for reference date.
+    try {
+      return appointments.firstWhere((a) => a.status == AppointmentStatus.inProgress);
+    } catch (_) {}
+
+    try {
+      return appointments.firstWhere((a) => a.status == AppointmentStatus.arrived);
+    } catch (_) {}
+
+    try {
+      return appointments.firstWhere((a) {
+        return (a.status == AppointmentStatus.scheduled ||
+                a.status == AppointmentStatus.confirmed) &&
+            !a.dateTime.isBefore(reference);
+      });
+    } catch (_) {}
+
+    return null;
   }
 
   AppointmentsOverviewState copyWith({
@@ -138,9 +135,7 @@ class AppointmentsOverviewState extends Equatable {
       hasMore: hasMore ?? this.hasMore,
       isLoading: isLoading ?? this.isLoading,
       isPageLoading: isPageLoading ?? this.isPageLoading,
-      errorMessage: clearErrorMessage
-          ? null
-          : errorMessage ?? this.errorMessage,
+      errorMessage: clearErrorMessage ? null : errorMessage ?? this.errorMessage,
     );
   }
 
