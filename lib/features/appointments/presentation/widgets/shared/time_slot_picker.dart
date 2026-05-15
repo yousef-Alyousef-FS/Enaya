@@ -51,10 +51,7 @@ class TimeSlotPicker extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 20),
         child: Text(
           'no_slots_available'.tr(),
-          style: TextStyle(
-            color: theme.colorScheme.onSurfaceVariant,
-            fontStyle: FontStyle.italic,
-          ),
+          style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontStyle: FontStyle.italic),
         ),
       ),
     );
@@ -71,7 +68,7 @@ class TimeSlotPicker extends StatelessWidget {
   Widget _buildSlotItem(BuildContext context, TimeSlot slot) {
     final bool isSelected = selectedSlot?.dateTime == slot.dateTime;
     final bool isSelectable = slot.isAvailable;
-    final String timeStr = DateFormat('hh:mm a').format(slot.dateTime);
+    final String timeStr = DateFormat('hh:mm a', 'en_US').format(slot.dateTime);
     final theme = Theme.of(context);
 
     return InkWell(
@@ -107,11 +104,7 @@ class TimeSlotPicker extends StatelessWidget {
                   _getStatusKey(slot.status).tr(),
                   style: TextStyle(
                     fontSize: 10,
-                    color: _getTextColor(
-                      slot,
-                      isSelected,
-                      theme,
-                    ).withAlpha(180),
+                    color: _getTextColor(slot, isSelected, theme).withAlpha(180),
                   ),
                 ),
               ),
@@ -145,12 +138,8 @@ class TimeSlotPicker extends StatelessWidget {
 
     return switch (slot.status) {
       TimeSlotStatus.available => theme.colorScheme.surfaceContainerLow,
-      TimeSlotStatus.occupied => theme.colorScheme.errorContainer.withAlpha(
-        110,
-      ),
-      TimeSlotStatus.breakTime => theme.colorScheme.tertiaryContainer.withAlpha(
-        120,
-      ),
+      TimeSlotStatus.occupied => theme.colorScheme.errorContainer.withAlpha(110),
+      TimeSlotStatus.breakTime => theme.colorScheme.tertiaryContainer.withAlpha(120),
       TimeSlotStatus.offDay => theme.colorScheme.surfaceContainerHighest,
     };
   }

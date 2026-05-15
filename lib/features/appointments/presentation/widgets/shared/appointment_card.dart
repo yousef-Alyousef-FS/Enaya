@@ -17,8 +17,7 @@ class AppointmentCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final locale = context.locale.toString();
-    final time = DateFormat.jm(locale).format(appointment.dateTime);
+    final time = DateFormat.jm('en_US').format(appointment.dateTime);
     final isRtl = Directionality.of(context).name == 'rtl';
     final primaryName = mode == AppointmentsOverviewMode.patient
         ? appointment.doctorName

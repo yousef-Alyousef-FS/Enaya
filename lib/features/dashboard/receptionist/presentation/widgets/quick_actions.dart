@@ -48,7 +48,7 @@ class QuickActions extends StatelessWidget {
     ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 4),
       child: ResponsiveStatsGrid(
         isStats: false, // Smaller height for action buttons
         children: actions,

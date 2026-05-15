@@ -170,6 +170,11 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
             body: Column(
               children: [
                 _buildStepper(context),
+                Divider(
+                  height: 1,
+                  thickness: 1,
+                  color: theme.colorScheme.outlineVariant.withAlpha(60),
+                ),
                 Expanded(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 500),
@@ -187,12 +192,14 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
                     },
                     child: SingleChildScrollView(
                       key: ValueKey(_activeStep),
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+                      padding: const EdgeInsets.fromLTRB(24, 12, 24, 120),
                       physics: const BouncingScrollPhysics(),
-                      child: Center(
+                      child: Align(
+                        alignment: Alignment.topCenter,
                         child: ConstrainedBox(
                           constraints: const BoxConstraints(maxWidth: 800),
                           child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               _buildCurrentStep(state),
                               if (state.errorMessage != null) _buildErrorWidget(context, state),
@@ -216,15 +223,12 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
   Widget _buildStepper(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        border: Border(bottom: BorderSide(color: theme.colorScheme.outlineVariant.withAlpha(40))),
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      decoration: BoxDecoration(color: theme.colorScheme.surface),
       child: EasyStepper(
         activeStep: _activeStep,
         lineStyle: LineStyle(
-          lineLength: 70,
+          lineLength: 56,
           lineType: LineType.normal,
           defaultLineColor: theme.colorScheme.outlineVariant.withAlpha(100),
           finishedLineColor: theme.colorScheme.primary,
@@ -232,9 +236,9 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
         activeStepTextColor: theme.colorScheme.primary,
         finishedStepTextColor: theme.colorScheme.primary,
         unreachedStepTextColor: theme.colorScheme.onSurfaceVariant,
-        internalPadding: 0,
+        internalPadding: 8,
         showLoadingAnimation: false,
-        stepRadius: 22,
+        stepRadius: 20,
         showStepBorder: false,
         enableStepTapping: false,
         steps: [

@@ -33,8 +33,7 @@ class AppointmentDetailsScreen extends StatefulWidget {
   });
 
   @override
-  State<AppointmentDetailsScreen> createState() =>
-      _AppointmentDetailsScreenState();
+  State<AppointmentDetailsScreen> createState() => _AppointmentDetailsScreenState();
 }
 
 class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
@@ -81,9 +80,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
             final appointment = state.appointment ?? widget.appointment;
 
             return Scaffold(
-              backgroundColor: isDark
-                  ? AppColors.darkBackground
-                  : AppColors.background,
+              backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
               appBar: AppBar(
                 title: Text('appointment_details'.tr()),
                 backgroundColor: Colors.transparent,
@@ -140,10 +137,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              theme.colorScheme.primary,
-              theme.colorScheme.primary.withAlpha(200),
-            ],
+            colors: [theme.colorScheme.primary, theme.colorScheme.primary.withAlpha(200)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -153,11 +147,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
             Positioned(
               right: -20,
               top: -20,
-              child: Icon(
-                Icons.calendar_month,
-                size: 140,
-                color: Colors.white.withAlpha(20),
-              ),
+              child: Icon(Icons.calendar_month, size: 140, color: Colors.white.withAlpha(20)),
             ),
             Padding(
               padding: const EdgeInsets.all(24),
@@ -185,11 +175,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(
-                        Icons.medical_services_outlined,
-                        color: Colors.white70,
-                        size: 18,
-                      ),
+                      const Icon(Icons.medical_services_outlined, color: Colors.white70, size: 18),
                       const SizedBox(width: 8),
                       Text(
                         appointment.doctorName,
@@ -226,21 +212,14 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
           const SizedBox(width: 6),
           Text(
             _roleLabel(widget.role),
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildInfoSection(
-    BuildContext context,
-    AppointmentEntity appointment,
-  ) {
+  Widget _buildInfoSection(BuildContext context, AppointmentEntity appointment) {
     final theme = Theme.of(context);
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -255,19 +234,14 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
               _buildInfoCard(
                 icon: Icons.event_available,
                 label: 'date'.tr(),
-                value: DateFormat(
-                  'EEEE, MMM d',
-                  context.locale.toString(),
-                ).format(appointment.dateTime),
+                value: DateFormat('EEEE, MMM d', 'en_US').format(appointment.dateTime),
                 color: theme.colorScheme.primary,
               ),
               const SizedBox(height: 12),
               _buildInfoCard(
                 icon: Icons.access_time,
                 label: 'time'.tr(),
-                value: DateFormat.jm(
-                  context.locale.toString(),
-                ).format(appointment.dateTime),
+                value: DateFormat.jm('en_US').format(appointment.dateTime),
                 color: AppColors.accentMint,
               ),
             ] else ...[
@@ -277,10 +251,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                     child: _buildInfoCard(
                       icon: Icons.event_available,
                       label: 'date'.tr(),
-                      value: DateFormat(
-                        'EEEE, MMM d',
-                        context.locale.toString(),
-                      ).format(appointment.dateTime),
+                      value: DateFormat('EEEE, MMM d', 'en_US').format(appointment.dateTime),
                       color: theme.colorScheme.primary,
                     ),
                   ),
@@ -289,9 +260,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                     child: _buildInfoCard(
                       icon: Icons.access_time,
                       label: 'time'.tr(),
-                      value: DateFormat.jm(
-                        context.locale.toString(),
-                      ).format(appointment.dateTime),
+                      value: DateFormat.jm('en_US').format(appointment.dateTime),
                       color: AppColors.accentMint,
                     ),
                   ),
@@ -313,10 +282,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     );
   }
 
-  Widget _buildClinicalSection(
-    BuildContext context,
-    AppointmentEntity appointment,
-  ) {
+  Widget _buildClinicalSection(BuildContext context, AppointmentEntity appointment) {
     Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,10 +342,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
                   children: [
                     Text(
                       label,
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontSize: 11,
-                      ),
+                      style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 11),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -437,21 +400,14 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
           const SizedBox(height: 10),
           Text(
             content,
-            style: TextStyle(
-              fontSize: 14,
-              color: theme.colorScheme.onSurface,
-              height: 1.5,
-            ),
+            style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface, height: 1.5),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBottomActions(
-    BuildContext context,
-    AppointmentDetailsState state,
-  ) {
+  Widget _buildBottomActions(BuildContext context, AppointmentDetailsState state) {
     final appointment = state.appointment ?? widget.appointment;
     final isLoading = state.isLoading;
     final theme = Theme.of(context);
@@ -481,31 +437,15 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
         color: theme.cardColor,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
-          ),
+          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 10, offset: const Offset(0, -5)),
         ],
       ),
       child: isCompact
           ? Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: _buildActionControls(
-                context,
-                appointment,
-                isLoading,
-                compact: true,
-              ),
+              children: _buildActionControls(context, appointment, isLoading, compact: true),
             )
-          : Row(
-              children: _buildActionControls(
-                context,
-                appointment,
-                isLoading,
-                compact: false,
-              ),
-            ),
+          : Row(children: _buildActionControls(context, appointment, isLoading, compact: false)),
     );
   }
 
@@ -536,11 +476,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
         ),
       );
     } else if (widget.role == AppointmentsOverviewMode.doctor) {
-      controls.add(
-        Expanded(
-          child: _buildDoctorPrimaryAction(context, appointment, isLoading),
-        ),
-      );
+      controls.add(Expanded(child: _buildDoctorPrimaryAction(context, appointment, isLoading)));
       controls.add(const SizedBox(width: 12));
       controls.add(
         _buildCircleAction(
@@ -598,17 +534,12 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
         return FilledButton.icon(
           onPressed: onPressed,
           icon: Icon(icon, size: 20),
-          label: Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
+          label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
           style: FilledButton.styleFrom(
             backgroundColor: color ?? theme.colorScheme.primary,
             foregroundColor: theme.colorScheme.onPrimary,
             padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
         );
       },
@@ -663,16 +594,11 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
       color: color,
       onPressed: isLoading || nextStatus == null
           ? null
-          : () => context.read<AppointmentDetailsCubit>().updateStatus(
-              nextStatus!,
-            ),
+          : () => context.read<AppointmentDetailsCubit>().updateStatus(nextStatus!),
     );
   }
 
-  void _showDoctorMoreActions(
-    BuildContext context,
-    AppointmentEntity appointment,
-  ) {
+  void _showDoctorMoreActions(BuildContext context, AppointmentEntity appointment) {
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -691,10 +617,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(
-                Icons.cancel_outlined,
-                color: AppColors.medicalRed,
-              ),
+              leading: const Icon(Icons.cancel_outlined, color: AppColors.medicalRed),
               title: Text(
                 'cancel_appointment'.tr(),
                 style: const TextStyle(color: AppColors.medicalRed),
@@ -740,10 +663,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
   Future<void> _rescheduleAppointment(BuildContext context) async {
     final result = await context.push(
       AppRouter.scheduleAppointment,
-      extra: {
-        'appointment': widget.appointment,
-        'mode': AppointmentScreenMode.reschedule,
-      },
+      extra: {'appointment': widget.appointment, 'mode': AppointmentScreenMode.reschedule},
     );
 
     if (result == true) {
@@ -776,24 +696,17 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
         appointment.status == AppointmentStatus.cancelled;
   }
 
-  Widget _buildStatusBanner(
-    BuildContext context,
-    AppointmentEntity appointment,
-  ) {
+  Widget _buildStatusBanner(BuildContext context, AppointmentEntity appointment) {
     final isCancelled = appointment.status == AppointmentStatus.cancelled;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: (isCancelled ? AppColors.error : AppColors.success).withAlpha(
-          12,
-        ),
+        color: (isCancelled ? AppColors.error : AppColors.success).withAlpha(12),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: (isCancelled ? AppColors.error : AppColors.success).withAlpha(
-            40,
-          ),
+          color: (isCancelled ? AppColors.error : AppColors.success).withAlpha(40),
         ),
       ),
       child: Row(
@@ -805,9 +718,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              isCancelled
-                  ? 'appointment_cancelled'.tr()
-                  : 'appointment_completed'.tr(),
+              isCancelled ? 'appointment_cancelled'.tr() : 'appointment_completed'.tr(),
               style: TextStyle(
                 color: isCancelled ? AppColors.error : AppColors.success,
                 fontWeight: FontWeight.bold,
@@ -819,10 +730,7 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     );
   }
 
-  Widget _buildReadOnlyActionsHint(
-    BuildContext context,
-    AppointmentEntity appointment,
-  ) {
+  Widget _buildReadOnlyActionsHint(BuildContext context, AppointmentEntity appointment) {
     return Row(
       children: [
         const Icon(Icons.info_outline, color: AppColors.gray500, size: 20),

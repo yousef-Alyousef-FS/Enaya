@@ -99,16 +99,16 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSectionTitle('quick_actions'.tr()),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           const QuickActions(),
-          const SizedBox(height: 32),
+          const SizedBox(height: 30),
 
           _buildSectionTitle('stats'.tr()),
-          const SizedBox(height: 16),
+          const SizedBox(height: 10),
           _buildStatsGrid(state),
-          const SizedBox(height: 32),
-
-          const SizedBox(height: 16),
+          const SizedBox(height: 30),
+          _buildSectionTitle('today_appointments'.tr()),
+          const SizedBox(height: 10),
           const AppointmentsPage(
             mode: AppointmentsOverviewMode.receptionist,
             provideCubit: true,

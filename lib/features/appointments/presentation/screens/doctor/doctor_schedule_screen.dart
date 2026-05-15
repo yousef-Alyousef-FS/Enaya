@@ -18,11 +18,7 @@ class DoctorScheduleScreen extends StatelessWidget {
   final String doctorId;
   final bool isEmbedded;
 
-  const DoctorScheduleScreen({
-    super.key,
-    required this.doctorId,
-    this.isEmbedded = false,
-  });
+  const DoctorScheduleScreen({super.key, required this.doctorId, this.isEmbedded = false});
 
   @override
   Widget build(BuildContext context) {
@@ -43,22 +39,17 @@ class DoctorScheduleScreen extends StatelessWidget {
         final int activeAndWaitingCount = state.appointments
             .where(
               (a) =>
-                  a.status == AppointmentStatus.arrived ||
-                  a.status == AppointmentStatus.inProgress,
+                  a.status == AppointmentStatus.arrived || a.status == AppointmentStatus.inProgress,
             )
             .length;
 
         final content = RefreshIndicator(
-          onRefresh: () async => context
-              .read<DoctorAppointmentsCubit>()
-              .loadAppointments(doctorId),
+          onRefresh: () async => context.read<DoctorAppointmentsCubit>().loadAppointments(doctorId),
           child: CustomScrollView(
             shrinkWrap: isEmbedded,
             physics: isEmbedded
                 ? const NeverScrollableScrollPhysics()
-                : const BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics(),
-                  ),
+                : const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             slivers: [
               SliverToBoxAdapter(
                 child: Padding(
@@ -68,16 +59,11 @@ class DoctorScheduleScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (!isEmbedded) ...[
-                        _buildSearchField(context),
-                        const SizedBox(height: 24),
-                      ],
+                      if (!isEmbedded) ...[_buildSearchField(context), const SizedBox(height: 24)],
                       DoctorQuickStats(
                         total: state.appointments.length,
                         completed: state.appointments
-                            .where(
-                              (a) => a.status == AppointmentStatus.completed,
-                            )
+                            .where((a) => a.status == AppointmentStatus.completed)
                             .length,
                         waiting: activeAndWaitingCount,
                         selectedIndex: selectedStatIndex,
@@ -88,14 +74,10 @@ class DoctorScheduleScreen extends StatelessWidget {
                               cubit.updateStatusFilter(null);
                               break;
                             case 1:
-                              cubit.updateStatusFilter(
-                                AppointmentStatus.arrived,
-                              );
+                              cubit.updateStatusFilter(AppointmentStatus.arrived);
                               break;
                             case 2:
-                              cubit.updateStatusFilter(
-                                AppointmentStatus.completed,
-                              );
+                              cubit.updateStatusFilter(AppointmentStatus.completed);
                               break;
                           }
                         },
@@ -118,22 +100,19 @@ class DoctorScheduleScreen extends StatelessWidget {
                 ),
               ),
 
-              if (state.status == DoctorAppointmentsStatus.failure &&
-                  state.errorMessage != null)
+              if (state.status == DoctorAppointmentsStatus.failure && state.errorMessage != null)
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
                     child: AppointmentsInlineError(
                       message: state.errorMessage,
-                      onRetry: () => context
-                          .read<DoctorAppointmentsCubit>()
-                          .loadAppointments(doctorId),
+                      onRetry: () =>
+                          context.read<DoctorAppointmentsCubit>().loadAppointments(doctorId),
                     ),
                   ),
                 ),
 
-              if (state.status == DoctorAppointmentsStatus.loading &&
-                  state.appointments.isEmpty)
+              if (state.status == DoctorAppointmentsStatus.loading && state.appointments.isEmpty)
                 const SliverFillRemaining(child: AppointmentsInlineLoading())
               else if (state.status == DoctorAppointmentsStatus.failure &&
                   state.appointments.isEmpty)
@@ -157,20 +136,13 @@ class DoctorScheduleScreen extends StatelessWidget {
                 )
               else
                 SliverPadding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isEmbedded ? 0 : 24,
-                    vertical: 8,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: isEmbedded ? 0 : 24, vertical: 8),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final appointment = state.filteredAppointments[index];
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16),
-                        child: _buildAppointmentItem(
-                          context,
-                          appointment,
-                          hasActiveSession,
-                        ),
+                        child: _buildAppointmentItem(context, appointment, hasActiveSession),
                       );
                     }, childCount: state.filteredAppointments.length),
                   ),
@@ -201,10 +173,7 @@ class DoctorScheduleScreen extends StatelessWidget {
       elevation: 0,
       title: Text(
         'doctor_appointments'.tr(),
-        style: TextStyle(
-          color: colorScheme.onSurface,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(color: colorScheme.onSurface, fontWeight: FontWeight.bold),
       ),
       actions: [
         IconButton(
@@ -225,19 +194,14 @@ class DoctorScheduleScreen extends StatelessWidget {
         fillColor: colorScheme.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.outlineVariant.withAlpha(120),
-          ),
+          borderSide: BorderSide(color: colorScheme.outlineVariant.withAlpha(120)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: colorScheme.outlineVariant.withAlpha(120),
-          ),
+          borderSide: BorderSide(color: colorScheme.outlineVariant.withAlpha(120)),
         ),
       ),
-      onChanged: (value) =>
-          context.read<DoctorAppointmentsCubit>().updateSearchQuery(value),
+      onChanged: (value) => context.read<DoctorAppointmentsCubit>().updateSearchQuery(value),
     );
   }
 
@@ -245,20 +209,13 @@ class DoctorScheduleScreen extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return Text(
       key.tr(),
-      style: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
-        color: colorScheme.onSurface,
-      ),
+      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
     );
   }
 
-  Widget _buildDateSelector(
-    BuildContext context,
-    DoctorAppointmentsState state,
-  ) {
+  Widget _buildDateSelector(BuildContext context, DoctorAppointmentsState state) {
     return Text(
-      DateFormat.yMMMd(context.locale.toString()).format(state.selectedDate),
+      DateFormat.yMMMd('en_US').format(state.selectedDate),
       style: TextStyle(
         fontSize: 14,
         color: Theme.of(context).colorScheme.primary,
@@ -273,8 +230,7 @@ class DoctorScheduleScreen extends StatelessWidget {
     bool hasActiveSession,
   ) {
     final bool isLive = appointment.status == AppointmentStatus.inProgress;
-    final bool canStart =
-        appointment.status == AppointmentStatus.arrived && !hasActiveSession;
+    final bool canStart = appointment.status == AppointmentStatus.arrived && !hasActiveSession;
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -283,14 +239,10 @@ class DoctorScheduleScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: isLive
-            ? Border.all(color: colorScheme.primary.withAlpha(80), width: 2)
-            : null,
+        border: isLive ? Border.all(color: colorScheme.primary.withAlpha(80), width: 2) : null,
         boxShadow: [
           BoxShadow(
-            color: isLive
-                ? colorScheme.primary.withAlpha(20)
-                : theme.shadowColor.withAlpha(28),
+            color: isLive ? colorScheme.primary.withAlpha(20) : theme.shadowColor.withAlpha(28),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -307,9 +259,7 @@ class DoctorScheduleScreen extends StatelessWidget {
               children: [
                 _buildTimeColumn(context, appointment, isLive),
                 _buildDivider(context),
-                Expanded(
-                  child: _buildPatientInfo(context, appointment, isLive),
-                ),
+                Expanded(child: _buildPatientInfo(context, appointment, isLive)),
                 const SizedBox(width: 12),
                 _buildActionArea(context, appointment, canStart, isLive),
               ],
@@ -320,20 +270,14 @@ class DoctorScheduleScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTimeColumn(
-    BuildContext context,
-    AppointmentEntity app,
-    bool isLive,
-  ) {
+  Widget _buildTimeColumn(BuildContext context, AppointmentEntity app, bool isLive) {
     return SizedBox(
       width: 55,
       child: Text(
-        DateFormat.Hm(context.locale.toString()).format(app.dateTime),
+        DateFormat.Hm('en_US').format(app.dateTime),
         style: TextStyle(
           fontWeight: FontWeight.bold,
-          color: isLive
-              ? AppColors.medicalRed
-              : Theme.of(context).colorScheme.primary,
+          color: isLive ? AppColors.medicalRed : Theme.of(context).colorScheme.primary,
           fontSize: 15,
         ),
       ),
@@ -350,11 +294,7 @@ class DoctorScheduleScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPatientInfo(
-    BuildContext context,
-    AppointmentEntity app,
-    bool isLive,
-  ) {
+  Widget _buildPatientInfo(BuildContext context, AppointmentEntity app, bool isLive) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -379,10 +319,7 @@ class DoctorScheduleScreen extends StatelessWidget {
           app.reason ?? 'no_reason'.tr(),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 13,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          style: TextStyle(fontSize: 13, color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
       ],
     );
@@ -398,11 +335,7 @@ class DoctorScheduleScreen extends StatelessWidget {
       ),
       child: const Text(
         'LIVE',
-        style: TextStyle(
-          color: AppColors.medicalRed,
-          fontSize: 10,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(color: AppColors.medicalRed, fontSize: 10, fontWeight: FontWeight.bold),
       ),
     );
   }
@@ -417,12 +350,11 @@ class DoctorScheduleScreen extends StatelessWidget {
       return _buildActionButton(
         label: 'start'.tr(),
         color: Theme.of(context).colorScheme.primary,
-        onPressed: () =>
-            context.read<DoctorAppointmentsCubit>().updateAppointmentStatus(
-              doctorId,
-              appointment.id,
-              AppointmentStatus.inProgress,
-            ),
+        onPressed: () => context.read<DoctorAppointmentsCubit>().updateAppointmentStatus(
+          doctorId,
+          appointment.id,
+          AppointmentStatus.inProgress,
+        ),
       );
     }
 
@@ -430,12 +362,11 @@ class DoctorScheduleScreen extends StatelessWidget {
       return _buildActionButton(
         label: 'end'.tr(),
         color: AppColors.success,
-        onPressed: () =>
-            context.read<DoctorAppointmentsCubit>().updateAppointmentStatus(
-              doctorId,
-              appointment.id,
-              AppointmentStatus.completed,
-            ),
+        onPressed: () => context.read<DoctorAppointmentsCubit>().updateAppointmentStatus(
+          doctorId,
+          appointment.id,
+          AppointmentStatus.completed,
+        ),
       );
     }
 
@@ -455,19 +386,13 @@ class DoctorScheduleScreen extends StatelessWidget {
         minimumSize: const Size(0, 36),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
-      child: Text(
-        label,
-        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-      ),
+      child: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
     );
   }
 
   Widget _buildMoreMenu(BuildContext context, AppointmentEntity app) {
     return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.more_vert,
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
+      icon: Icon(Icons.more_vert, color: Theme.of(context).colorScheme.onSurfaceVariant),
       onSelected: (val) {
         if (val == 'no_show') {
           context.read<DoctorAppointmentsCubit>().updateAppointmentStatus(
@@ -477,9 +402,7 @@ class DoctorScheduleScreen extends StatelessWidget {
           );
         }
       },
-      itemBuilder: (context) => [
-        PopupMenuItem(value: 'no_show', child: Text('no_show'.tr())),
-      ],
+      itemBuilder: (context) => [PopupMenuItem(value: 'no_show', child: Text('no_show'.tr()))],
     );
   }
 
@@ -502,10 +425,7 @@ class DoctorScheduleScreen extends StatelessWidget {
         'role': AppointmentsOverviewMode.doctor,
         'onDataChanged': () {
           if (context.mounted) {
-            context.read<DoctorAppointmentsCubit>().loadAppointments(
-              doctorId,
-              silent: true,
-            );
+            context.read<DoctorAppointmentsCubit>().loadAppointments(doctorId, silent: true);
           }
         },
       },

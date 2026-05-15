@@ -22,51 +22,72 @@ class StepParticipants extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AppointmentScheduleCubit, AppointmentScheduleState>(
       builder: (context, state) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionLabel(context, 'patient_and_doctor_info'.tr()),
-            const SizedBox(height: 16),
-            _buildCard(
-              context,
-              child: Column(
-                children: [
-                  if (!isPatientMode) ...[
-                    PatientSearchField(
-                      initialPatient: initialPatient,
-                      onPatientSelected: (p) =>
-                          context.read<AppointmentScheduleCubit>().updateSelectedPatient(p),
-                      onClearPatient: () =>
-                          context.read<AppointmentScheduleCubit>().clearSelectedPatient(),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                  if (state.selectedDoctorId == null)
-                    state.isDoctorsLoading
-                        ? const LinearProgressIndicator()
-                        : DoctorSelectorButton(
-                            doctors: state.availableDoctors
-                                .map((d) => DoctorOption(id: d.id, name: d.name))
-                                .toList(),
-                            selectedDoctorName: state.selectedDoctorName,
-                            onClearSelection: () =>
-                                context.read<AppointmentScheduleCubit>().clearSelectedDoctor(),
-                            onSelected: (d) => context
-                                .read<AppointmentScheduleCubit>()
-                                .updateSelectedDoctor(d.id, d.name),
-                          )
-                  else
-                    _buildSelectedInfoRow(
-                      context,
-                      Icons.medical_services_rounded,
-                      'doctor'.tr(),
-                      state.selectedDoctorName ?? '',
-                      onEdit: () => context.read<AppointmentScheduleCubit>().clearSelectedDoctor(),
-                    ),
-                ],
-              ),
-            ),
-          ],
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 700;
+
+            final patientWidget = isPatientMode
+                ? const SizedBox.shrink()
+                : PatientSearchField(
+                    initialPatient: initialPatient,
+                    onPatientSelected: (p) =>
+                        context.read<AppointmentScheduleCubit>().updateSelectedPatient(p),
+                    onClearPatient: () =>
+                        context.read<AppointmentScheduleCubit>().clearSelectedPatient(),
+                  );
+
+            final doctorWidget = state.selectedDoctorId == null
+                ? state.isDoctorsLoading
+                      ? const LinearProgressIndicator()
+                      : DoctorSelectorButton(
+                          doctors: state.availableDoctors
+                              .map((d) => DoctorOption(id: d.id, name: d.name))
+                              .toList(),
+                          selectedDoctorName: state.selectedDoctorName,
+                          onClearSelection: () =>
+                              context.read<AppointmentScheduleCubit>().clearSelectedDoctor(),
+                          onSelected: (d) => context
+                              .read<AppointmentScheduleCubit>()
+                              .updateSelectedDoctor(d.id, d.name),
+                        )
+                : _buildSelectedInfoRow(
+                    context,
+                    Icons.medical_services_rounded,
+                    'doctor'.tr(),
+                    state.selectedDoctorName ?? '',
+                    onEdit: () => context.read<AppointmentScheduleCubit>().clearSelectedDoctor(),
+                  );
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionLabel(context, 'patient_and_doctor_info'.tr()),
+                const SizedBox(height: 12),
+                _buildCard(
+                  context,
+                  child: isWide
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (!isPatientMode)
+                              Expanded(child: patientWidget)
+                            else
+                              const SizedBox.shrink(),
+                            if (!isPatientMode) const SizedBox(width: 16),
+                            Expanded(child: doctorWidget),
+                          ],
+                        )
+                      : Column(
+                          children: [
+                            if (!isPatientMode) patientWidget,
+                            if (!isPatientMode) const SizedBox(height: 14),
+                            doctorWidget,
+                          ],
+                        ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -189,8 +210,7 @@ class StepDetails extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AppointmentScheduleCubit, AppointmentScheduleState>(
       builder: (context, state) {
-        return
-          Column(
+        return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildSectionLabel(context, 'visit_details'.tr()),
@@ -247,7 +267,10 @@ class StepDetails extends StatelessWidget {
                     Icons.event_available,
                     'date'.tr(),
                     state.selectedTimeSlot != null
-                        ? DateFormat('EEEE, MMM d @ HH:mm').format(state.selectedTimeSlot!.dateTime)
+                        ? DateFormat(
+                            'EEEE, MMM d @ HH:mm',
+                            'en_US',
+                          ).format(state.selectedTimeSlot!.dateTime)
                         : '',
                   ),
                 ],
@@ -298,11 +321,11 @@ Widget _buildSectionLabel(BuildContext context, String text) {
 Widget _buildCard(BuildContext context, {required Widget child}) {
   final theme = Theme.of(context);
   return AppBaseCard(
-    padding: const EdgeInsets.all(24),
-    borderRadius: 24,
-    elevation: 0,
-    backgroundColor: theme.colorScheme.surface,
-    borderSide: BorderSide(color: theme.colorScheme.outlineVariant.withAlpha(80)),
+    padding: const EdgeInsets.all(16),
+    borderRadius: 20,
+    elevation: 1,
+    backgroundColor: theme.colorScheme.surfaceContainerLow,
+    borderSide: BorderSide.none,
     child: child,
   );
 }

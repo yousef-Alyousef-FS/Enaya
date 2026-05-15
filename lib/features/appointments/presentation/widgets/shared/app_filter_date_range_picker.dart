@@ -41,7 +41,7 @@ class AppFilterDateRangePicker extends StatelessWidget {
       initialDate: clamp(initialDate),
       firstDate: minDate,
       lastDate: maxDate,
-      locale: context.locale,
+      locale: const Locale('en', 'US'),
       builder: (context, child) {
         return Theme(
           data: theme.copyWith(
@@ -75,7 +75,7 @@ class AppFilterDateRangePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final format = DateFormat('dd/MM/yyyy');
+    final format = DateFormat('dd/MM/yyyy', 'en_US');
     final isEndSelected = endDate != null;
 
     return Material(
@@ -180,7 +180,6 @@ class _DateField extends StatelessWidget {
                   color: isActive ? primary : onSurfaceVariant.withValues(alpha: 0.7),
                 ),
               ),
-              const SizedBox(height: 4),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

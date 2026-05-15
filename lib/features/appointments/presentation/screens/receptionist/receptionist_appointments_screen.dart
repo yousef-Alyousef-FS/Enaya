@@ -55,22 +55,6 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                 ],
 
-                // 2. Section Header
-                Builder(
-                  builder: (context) {
-                    final now = DateTime.now();
-                    final selected = state.filter.startDate;
-                    final isToday =
-                        now.year == selected.year &&
-                        now.month == selected.month &&
-                        now.day == selected.day;
-                    final headerTitle = !isToday
-                        ? DateFormat.yMMMd(context.locale.toString()).format(selected)
-                        : (isEmbedded ? 'today_appointments'.tr() : 'appointments_list'.tr());
-
-                    return AppSectionHeader(title: headerTitle, isLoading: state.isLoading);
-                  },
-                ),
                 const SizedBox(height: 16),
 
                 if (state.errorMessage != null) ...[
@@ -111,7 +95,7 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
                       if (isToday) {
                         return 'adjust_filters_to_find_appointments'.tr();
                       }
-                      return '${DateFormat.yMMMd(context.locale.toString()).format(selected)} • ${'adjust_filters_to_find_appointments'.tr()}';
+                      return '${DateFormat.yMMMd('en_US').format(selected)} • ${'adjust_filters_to_find_appointments'.tr()}';
                     })(),
                     icon: Icons.filter_alt_off_outlined,
                   ),

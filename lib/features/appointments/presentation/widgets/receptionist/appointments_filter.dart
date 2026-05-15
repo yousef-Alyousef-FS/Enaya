@@ -13,7 +13,7 @@ import '../../../domain/entities/appointment_entity.dart';
 ///
 /// Renamed to `AppointmentsFilterWidget` to avoid collision with the filter model.
 class AppointmentsFilterWidget extends StatelessWidget {
-  static const double _kControlHeight = 57;
+  static const double _kControlHeight = 52;
 
   final List<AppointmentEntity> appointments;
   final List<DoctorOption>? doctors; // optional: if not provided we derive from appointments
@@ -265,7 +265,7 @@ class AppointmentsFilterWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: BorderRadius.circular(14),

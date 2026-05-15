@@ -43,8 +43,8 @@ class _CalendarHorizontalState extends State<CalendarHorizontal> {
         itemBuilder: (context, index) {
           final date = _baseDate.add(Duration(days: index));
           final isSelected = DateUtils.isSameDay(date, widget.selectedDate);
-          final dayName = DateFormat('EEE').format(date);
-          final dayNum = DateFormat('dd').format(date);
+          final dayName = DateFormat('EEE', 'en_US').format(date);
+          final dayNum = DateFormat('dd', 'en_US').format(date);
 
           return GestureDetector(
             onTap: () => widget.onDateSelected(date),
@@ -58,9 +58,7 @@ class _CalendarHorizontalState extends State<CalendarHorizontal> {
                     : (isDark ? AppColors.darkSurfaceSoft : Colors.white),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: isSelected
-                      ? theme.colorScheme.primary
-                      : theme.colorScheme.outlineVariant,
+                  color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outlineVariant,
                   width: 1.5,
                 ),
                 boxShadow: isSelected
@@ -90,9 +88,7 @@ class _CalendarHorizontalState extends State<CalendarHorizontal> {
                   Text(
                     dayNum,
                     style: TextStyle(
-                      color: isSelected
-                          ? Colors.white
-                          : theme.colorScheme.onSurface,
+                      color: isSelected ? Colors.white : theme.colorScheme.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),

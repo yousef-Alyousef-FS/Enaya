@@ -12,11 +12,7 @@ class AppointmentTableConfig {
     required List<AppointmentEntity> appointments,
     required void Function(AppointmentEntity app) onView,
     required void Function(AppointmentEntity app) onEdit,
-    required void Function(
-      AppointmentEntity app,
-      AppointmentStatus status,
-      String? reason,
-    )
+    required void Function(AppointmentEntity app, AppointmentStatus status, String? reason)
     onStatusChange,
   }) {
     final theme = Theme.of(context);
@@ -31,17 +27,11 @@ class AppointmentTableConfig {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              a.patientName,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            ),
+            Text(a.patientName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
             if (a.patientPhone != null)
               Text(
                 a.patientPhone!,
-                style: TextStyle(
-                  color: theme.colorScheme.onSurfaceVariant,
-                  fontSize: 11,
-                ),
+                style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 11),
               ),
           ],
         ),
@@ -52,7 +42,7 @@ class AppointmentTableConfig {
         sortable: true,
         sortValue: (a) => a.dateTime,
         cell: (a) => Text(
-          DateFormat('HH:mm').format(a.dateTime),
+          DateFormat('HH:mm', 'en_US').format(a.dateTime),
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
@@ -74,21 +64,13 @@ class AppointmentTableConfig {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             IconButton(
-              icon: Icon(
-                Icons.visibility_outlined,
-                color: theme.colorScheme.primary,
-                size: 20,
-              ),
+              icon: Icon(Icons.visibility_outlined, color: theme.colorScheme.primary, size: 20),
               onPressed: () => onView(a),
               tooltip: 'view'.tr(),
             ),
             if (!a.status.isReadOnly)
               PopupMenuButton<AppointmentStatus>(
-                icon: Icon(
-                  Icons.more_vert,
-                  color: theme.colorScheme.onSurfaceVariant,
-                  size: 20,
-                ),
+                icon: Icon(Icons.more_vert, color: theme.colorScheme.onSurfaceVariant, size: 20),
                 onSelected: (newStatus) {
                   // Show confirmation dialog for status change
                   showDialog(
@@ -96,8 +78,7 @@ class AppointmentTableConfig {
                     builder: (_) => AppointmentStatusChangeDialog(
                       appointment: a,
                       newStatus: newStatus,
-                      onConfirm: (status, reason) =>
-                          onStatusChange(a, status, reason),
+                      onConfirm: (status, reason) => onStatusChange(a, status, reason),
                     ),
                   );
                 },
@@ -105,10 +86,7 @@ class AppointmentTableConfig {
                   final allowedStatuses = a.status.allowedTransitions;
 
                   return allowedStatuses.map((status) {
-                    return PopupMenuItem(
-                      value: status,
-                      child: _buildStatusMenuItem(status, theme),
-                    );
+                    return PopupMenuItem(value: status, child: _buildStatusMenuItem(status, theme));
                   }).toList();
                 },
               ),
@@ -118,21 +96,14 @@ class AppointmentTableConfig {
     ];
   }
 
-  static Widget _buildStatusMenuItem(
-    AppointmentStatus status,
-    ThemeData theme,
-  ) {
+  static Widget _buildStatusMenuItem(AppointmentStatus status, ThemeData theme) {
     return Row(
       children: [
         Icon(status.icon, size: 18, color: status.color),
         const SizedBox(width: 12),
         Text(
           status.displayName,
-          style: TextStyle(
-            color: status.color,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+          style: TextStyle(color: status.color, fontSize: 13, fontWeight: FontWeight.w500),
         ),
       ],
     );

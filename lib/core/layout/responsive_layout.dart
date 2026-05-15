@@ -43,51 +43,33 @@ class ResponsiveLayoutConfig {
 /// Computes responsive auth/layout values used by presentation widgets.
 class ResponsiveLayout {
   /// Returns the active [ResponsiveLayoutConfig] for current screen metrics.
-  static ResponsiveLayoutConfig of(
-    BuildContext context, {
-    bool isStatsGrid = true,
-  }) {
+  static ResponsiveLayoutConfig of(BuildContext context, {bool isStatsGrid = true}) {
     final media = MediaQuery.of(context);
     final width = media.size.width;
     final height = media.size.height;
     final isPortrait = media.orientation == Orientation.portrait;
     final isCompactHeight = height < 620;
 
-    // Grid Calculations (formerly in ResponsiveGridConfig)
-    const gridSpacing = 24.0;
-    const idealItemWidth = 280.0;
-    int gridCount = (width / idealItemWidth).floor().clamp(1, 4);
-    if (gridCount == 3) gridCount = 2; // Prefer balanced pairs
+    // Grid Calculations: explicit, keep mobile = 2 columns, tablet/desktop = 4
+    const gridSpacing = 12.0; // slightly tighter spacing
+    final int gridCount = width < LayoutBreakpoints.mobileMaxWidth ? 2 : 4;
 
     return ResponsiveLayoutConfig(
       isPortrait: isPortrait,
       cardMaxWidth: _calculateCardMaxWidth(width, isPortrait),
-      cardHorizontalPadding: isPortrait ? 24 : 20,
-      cardVerticalPadding: isPortrait ? 30 : (isCompactHeight ? 18 : 22),
-      scrollVerticalPadding: isPortrait ? 20 : (isCompactHeight ? 12 : 16),
-      titleFontSize: _getConstantFont(
-        width,
-        mobile: 24,
-        tablet: 26,
-        desktop: 28,
-      ),
-      bodyFontSize: _getConstantFont(
-        width,
-        mobile: 14,
-        tablet: 15,
-        desktop: 16,
-      ),
-      buttonFontSize: _getConstantFont(
-        width,
-        mobile: 15,
-        tablet: 16,
-        desktop: 17,
-      ),
+      cardHorizontalPadding: isPortrait ? 18 : 20,
+      cardVerticalPadding: isPortrait ? 20 : (isCompactHeight ? 14 : 22),
+      scrollVerticalPadding: isPortrait ? 14 : (isCompactHeight ? 10 : 16),
+      titleFontSize: _getConstantFont(width, mobile: 24, tablet: 26, desktop: 28),
+      bodyFontSize: _getConstantFont(width, mobile: 14, tablet: 15, desktop: 16),
+      buttonFontSize: _getConstantFont(width, mobile: 15, tablet: 16, desktop: 17),
       logoSize: _getConstantFont(width, mobile: 72, tablet: 80, desktop: 90),
       iconSize: _getConstantFont(width, mobile: 28, tablet: 32, desktop: 36),
       gridColumnCount: gridCount,
       gridSpacing: gridSpacing,
-      gridMainAxisExtent:  95.0,
+      gridMainAxisExtent: isStatsGrid
+          ? (width < LayoutBreakpoints.mobileMaxWidth ? 100.0 : 95.0)
+          : (width < LayoutBreakpoints.mobileMaxWidth ? 82.0 : 78.0),
     );
   }
 

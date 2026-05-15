@@ -23,7 +23,6 @@ import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
 import '../cubit/doctor_dashboard_cubit.dart';
 import '../cubit/doctor_dashboard_state.dart';
 
-
 class DoctorDashboardPage extends StatefulWidget {
   const DoctorDashboardPage({super.key});
 
@@ -56,19 +55,12 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
     );
   }
 
-  Widget _getSectionBody(
-    int index,
-    DoctorDashboardState state,
-    String doctorId,
-  ) {
+  Widget _getSectionBody(int index, DoctorDashboardState state, String doctorId) {
     switch (index) {
       case 0:
         return _buildOverviewSection(state, doctorId);
       case 1:
-        return AppointmentsPage(
-          mode: AppointmentsOverviewMode.doctor,
-          specificDoctorId: doctorId,
-        );
+        return AppointmentsPage(mode: AppointmentsOverviewMode.doctor, specificDoctorId: doctorId);
       case 2:
         return FeatureComingSoonState(
           titleKey: 'nav_patients',
@@ -154,6 +146,7 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
           icon: Icons.people_outline,
           color: Theme.of(context).colorScheme.primary,
           accentColor: Colors.blue,
+          minHeight: 90,
         ),
         StatCard(
           title: 'consultations'.tr(),
@@ -162,6 +155,7 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
           icon: Icons.medical_services_outlined,
           color: AppColors.success,
           accentColor: Colors.green,
+          minHeight: 90,
         ),
         StatCard(
           title: 'pending_reports'.tr(),
@@ -170,23 +164,17 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
           icon: Icons.assignment_outlined,
           color: AppColors.warning,
           accentColor: Colors.orange,
+          minHeight: 90,
         ),
       ],
     );
   }
 
   Widget _buildSectionHeader(String key) {
-    return Text(
-      key.tr(),
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-    );
+    return Text(key.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
   }
 
-  Widget _buildUpcomingList(
-    BuildContext context,
-    DoctorDashboardState state,
-    String doctorId,
-  ) {
+  Widget _buildUpcomingList(BuildContext context, DoctorDashboardState state, String doctorId) {
     if (state.upcomingAppointments.isEmpty) {
       return Center(child: Text('no_upcoming_appointments'.tr()));
     }
@@ -203,8 +191,7 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
                 extra: {
                   'appointment': appointment,
                   'role': AppointmentsOverviewMode.doctor,
-                  'onDataChanged': () =>
-                      context.read<DoctorDashboardCubit>().load(doctorId),
+                  'onDataChanged': () => context.read<DoctorDashboardCubit>().load(doctorId),
                 },
               );
             },

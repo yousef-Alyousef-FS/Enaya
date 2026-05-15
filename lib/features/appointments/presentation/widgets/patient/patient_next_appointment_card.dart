@@ -19,8 +19,8 @@ class PatientNextAppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final time = DateFormat('hh:mm a').format(appointment.dateTime);
-    final date = DateFormat('EEEE, dd MMMM').format(appointment.dateTime);
+    final time = DateFormat('hh:mm a', 'en_US').format(appointment.dateTime);
+    final date = DateFormat('EEEE, dd MMMM', 'en_US').format(appointment.dateTime);
 
     // Use Theme's colorScheme directly so colors adapt to light/dark modes.
     return AppBaseCard(
