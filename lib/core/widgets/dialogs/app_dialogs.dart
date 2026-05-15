@@ -2,10 +2,9 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
+/// Dialog facade used across features to keep dialog style and behavior consistent.
 class AppDialogs {
-  // -----------------------------
-  // 🔥 Base Dialog Builder
-  // -----------------------------
+  /// Internal reusable AwesomeDialog builder used by all public helpers.
   static AwesomeDialog _baseDialog(
     BuildContext context, {
     required DialogType type,
@@ -32,9 +31,7 @@ class AppDialogs {
     );
   }
 
-  // -----------------------------
-  // ❌ Error Dialog
-  // -----------------------------
+  /// Shows an error dialog.
   static Future<void> showError(
     BuildContext context, {
     required String message,
@@ -50,9 +47,7 @@ class AppDialogs {
     ).show();
   }
 
-  // -----------------------------
-  // ✅ Success Dialog
-  // -----------------------------
+  /// Shows a success dialog.
   static Future<void> showSuccess(
     BuildContext context, {
     required String message,
@@ -69,9 +64,7 @@ class AppDialogs {
     ).show();
   }
 
-  // -----------------------------
-  // ⚠️ Warning Dialog
-  // -----------------------------
+  /// Shows a warning dialog.
   static Future<void> showWarning(
     BuildContext context, {
     required String message,
@@ -86,9 +79,7 @@ class AppDialogs {
     ).show();
   }
 
-  // -----------------------------
-  // ❓ Confirm Dialog
-  // -----------------------------
+  /// Shows a confirmation dialog with confirm/cancel actions.
   static Future<void> showConfirm(
     BuildContext context, {
     required String title,

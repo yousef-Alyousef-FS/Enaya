@@ -1,13 +1,29 @@
 import 'package:flutter/material.dart';
 
+/// Reusable styled text field for auth forms.
 class AuthTextField extends StatefulWidget {
+  /// Visible field label.
   final String labelText;
+
+  /// Placeholder shown when input is empty.
   final String hintText;
+
+  /// Text editing controller owned by parent form.
   final TextEditingController controller;
+
+  /// Enables password-obscuring behavior.
   final bool isPassword;
+
+  /// Optional field-level validator.
   final String? Function(String?)? validator;
+
+  /// Keyboard type for platform input optimization.
   final TextInputType keyboardType;
+
+  /// Leading icon shown in input decoration.
   final IconData prefixIcon;
+
+  /// Optional semantic label for accessibility extensions.
   final String? semanticLabel;
 
   const AuthTextField({
@@ -57,7 +73,9 @@ class _AuthTextFieldState extends State<AuthTextField> {
         suffixIcon: widget.isPassword
             ? IconButton(
                 icon: Icon(
-                  _obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                  _obscureText
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
                   color: theme.iconTheme.color?.withValues(alpha: 0.6),
                 ),
                 onPressed: () {
@@ -69,5 +87,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
         floatingLabelBehavior: FloatingLabelBehavior.auto,
       ),
     );
+
+    // End auth text-field rendering.
   }
 }

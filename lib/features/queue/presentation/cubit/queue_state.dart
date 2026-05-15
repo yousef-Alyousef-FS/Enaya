@@ -7,9 +7,16 @@ class QueueState extends Equatable {
   final String? errorMessage;
   final List<QueueItem> queueItems;
 
-  const QueueState({required this.isLoading, required this.errorMessage, required this.queueItems});
+  const QueueState({
+    required this.isLoading,
+    required this.errorMessage,
+    required this.queueItems,
+  });
 
-  const QueueState.initial() : isLoading = false, errorMessage = null, queueItems = const [];
+  const QueueState.initial()
+    : isLoading = false,
+      errorMessage = null,
+      queueItems = const [];
 
   bool get isError => errorMessage != null;
 
@@ -21,7 +28,9 @@ class QueueState extends Equatable {
   }) {
     return QueueState(
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: clearErrorMessage ? null : errorMessage ?? this.errorMessage,
+      errorMessage: clearErrorMessage
+          ? null
+          : errorMessage ?? this.errorMessage,
       queueItems: queueItems ?? this.queueItems,
     );
   }

@@ -1,16 +1,15 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
-import '../../../../core/theme/app_colors.dart';
+
 import '../../../../core/widgets/loaders/app_loaders.dart';
 import '../widgets/auth_card_container.dart';
-import '../../../../core/widgets/common/portrait_only_scope.dart';
+import '../widgets/portrait_only_scope.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 import '../mixins/auth_form_mixin.dart';
@@ -23,7 +22,8 @@ class SignupScreen extends StatefulWidget {
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMixin, AuthFormMixin {
+class _SignupScreenState extends State<SignupScreen>
+    with TickerProviderStateMixin, AuthFormMixin {
   final _formKey = GlobalKey<FormState>();
 
   final _userNameController = TextEditingController();
@@ -35,13 +35,21 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
   late final AnimationController _fadeController;
   late final Animation<double> _fadeAnimation;
 
+  bool _agreeToTerms = false;
+
   @override
   void initState() {
     super.initState();
 
-    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
 
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
   }
 
   @override
@@ -55,19 +63,14 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
     super.dispose();
   }
 
-  // -----------------------------
-  // Validation
-  // -----------------------------
   String? _validateEmail(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'enter_valid_email'.tr();
     }
-
     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
     if (!emailRegex.hasMatch(value.trim())) {
       return 'enter_valid_email'.tr();
     }
-
     return null;
   }
 
@@ -75,11 +78,9 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
     if (value == null || value.trim().isEmpty) {
       return 'enter_phone_number'.tr();
     }
-
     if (value.length < 8) {
       return 'invalid_phone_number'.tr();
     }
-
     return null;
   }
 
@@ -105,9 +106,11 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
 
   void _onSignupPressed(AuthCubit cubit) {
     if (!_formKey.currentState!.validate()) return;
-
+    if (!_agreeToTerms) {
+      setState(() => errorMessage = 'agree_to_terms_error'.tr());
+      return;
+    }
     setState(() => errorMessage = null);
-
     cubit.signup(
       _emailController.text.trim(),
       _passwordController.text,
@@ -116,9 +119,6 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
     );
   }
 
-  // -----------------------------
-  // UI
-  // -----------------------------
   @override
   Widget build(BuildContext context) {
     return PortraitOnlyScope(
@@ -143,20 +143,19 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
                     Text(
                       'join_enaya'.tr(),
                       textAlign: TextAlign.center,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                        fontSize: config.titleFontSize,
+                      ),
                     ),
-                    SizedBox(height: config.isPortrait ? 10.h : 8.h),
+                    const SizedBox(height: 8),
                     Text(
                       'signup_description'.tr(),
                       textAlign: TextAlign.center,
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        fontSize: config.bodyFontSize,
+                      ),
                     ),
-                    SizedBox(height: config.isPortrait ? 32.h : 24.h),
-
+                    const SizedBox(height: 32),
                     _buildForm(config),
                   ],
                 );
@@ -179,10 +178,10 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
             hintText: 'full_name'.tr(),
             controller: _userNameController,
             prefixIcon: Icons.person_outline,
-            validator: (value) => value!.isEmpty ? 'enter_your_name'.tr() : null,
+            validator: (value) =>
+                value!.isEmpty ? 'enter_your_name'.tr() : null,
           ),
-          SizedBox(height: config.isPortrait ? 16.h : 12.h),
-
+          const SizedBox(height: 16),
           AuthTextField(
             labelText: 'email_address'.tr(),
             hintText: 'email_address'.tr(),
@@ -191,8 +190,7 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
             prefixIcon: Icons.email_outlined,
             validator: _validateEmail,
           ),
-          SizedBox(height: config.isPortrait ? 16.h : 12.h),
-
+          const SizedBox(height: 16),
           AuthTextField(
             labelText: 'phone_number'.tr(),
             hintText: 'phone_number'.tr(),
@@ -201,8 +199,7 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
             prefixIcon: Icons.phone_outlined,
             validator: _validatePhone,
           ),
-          SizedBox(height: config.isPortrait ? 16.h : 12.h),
-
+          const SizedBox(height: 16),
           AuthTextField(
             labelText: 'password'.tr(),
             hintText: 'password'.tr(),
@@ -211,8 +208,7 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
             prefixIcon: Icons.lock_outline,
             validator: _validatePassword,
           ),
-          SizedBox(height: config.isPortrait ? 16.h : 12.h),
-
+          const SizedBox(height: 16),
           AuthTextField(
             labelText: 'confirm_password'.tr(),
             hintText: 'confirm_password'.tr(),
@@ -221,11 +217,11 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
             prefixIcon: Icons.lock_outline,
             validator: _validateConfirmPassword,
           ),
-          SizedBox(height: config.isPortrait ? 30.h : 22.h),
-
+          const SizedBox(height: 16),
+          _buildTermsCheckbox(),
+          const SizedBox(height: 32),
           _buildSignupButton(config),
-          SizedBox(height: config.isPortrait ? 20.h : 14.h),
-
+          const SizedBox(height: 24),
           _buildLoginRedirect(config),
         ],
       ),
@@ -236,63 +232,42 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         final cubit = context.read<AuthCubit>();
-
         if (state.isError) {
-          setState(() => errorMessage = state.errorMessage ?? 'error_occurred'.tr());
+          setState(
+            () => errorMessage = state.errorMessage ?? 'error_occurred'.tr(),
+          );
           _fadeController.forward(from: 0);
           cubit.clearStatus();
           return;
         }
-
         if (state.isSuccess) {
-          setState(() {
-            errorMessage = null;
-            isNavigating = true;
-          });
-          successAnimationController.forward().then((_) {
-            if (mounted) {
-              context.go(AppRouter.patientHome);
-              // No reverse or clearStatus needed as we navigate away
-            }
-          });
+          context.go(AppRouter.patientHome);
           return;
         }
       },
       builder: (context, state) {
         final cubit = context.read<AuthCubit>();
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            AnimatedBuilder(
-              animation: successAnimation,
-              builder: (_, _) => Transform.scale(
-                scale: successAnimation.value,
-                child: ElevatedButton(
-                  onPressed: (state.isLoading || isNavigating)
-                      ? null
-                      : () => _onSignupPressed(cubit),
-                  child: state.isLoading ? AppLoaders.inline() : Text('sign_up'.tr()),
-                ),
-              ),
+            ElevatedButton(
+              onPressed: (state.isLoading)
+                  ? null
+                  : () => _onSignupPressed(cubit),
+              child: state.isLoading
+                  ? AppLoaders.inline()
+                  : Text('sign_up'.tr()),
             ),
-
-            if (errorMessage != null && !state.isSuccess)
-              FadeTransition(
-                opacity: _fadeAnimation,
-                child: Padding(
-                  padding: EdgeInsets.only(top: 12.h),
-                  child: Text(
-                    errorMessage!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.error,
-                      fontSize: config.bodyFontSize,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+            if (errorMessage != null && !state.isSuccess) ...[
+              const SizedBox(height: 16),
+              Text(
+                errorMessage!,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.error,
+                  fontSize: config.bodyFontSize,
                 ),
               ),
+            ],
           ],
         );
       },
@@ -305,13 +280,16 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
         alignment: WrapAlignment.center,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Text('already_have_account'.tr(), style: TextStyle(fontSize: config.bodyFontSize)),
+          Text(
+            'already_have_account'.tr(),
+            style: TextStyle(fontSize: config.bodyFontSize),
+          ),
           TextButton(
             onPressed: () => context.pop(),
             child: Text(
               'login'.tr(),
               style: TextStyle(
-                color: AppColors.primary,
+                color: Theme.of(context).colorScheme.primary,
                 fontWeight: FontWeight.bold,
                 fontSize: config.buttonFontSize,
               ),
@@ -319,6 +297,27 @@ class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMix
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTermsCheckbox() {
+    return Row(
+      children: [
+        Checkbox(
+          value: _agreeToTerms,
+          onChanged: (value) => setState(() => _agreeToTerms = value ?? false),
+          activeColor: Theme.of(context).colorScheme.primary,
+        ),
+        Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => _agreeToTerms = !_agreeToTerms),
+            child: Text(
+              'i_agree_to_terms'.tr(),
+              style: const TextStyle(fontSize: 13),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

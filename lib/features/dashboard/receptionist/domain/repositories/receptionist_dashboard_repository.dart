@@ -1,5 +1,5 @@
-import '../entities/receptionist_dashboard_stats.dart';
+import '../entities/receptionist_dashboard_data.dart';
 
 abstract class ReceptionistDashboardRepository {
-  Future<ReceptionistDashboardStats> getDashboard();
+  Future<ReceptionistDashboardData> getDashboard();
 }

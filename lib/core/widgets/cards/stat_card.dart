@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../theme/app_colors.dart';
 
-class StatCard extends StatefulWidget {
+class StatCard extends StatelessWidget {
   final String title;
   final String value;
   final String? subtitle;
@@ -11,6 +10,7 @@ class StatCard extends StatefulWidget {
   final Widget? trend;
   final VoidCallback? onTap;
   final bool isLoading;
+  final double? minHeight;
 
   const StatCard({
     super.key,
@@ -23,44 +23,24 @@ class StatCard extends StatefulWidget {
     this.trend,
     this.onTap,
     this.isLoading = false,
+    this.minHeight,
   });
-
-  @override
-  State<StatCard> createState() => _StatCardState();
-}
-
-class _StatCardState extends State<StatCard> {
-  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return MouseRegion(
-      cursor: widget.onTap != null ? SystemMouseCursors.click : SystemMouseCursors.basic,
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: GestureDetector(
-        onTap: widget.onTap,
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        elevation: 2.0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: widget.color.withValues(alpha: 0.2)),
-              boxShadow: [
-                BoxShadow(
-                  color: (_hovered ? widget.color : AppColors.shadow).withValues(
-                    alpha: _hovered ? 0.15 : 0.05,
-                  ),
-                  blurRadius: _hovered ? 16 : 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
+          child: Container(
+            constraints: minHeight != null ? BoxConstraints(minHeight: minHeight!) : null,
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            color: theme.colorScheme.surfaceContainerLow,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -69,42 +49,51 @@ class _StatCardState extends State<StatCard> {
                   children: [
                     Expanded(
                       child: Text(
-                        widget.title,
+                        title,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurface,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Icon(widget.icon, color: widget.color, size: 24),
+                    Icon(icon, color: color, size: 22),
                   ],
                 ),
-
-                const SizedBox(height: 8),
 
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Expanded(
-                      child: widget.isLoading
-                          ? _shimmer()
+                      child: isLoading
+                          ? Container(
+                              height: 24,
+                              width: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade300.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                            )
                           : Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  widget.value,
+                                  value,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    color: widget.accentColor ?? widget.color,
-                                    fontSize: 28,
+                                    color: accentColor ?? color,
+                                    fontSize: 22,
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                                if (widget.subtitle != null) ...[
-                                  const SizedBox(height: 4),
+                                if (subtitle != null) ...[
+                                  const SizedBox(height: 2),
                                   Text(
-                                    widget.subtitle!,
+                                    subtitle!,
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -122,17 +111,6 @@ class _StatCardState extends State<StatCard> {
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _shimmer() {
-    return Container(
-      height: 28,
-      width: 80,
-      decoration: BoxDecoration(
-        color: Colors.grey.shade300.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(6),
       ),
     );
   }

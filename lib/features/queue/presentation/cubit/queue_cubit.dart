@@ -13,16 +13,35 @@ class QueueCubit extends Cubit<QueueState> {
 
     try {
       final items = await _repository.getQueueByDoctor(doctorId);
-      emit(state.copyWith(isLoading: false, clearErrorMessage: true, queueItems: items));
+      emit(
+        state.copyWith(
+          isLoading: false,
+          clearErrorMessage: true,
+          queueItems: items,
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(isLoading: false, errorMessage: e.toString()));
     }
   }
 
-  Future<void> addToQueue(int patientId, String patientName, int doctorId) async {
+  Future<void> addToQueue(
+    int patientId,
+    String patientName,
+    int doctorId,
+  ) async {
     try {
-      final newItem = await _repository.addToQueue(patientId, patientName, doctorId);
-      emit(state.copyWith(clearErrorMessage: true, queueItems: [...state.queueItems, newItem]));
+      final newItem = await _repository.addToQueue(
+        patientId,
+        patientName,
+        doctorId,
+      );
+      emit(
+        state.copyWith(
+          clearErrorMessage: true,
+          queueItems: [...state.queueItems, newItem],
+        ),
+      );
     } catch (e) {
       emit(state.copyWith(errorMessage: e.toString()));
     }

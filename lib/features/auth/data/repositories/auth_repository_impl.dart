@@ -11,14 +11,16 @@ class AuthRepositoryImpl implements IAuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final NetworkInfo networkInfo;
 
-  AuthRepositoryImpl({required this.remoteDataSource, required this.networkInfo});
+  AuthRepositoryImpl({
+    required this.remoteDataSource,
+    required this.networkInfo,
+  });
 
   @override
   Future<Either<Failure, UserEntity>> login({
     required String usernameOrEmail,
     required String password,
-  }) async
-  {
+  }) async {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure());
     }
@@ -40,8 +42,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String password,
     required String username,
     required String phone,
-  }) async
-  {
+  }) async {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure());
     }
@@ -60,8 +61,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> forgotPassword({required String email}) async
-  {
+  Future<Either<Failure, Unit>> forgotPassword({required String email}) async {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure());
     }
@@ -79,8 +79,7 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String email,
     required String verificationCode,
     required String newPassword,
-  }) async
-  {
+  }) async {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure());
     }
@@ -101,8 +100,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<Either<Failure, Unit>> changePassword({
     required String currentPassword,
     required String newPassword,
-  }) async
-  {
+  }) async {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure());
     }
@@ -119,7 +117,9 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> sendEmailVerification({required String email}) async {
+  Future<Either<Failure, Unit>> sendEmailVerification({
+    required String email,
+  }) async {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure());
     }
@@ -136,14 +136,16 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<Either<Failure, Unit>> verifyEmail({
     required String email,
     required String verificationCode,
-  }) async
-  {
+  }) async {
     if (!await networkInfo.isConnected) {
       return Left(NetworkFailure());
     }
 
     try {
-      await remoteDataSource.verifyEmail(email: email, verificationCode: verificationCode);
+      await remoteDataSource.verifyEmail(
+        email: email,
+        verificationCode: verificationCode,
+      );
       return const Right(unit);
     } catch (error) {
       return Left(ApiErrorHandler.handle(error));
@@ -151,8 +153,7 @@ class AuthRepositoryImpl implements IAuthRepository {
   }
 
   @override
-  Future<Either<Failure, Unit>> logout() async
-  {
+  Future<Either<Failure, Unit>> logout() async {
     try {
       await remoteDataSource.logout();
       return const Right(unit);

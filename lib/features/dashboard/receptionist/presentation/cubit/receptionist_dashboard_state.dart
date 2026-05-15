@@ -1,15 +1,21 @@
 import 'package:equatable/equatable.dart';
-
-import '../../domain/entities/receptionist_dashboard_stats.dart';
+import '../../domain/entities/receptionist_dashboard_data.dart';
 
 class ReceptionistDashboardState extends Equatable {
   final bool isLoading;
   final String? errorMessage;
-  final ReceptionistDashboardStats? stats;
+  final ReceptionistDashboardData? stats;
 
-  const ReceptionistDashboardState({required this.isLoading, this.errorMessage, this.stats});
+  const ReceptionistDashboardState({
+    required this.isLoading,
+    this.errorMessage,
+    this.stats,
+  });
 
-  const ReceptionistDashboardState.initial() : isLoading = false, errorMessage = null, stats = null;
+  const ReceptionistDashboardState.initial()
+    : isLoading = false,
+      errorMessage = null,
+      stats = null;
 
   bool get hasData => stats != null;
   bool get isError => errorMessage != null;
@@ -18,11 +24,13 @@ class ReceptionistDashboardState extends Equatable {
     bool? isLoading,
     String? errorMessage,
     bool clearErrorMessage = false,
-    ReceptionistDashboardStats? stats,
+    ReceptionistDashboardData? stats,
   }) {
     return ReceptionistDashboardState(
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: clearErrorMessage ? null : errorMessage ?? this.errorMessage,
+      errorMessage: clearErrorMessage
+          ? null
+          : errorMessage ?? this.errorMessage,
       stats: stats ?? this.stats,
     );
   }

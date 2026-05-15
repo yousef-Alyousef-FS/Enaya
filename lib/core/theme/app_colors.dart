@@ -6,7 +6,7 @@ class AppColors {
   // ---------------------------------------------------------------------------
   // 🌟 BRAND COLORS (MIDEX Identity)
   // ---------------------------------------------------------------------------
-  static const Color primary = Color(0xFF4A6CF7);        // Indigo-Blue (Medical)
+  static const Color primary = Color(0xFF4A6CF7); // Indigo-Blue (Medical)
   static const Color primaryDark = Color(0xFF3C56C5);
   static const Color primaryLight = Color(0xFF7D95FF);
   static const Color primaryExtraLight = Color(0xFFE9EDFF);
@@ -15,6 +15,8 @@ class AppColors {
   // Accent (Lavender / Medical Calm)
   static const Color accent = Color(0xFF9C8CFF);
   static const Color accentLight = Color(0xFFD9D2FF);
+  // Creative accent: Aqua Mint — complements the medical palette
+  static const Color accentMint = Color(0xFF29C6B6);
 
   // ---------------------------------------------------------------------------
   // 🩺 MEDICAL SECONDARY PALETTE

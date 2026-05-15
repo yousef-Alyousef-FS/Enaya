@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../../../../appointments/data/models/appointment_model.dart';
-import '../../../domain/entities/receptionist_dashboard_stats.dart';
+import '../../../../../appointments/data/models/appointment_model/appointment_model.dart';
+import '../../../../../appointments/domain/entities/appointment_entity.dart';
+import '../../../domain/entities/receptionist_dashboard_data.dart';
 
 part 'receptionist_dashboard_stats_model.freezed.dart';
 part 'receptionist_dashboard_stats_model.g.dart';
@@ -27,17 +28,14 @@ class ReceptionistDashboardStatsModel with _$ReceptionistDashboardStatsModel {
       _$ReceptionistDashboardStatsModelFromJson(json);
 }
 
-// -------------------------
-// EXTENSION MAPPING
-// -------------------------
-extension ReceptionistDashboardStatsModelMapper on ReceptionistDashboardStatsModel {
-  ReceptionistDashboardStats toEntity() {
-    return ReceptionistDashboardStats(
+extension ReceptionistDashboardStatsModelX on ReceptionistDashboardStatsModel {
+  ReceptionistDashboardData toEntity() {
+    return ReceptionistDashboardData(
       receptionistName: receptionistName,
       shiftStatus: shiftStatus,
       shiftStart: DateTime.parse(shiftStart),
       shiftEnd: DateTime.parse(shiftEnd),
-      averageWaitTime: Duration(minutes: averageWaitTimeMinutes),
+      averageWaitTimeMinutes: averageWaitTimeMinutes,
       topWaitingPatients: topWaitingPatients,
       totalAppointments: totalAppointments,
       waitingListCount: waitingListCount,
@@ -48,4 +46,9 @@ extension ReceptionistDashboardStatsModelMapper on ReceptionistDashboardStatsMod
       appointments: appointments.map((e) => e.toEntity()).toList(),
     );
   }
+
+  List<AppointmentEntity> get appointmentEntities =>
+      appointments.map((e) => e.toEntity()).toList();
+  DateTime get shiftStartDateTime => DateTime.parse(shiftStart);
+  DateTime get shiftEndDateTime => DateTime.parse(shiftEnd);
 }

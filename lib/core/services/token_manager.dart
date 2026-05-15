@@ -1,75 +1,72 @@
-import 'dart:convert';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../cache/cache_helper.dart';
 import '../constants/api_constants.dart';
 
+/// Specialized service for managing authentication tokens and their lifecycle.
+///
+/// It delegates the actual storage logic to [CacheHelper] but maintains
+/// the business logic of keys, expiry, and token-specific exceptions.
 class TokenManager {
-  final FlutterSecureStorage _secureStorage;
   final CacheHelper _cacheHelper;
 
-  TokenManager({
-    required FlutterSecureStorage secureStorage,
-    required CacheHelper cacheHelper,
-  })  : _secureStorage = secureStorage,
-        _cacheHelper = cacheHelper;
+  TokenManager({required CacheHelper cacheHelper}) : _cacheHelper = cacheHelper;
 
   // ---------------------------------------------------------------------------
   // 🔐 Access Token
   // ---------------------------------------------------------------------------
-  Future<void> saveToken(String token) async {
-    
 
+  /// Persists access token in secure storage.
+  Future<void> saveToken(String token) async {
     try {
-      await _secureStorage.write(
-        key: ApiConstants.tokenKey,
-        value: token,
-      );
+      await _cacheHelper.saveSecuredString(ApiConstants.tokenKey, token);
     } catch (e) {
-      throw TokenException('Failed to save token: $e');
+      throw TokenException('Failed to save access token: $e');
     }
   }
 
+  /// Reads access token from secure storage.
   Future<String?> getToken() async {
     try {
-      return await _secureStorage.read(key: ApiConstants.tokenKey);
+      return await _cacheHelper.getSecuredString(ApiConstants.tokenKey);
     } catch (e) {
-      throw TokenException('Failed to retrieve token: $e');
+      throw TokenException('Failed to retrieve access token: $e');
     }
   }
 
+  /// Deletes access token from secure storage.
   Future<void> deleteToken() async {
     try {
-      await _secureStorage.delete(key: ApiConstants.tokenKey);
+      await _cacheHelper.deleteSecuredString(ApiConstants.tokenKey);
     } catch (e) {
-      throw TokenException('Failed to delete token: $e');
+      throw TokenException('Failed to delete access token: $e');
     }
   }
 
   // ---------------------------------------------------------------------------
   // 🔄 Refresh Token
   // ---------------------------------------------------------------------------
+
+  /// Persists refresh token in secure storage.
   Future<void> saveRefreshToken(String token) async {
     try {
-      await _secureStorage.write(
-        key: ApiConstants.refreshTokenKey,
-        value: token,
-      );
+      await _cacheHelper.saveSecuredString(ApiConstants.refreshTokenKey, token);
     } catch (e) {
       throw TokenException('Failed to save refresh token: $e');
     }
   }
 
+  /// Reads refresh token from secure storage.
   Future<String?> getRefreshToken() async {
     try {
-      return await _secureStorage.read(key: ApiConstants.refreshTokenKey);
+      return await _cacheHelper.getSecuredString(ApiConstants.refreshTokenKey);
     } catch (e) {
       throw TokenException('Failed to retrieve refresh token: $e');
     }
   }
 
+  /// Deletes refresh token from secure storage.
   Future<void> deleteRefreshToken() async {
     try {
-      await _secureStorage.delete(key: ApiConstants.refreshTokenKey);
+      await _cacheHelper.deleteSecuredString(ApiConstants.refreshTokenKey);
     } catch (e) {
       throw TokenException('Failed to delete refresh token: $e');
     }
@@ -78,6 +75,8 @@ class TokenManager {
   // ---------------------------------------------------------------------------
   // ⏳ Token Expiry
   // ---------------------------------------------------------------------------
+
+  /// Persists token expiry timestamp.
   Future<void> saveTokenExpiry(DateTime expiry) async {
     try {
       await _cacheHelper.setData(
@@ -89,6 +88,7 @@ class TokenManager {
     }
   }
 
+  /// Returns token expiry timestamp if available.
   DateTime? getTokenExpiry() {
     try {
       final value = _cacheHelper.getData(key: ApiConstants.tokenExpiryKey);
@@ -99,51 +99,31 @@ class TokenManager {
     }
   }
 
+  /// Checks if the current token is considered expired.
   bool isTokenExpired() {
     final expiry = getTokenExpiry();
     if (expiry == null) return true;
-    return DateTime.now().isAfter(expiry);
+    // Buffer of 30 seconds to be safe
+    return DateTime.now().isAfter(expiry.subtract(const Duration(seconds: 30)));
   }
 
   // ---------------------------------------------------------------------------
-  // 👤 User Data (JSON)
+  // 🧹 Cleanup
   // ---------------------------------------------------------------------------
-  Future<void> saveUserData(Map<String, dynamic> user) async {
-    try {
-      await _cacheHelper.setData(
-        key: ApiConstants.userDataKey,
-        value: jsonEncode(user),
-      );
-    } catch (e) {
-      throw TokenException('Failed to save user data: $e');
-    }
-  }
 
-  Map<String, dynamic>? getUserData() {
-    try {
-      final jsonString = _cacheHelper.getData(key: ApiConstants.userDataKey);
-      if (jsonString == null) return null;
-      return jsonDecode(jsonString);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // 🧹 Clear All
-  // ---------------------------------------------------------------------------
+  /// Clears only token-related data.
   Future<void> clearAll() async {
     try {
       await deleteToken();
       await deleteRefreshToken();
-      await _cacheHelper.removeData(key: ApiConstants.userDataKey);
       await _cacheHelper.removeData(key: ApiConstants.tokenExpiryKey);
     } catch (e) {
-      throw TokenException('Failed to clear authentication data: $e');
+      throw TokenException('Failed to clear token data: $e');
     }
   }
 }
 
+/// Domain-specific exception for token/session persistence failures.
 class TokenException implements Exception {
   final String message;
   TokenException(this.message);

@@ -1,18 +1,8 @@
-import 'package:dartz/dartz.dart';
-import '../../../../core/error/failures.dart';
-import '../entities/work_schedule_entry.dart';
-
-class SaveScheduleParams {
-  final String doctorId;
-  final List<WorkScheduleEntry> entries;
-
-  SaveScheduleParams({required this.doctorId, required this.entries});
-}
+import '../../data/models/work_schedule_model.dart';
 
 class SaveDoctorScheduleUseCase {
-  Future<Either<Failure, void>> call(SaveScheduleParams params) async {
-    // Mock save delay
+  Future<void> call(List<WorkScheduleEntry> schedule) async {
+    // Basic mock logic
     await Future.delayed(const Duration(seconds: 1));
-    return const Right(null);
   }
 }

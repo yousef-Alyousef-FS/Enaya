@@ -1,38 +1,61 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
-import '../../theme/app_colors.dart';
 
+/// Centralized loading widgets for common UI contexts.
 class AppLoaders {
-  /// Loader for buttons
-  static Widget button({Color? color, double size = 22.0}) {
-    return SpinKitThreeBounce(color: color, size: size);
+  /// Small loader suitable for buttons.
+  static Widget inline({Color? color, double size = 18}) {
+    return Builder(
+      builder: (context) => SpinKitChasingDots(
+        color: color ?? Theme.of(context).primaryColor,
+        size: size,
+      ),
+    );
   }
 
-  /// Loader centered on screen
+  /// Loader for compact contexts (e.g. small panels).
+  static Widget button({Color? color, double size = 22.0}) {
+    return Builder(
+      builder: (context) => SpinKitThreeBounce(
+        color: color ?? Theme.of(context).primaryColor,
+        size: size,
+      ),
+    );
+  }
+
+  /// Full-screen centered loader.
   static Widget screen({Color? color, double size = 45.0}) {
     return Center(
-      child: SpinKitDoubleBounce(color: color ?? AppColors.primary, size: size),
+      child: Builder(
+        builder: (context) => SpinKitDoubleBounce(
+          color: color ?? Theme.of(context).primaryColor,
+          size: size,
+        ),
+      ),
     );
   }
 
-  /// Loader for splash screen
-  static Widget splash({Color color = Colors.white, double size = 40.0}) {
-    return SpinKitFoldingCube(color: color, size: size);
-  }
-
-  /// Overlay loader (full screen blur)
-  static Widget overlay({
-    Color background = Colors.black54,
-    Color loaderColor = AppColors.primary,
-  }) {
-    return Container(
-      color: background,
-      child: Center(child: SpinKitCircle(color: loaderColor, size: 55)),
+  /// Splash-style loader used on the intro screen.
+  static Widget splash({Color? color, double size = 40.0}) {
+    return Builder(
+      builder: (context) => SpinKitFoldingCube(
+        color: color ?? Theme.of(context).primaryColor,
+        size: size,
+      ),
     );
   }
 
-  /// Loader for small UI elements (cards, list tiles, textfields)
-  static Widget inline({Color? color, double size = 18}) {
-    return SpinKitChasingDots(color: color ?? AppColors.primary, size: size);
+  /// Overlay loader that covers the screen with a translucent background.
+  static Widget overlay({Color? background, Color? loaderColor}) {
+    return Builder(
+      builder: (context) {
+        final bg = background ?? Colors.black54;
+        final lc = loaderColor ?? Theme.of(context).primaryColor;
+        return Container(
+          color: bg,
+          child: Center(child: SpinKitCircle(color: lc, size: 55)),
+        );
+      },
+    );
   }
 }

@@ -13,8 +13,10 @@ class ResponsiveHelper {
       MediaQuery.of(context).size.width >= LayoutBreakpoints.desktopMinWidth;
 
   // Media Query Helpers
-  static double screenWidth(BuildContext context) => MediaQuery.of(context).size.width;
-  static double screenHeight(BuildContext context) => MediaQuery.of(context).size.height;
+  static double screenWidth(BuildContext context) =>
+      MediaQuery.of(context).size.width;
+  static double screenHeight(BuildContext context) =>
+      MediaQuery.of(context).size.height;
 }
 
 extension ResponsiveExtension on BuildContext {

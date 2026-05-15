@@ -56,6 +56,7 @@ dependencies:
   intl: ^0.20.2
   logger: ^2.0.2
   pretty_dio_logger: ^1.4.0
+  easy_stepper: ^0.8.3
 
 dev_dependencies:
   flutter_test:

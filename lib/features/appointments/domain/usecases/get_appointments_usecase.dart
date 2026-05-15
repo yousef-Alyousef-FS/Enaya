@@ -1,10 +1,9 @@
 import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
-import '../../../../core/network/api_error_handler.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../entities/appointment_entity.dart';
 import '../entities/appointment_status.dart';
-import '../repositories/appointment_management_repository.dart';
+import '../repositories/appointment_repository.dart';
 
 class GetAppointmentsParams {
   final DateTime? date;
@@ -22,11 +21,11 @@ class GetAppointmentsParams {
     this.patientId,
     this.status,
     this.page = 1,
-    this.limit = 20,
+    this.limit = 50,
   });
 
   /// Factory for today's appointments
-  factory GetAppointmentsParams.today({int page = 1, int limit = 20}) {
+  factory GetAppointmentsParams.today({int page = 1, int limit = 50}) {
     return GetAppointmentsParams(
       date: DateTime.now(),
       page: page,
@@ -35,18 +34,16 @@ class GetAppointmentsParams {
   }
 }
 
-class GetAppointmentsUseCase implements UseCase<List<AppointmentEntity>, GetAppointmentsParams> {
-  final AppointmentManagementRepository repository;
+class GetAppointmentsUseCase
+    implements UseCase<List<AppointmentEntity>, GetAppointmentsParams> {
+  final IAppointmentRepository repository;
 
   GetAppointmentsUseCase(this.repository);
 
   @override
-  Future<Either<Failure, List<AppointmentEntity>>> call(GetAppointmentsParams params) async {
-    try {
-      final result = await repository.getAppointments(params);
-      return Right(result);
-    } catch (e) {
-      return Left(ApiErrorHandler.handle(e));
-    }
+  Future<Either<Failure, List<AppointmentEntity>>> call(
+    GetAppointmentsParams params,
+  ) async {
+    return await repository.getAppointments(params);
   }
 }

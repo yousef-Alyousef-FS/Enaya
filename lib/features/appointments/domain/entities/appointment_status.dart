@@ -79,6 +79,60 @@ extension AppointmentStatusX on AppointmentStatus {
         return Icons.event_repeat_rounded;
     }
   }
+
+  /// Returns list of allowed status transitions from the current state.
+  ///
+  /// Uses business logic to determine valid state transitions:
+  /// - Scheduled/Confirmed → can go to Arrived, Rescheduled, Cancelled, NoShow
+  /// - Arrived → can go to InProgress or Cancel
+  /// - InProgress → can only go to Completed
+  /// - Completed/Cancelled → Read-only (no transitions)
+  /// - NoShow → can go to Arrived, Confirmed, or Cancelled
+  List<AppointmentStatus> get allowedTransitions {
+    switch (this) {
+      case AppointmentStatus.scheduled:
+        return [
+          AppointmentStatus.confirmed,
+          AppointmentStatus.arrived,
+          AppointmentStatus.cancelled,
+          AppointmentStatus.noShow,
+        ];
+      case AppointmentStatus.confirmed:
+        return [
+          AppointmentStatus.arrived,
+          AppointmentStatus.rescheduled,
+          AppointmentStatus.cancelled,
+          AppointmentStatus.noShow,
+        ];
+      case AppointmentStatus.arrived:
+        return [AppointmentStatus.inProgress, AppointmentStatus.cancelled];
+      case AppointmentStatus.inProgress:
+        return [AppointmentStatus.completed];
+      case AppointmentStatus.completed:
+        return []; // Read-only
+      case AppointmentStatus.cancelled:
+        return []; // Read-only
+      case AppointmentStatus.noShow:
+        return [
+          AppointmentStatus.arrived,
+          AppointmentStatus.confirmed,
+          AppointmentStatus.cancelled,
+        ];
+      case AppointmentStatus.rescheduled:
+        return [AppointmentStatus.scheduled];
+    }
+  }
+
+  /// Check if this status is read-only and cannot be changed.
+  bool get isReadOnly {
+    return this == AppointmentStatus.completed ||
+        this == AppointmentStatus.cancelled;
+  }
+
+  /// Check if a transition to [newStatus] is allowed from current state.
+  bool canTransitionTo(AppointmentStatus newStatus) {
+    return allowedTransitions.contains(newStatus);
+  }
 }
 
 AppointmentStatus parseAppointmentStatus(

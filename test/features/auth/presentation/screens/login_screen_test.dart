@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:enaya/core/di/injection.dart';
 import 'package:enaya/features/auth/domain/entities/user_entity.dart';
@@ -29,7 +28,8 @@ class MockResetPasswordUseCase extends Mock implements ResetPasswordUseCase {}
 
 class MockChangePasswordUseCase extends Mock implements ChangePasswordUseCase {}
 
-class MockSendEmailVerificationUseCase extends Mock implements SendEmailVerificationUseCase {}
+class MockSendEmailVerificationUseCase extends Mock
+    implements SendEmailVerificationUseCase {}
 
 class MockVerifyEmailUseCase extends Mock implements VerifyEmailUseCase {}
 
@@ -65,13 +65,21 @@ void main() {
 
     getIt.registerLazySingleton<LoginUseCase>(() => mockLoginUseCase);
     getIt.registerLazySingleton<SignupUsecase>(() => mockSignupUseCase);
-    getIt.registerLazySingleton<ForgotPasswordUseCase>(() => mockForgotPasswordUseCase);
-    getIt.registerLazySingleton<ResetPasswordUseCase>(() => mockResetPasswordUseCase);
-    getIt.registerLazySingleton<ChangePasswordUseCase>(() => mockChangePasswordUseCase);
+    getIt.registerLazySingleton<ForgotPasswordUseCase>(
+      () => mockForgotPasswordUseCase,
+    );
+    getIt.registerLazySingleton<ResetPasswordUseCase>(
+      () => mockResetPasswordUseCase,
+    );
+    getIt.registerLazySingleton<ChangePasswordUseCase>(
+      () => mockChangePasswordUseCase,
+    );
     getIt.registerLazySingleton<SendEmailVerificationUseCase>(
       () => mockSendEmailVerificationUseCase,
     );
-    getIt.registerLazySingleton<VerifyEmailUseCase>(() => mockVerifyEmailUseCase);
+    getIt.registerLazySingleton<VerifyEmailUseCase>(
+      () => mockVerifyEmailUseCase,
+    );
     getIt.registerLazySingleton<LogoutUseCase>(() => mockLogoutUseCase);
     getIt.registerFactory(
       () => AuthCubit(
@@ -92,7 +100,10 @@ void main() {
     final router = GoRouter(
       initialLocation: '/login',
       routes: [
-        GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const LoginScreen(),
+        ),
         GoRoute(
           path: '/patient',
           builder: (context, state) => const Scaffold(body: Text('Home Page')),
@@ -100,13 +111,12 @@ void main() {
       ],
     );
 
-    return ScreenUtilInit(
-      designSize: const Size(768, 1024),
-      builder: (context, child) => MaterialApp.router(routerConfig: router),
-    );
+    return MaterialApp.router(routerConfig: router);
   }
 
-  testWidgets('Should show validation error when fields are empty', (WidgetTester tester) async {
+  testWidgets('Should show validation error when fields are empty', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pumpAndSettle(); // Wait for routing to settle
 
@@ -117,7 +127,9 @@ void main() {
     expect(find.text('enter_username_or_email'), findsOneWidget);
   });
 
-  testWidgets('Should navigate to home on success', (WidgetTester tester) async {
+  testWidgets('Should navigate to home on success', (
+    WidgetTester tester,
+  ) async {
     // Arrange
     const testUser = UserEntity(
       id: 1,
@@ -126,7 +138,9 @@ void main() {
       roleId: 3,
       phone: '123456789',
     );
-    when(() => mockLoginUseCase(any())).thenAnswer((_) async => const Right(testUser));
+    when(
+      () => mockLoginUseCase(any()),
+    ).thenAnswer((_) async => const Right(testUser));
 
     await tester.pumpWidget(createWidgetUnderTest());
     await tester.pumpAndSettle();

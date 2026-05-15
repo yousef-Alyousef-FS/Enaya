@@ -2,15 +2,18 @@ import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../repositories/appointment_management_repository.dart';
+import '../repositories/appointment_repository.dart';
 
-class GetAvailableSlotsUseCase implements UseCase<List<String>, GetAvailableSlotsParams> {
-  final AppointmentManagementRepository repository;
+class GetAvailableSlotsUseCase
+    implements UseCase<List<String>, GetAvailableSlotsParams> {
+  final IAppointmentRepository repository;
 
   GetAvailableSlotsUseCase(this.repository);
 
   @override
-  Future<Either<Failure, List<String>>> call(GetAvailableSlotsParams params) async {
+  Future<Either<Failure, List<String>>> call(
+    GetAvailableSlotsParams params,
+  ) async {
     return await repository.getAvailableSlots(params.doctorId, params.date);
   }
 }

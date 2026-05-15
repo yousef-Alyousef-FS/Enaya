@@ -1,17 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/loaders/app_loaders.dart';
 import '../widgets/auth_card_container.dart';
-import '../../../../core/widgets/common/logo.dart';
-import '../../../../core/widgets/common/portrait_only_scope.dart';
+import '../widgets/logo.dart';
+import '../widgets/portrait_only_scope.dart';
 
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
@@ -27,7 +26,10 @@ enum UserRole {
   const UserRole(this.id);
 
   static UserRole fromId(int id) {
-    return UserRole.values.firstWhere((e) => e.id == id, orElse: () => UserRole.patient);
+    return UserRole.values.firstWhere(
+      (e) => e.id == id,
+      orElse: () => UserRole.patient,
+    );
   }
 }
 
@@ -38,7 +40,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin, AuthFormMixin {
+class _LoginScreenState extends State<LoginScreen>
+    with TickerProviderStateMixin, AuthFormMixin {
   final _formKey = GlobalKey<FormState>();
 
   late final TextEditingController _emailController;
@@ -54,9 +57,14 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
 
-    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
-
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
   }
 
   @override
@@ -67,9 +75,6 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     super.dispose();
   }
 
-  // -----------------------------
-  // Navigation Logic
-  // -----------------------------
   void _handleNavigation(BuildContext context, AuthState state) {
     final user = state.currentUser;
     if (user == null) return;
@@ -85,23 +90,15 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     context.go(route);
   }
 
-  // -----------------------------
-  // Validation
-  // -----------------------------
   String? _validateEmailOrUsername(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'enter_username_or_email'.tr();
     }
-
-    // إذا كان username → مقبول
     if (!value.contains('@')) return null;
-
-    // إذا كان email → لازم يكون صحيح
     final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
     if (!emailRegex.hasMatch(value.trim())) {
       return 'invalid_email'.tr();
     }
-
     return null;
   }
 
@@ -117,15 +114,10 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
 
   void _onLoginPressed(AuthCubit cubit) {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => errorMessage = null);
-
     cubit.login(_emailController.text.trim(), _passwordController.text);
   }
 
-  // -----------------------------
-  // UI
-  // -----------------------------
   @override
   Widget build(BuildContext context) {
     return PortraitOnlyScope(
@@ -141,11 +133,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                   config: config,
                   children: [
                     _buildLogo(config),
-                    SizedBox(height: config.isPortrait ? 22.h : 16.h),
-
+                    const SizedBox(height: 24),
                     _buildHeader(context, config),
-                    SizedBox(height: config.isPortrait ? 30.h : 20.h),
-
+                    const SizedBox(height: 32),
                     _buildForm(config),
                   ],
                 );
@@ -161,7 +151,10 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     return Container(
       width: config.logoSize,
       height: config.logoSize,
-      decoration: BoxDecoration(color: AppColors.primary.withAlpha(35), shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withAlpha(35),
+        shape: BoxShape.circle,
+      ),
       child: LogoIcon(width: config.iconSize, height: config.iconSize),
     );
   }
@@ -172,13 +165,17 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         Text(
           'welcome_back'.tr(),
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
+          style: Theme.of(
+            context,
+          ).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
         ),
-        SizedBox(height: config.isPortrait ? 10.h : 8.h),
+        const SizedBox(height: 8),
         Text(
           'login_description'.tr(),
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
         ),
       ],
     );
@@ -198,8 +195,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             semanticLabel: 'username_or_email'.tr(),
             validator: _validateEmailOrUsername,
           ),
-          SizedBox(height: config.isPortrait ? 18.h : 12.h),
-
+          const SizedBox(height: 16),
           AuthTextField(
             labelText: 'password'.tr(),
             hintText: 'password'.tr(),
@@ -209,14 +205,13 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             semanticLabel: 'password'.tr(),
             validator: _validatePassword,
           ),
-          SizedBox(height: config.isPortrait ? 10.h : 8.h),
-
+          const SizedBox(height: 8),
           _buildForgotPassword(config),
-          SizedBox(height: config.isPortrait ? 18.h : 12.h),
-
+          const SizedBox(height: 16),
           _buildLoginSection(config),
-          SizedBox(height: config.isPortrait ? 24.h : 16.h),
-
+          const SizedBox(height: 16),
+          _buildBiometricOption(),
+          const SizedBox(height: 24),
           _buildSignupSection(config),
         ],
       ),
@@ -231,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         child: Text(
           'forgot_password'.tr(),
           style: TextStyle(
-            color: AppColors.primary,
+            color: Theme.of(context).colorScheme.primary,
             fontSize: config.buttonFontSize,
             fontWeight: FontWeight.w600,
           ),
@@ -244,58 +239,40 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         final cubit = context.read<AuthCubit>();
-
         if (state.isError) {
-          setState(() => errorMessage = state.errorMessage ?? 'error_occurred'.tr());
+          setState(
+            () => errorMessage = state.errorMessage ?? 'error_occurred'.tr(),
+          );
           _fadeController.forward(from: 0);
           cubit.clearStatus();
           return;
         }
-
         if (state.isSuccess) {
-          setState(() {
-            errorMessage = null;
-            isNavigating = true;
-          });
-          successAnimationController.forward().then((_) {
-            if (mounted) {
-              _handleNavigation(context, state);
-              // We don't reverse or clear status here because we are leaving the screen
-            }
-          });
+          _handleNavigation(context, state);
           return;
         }
       },
       builder: (context, state) {
         final cubit = context.read<AuthCubit>();
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            AnimatedBuilder(
-              animation: successAnimation,
-              builder: (_, _) => Transform.scale(
-                scale: successAnimation.value,
-                child: ElevatedButton(
-                  onPressed: (state.isLoading || isNavigating)
-                      ? null
-                      : () => _onLoginPressed(cubit),
-                  child: state.isLoading ? AppLoaders.inline() : Text('login'.tr()),
-                ),
-              ),
+            ElevatedButton(
+              onPressed: (state.isLoading)
+                  ? null
+                  : () => _onLoginPressed(cubit),
+              child: state.isLoading ? AppLoaders.inline() : Text('login'.tr()),
             ),
-
-            // Error message with fade animation
             if (errorMessage != null && !state.isSuccess)
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: Padding(
-                  padding: EdgeInsets.only(top: 12.h),
+                  padding: const EdgeInsets.only(top: 12),
                   child: Text(
                     errorMessage!,
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: AppColors.error,
+                      color: Theme.of(context).colorScheme.error,
                       fontSize: config.bodyFontSize,
                       fontWeight: FontWeight.w600,
                     ),
@@ -313,19 +290,55 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Text('dont_have_account'.tr(), style: TextStyle(fontSize: config.buttonFontSize)),
+        Text(
+          'dont_have_account'.tr(),
+          style: TextStyle(fontSize: config.buttonFontSize),
+        ),
         TextButton(
           onPressed: () => context.push(AppRouter.signup),
           child: Text(
             'sign_up'.tr(),
             style: TextStyle(
-              color: AppColors.primary,
+              color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
               fontSize: config.buttonFontSize,
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildBiometricOption() {
+    final isBiometricSupported =
+        !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS);
+
+    return Center(
+      child: AnimatedOpacity(
+        opacity: isBiometricSupported ? 1.0 : 0.45,
+        duration: const Duration(milliseconds: 250),
+        child: IconButton(
+          icon: Icon(
+            Icons.fingerprint,
+            size: 40,
+            color: isBiometricSupported
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          onPressed: isBiometricSupported
+              ? () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('biometric_login_not_implemented'.tr()),
+                    ),
+                  );
+                }
+              : null,
+          tooltip: 'biometric_login'.tr(),
+        ),
+      ),
     );
   }
 }

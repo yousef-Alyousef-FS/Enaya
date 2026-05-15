@@ -14,6 +14,7 @@ import '../../domain/usecases/signup_usecase.dart';
 import '../../domain/usecases/verify_email_usecase.dart';
 import 'auth_state.dart';
 
+/// Auth orchestration cubit that delegates operations to use cases.
 class AuthCubit extends Cubit<AuthState> {
   final LoginUseCase _loginUseCase;
   final SignupUsecase _signupUseCase;
@@ -43,9 +44,12 @@ class AuthCubit extends Cubit<AuthState> {
        _logoutUseCase = logoutUseCase,
        super(const AuthState.initial());
 
+  /// Authenticates user with username/email and password.
   Future<void> login(String usernameOrEmail, String password) async {
     await _handleResult<UserEntity>(
-      _loginUseCase(LoginParams(usernameOrEmail: usernameOrEmail, password: password)),
+      _loginUseCase(
+        LoginParams(usernameOrEmail: usernameOrEmail, password: password),
+      ),
       onSuccess: (user) => emit(
         state.copyWith(
           isLoading: false,
@@ -57,10 +61,21 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  Future<void> signup(String email, String password, String username, String phone) async {
+  /// Creates a new user account.
+  Future<void> signup(
+    String email,
+    String password,
+    String username,
+    String phone,
+  ) async {
     await _handleResult<UserEntity>(
       _signupUseCase(
-        SignupParams(email: email, password: password, username: username, phone: phone),
+        SignupParams(
+          email: email,
+          password: password,
+          username: username,
+          phone: phone,
+        ),
       ),
       onSuccess: (user) => emit(
         state.copyWith(
@@ -73,14 +88,21 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
+  /// Initiates forgot-password flow by email.
   Future<void> forgotPassword(String email) async {
     await _handleResult<void>(
       _forgotPasswordUseCase(email),
-      onSuccess: (_) =>
-          emit(state.copyWith(isLoading: false, clearErrorMessage: true, isSuccess: true)),
+      onSuccess: (_) => emit(
+        state.copyWith(
+          isLoading: false,
+          clearErrorMessage: true,
+          isSuccess: true,
+        ),
+      ),
     );
   }
 
+  /// Resets password using verification code and new password.
   Future<void> resetPassword({
     required String email,
     required String verificationCode,
@@ -94,40 +116,72 @@ class AuthCubit extends Cubit<AuthState> {
           newPassword: newPassword,
         ),
       ),
-      onSuccess: (_) =>
-          emit(state.copyWith(isLoading: false, clearErrorMessage: true, isSuccess: true)),
+      onSuccess: (_) => emit(
+        state.copyWith(
+          isLoading: false,
+          clearErrorMessage: true,
+          isSuccess: true,
+        ),
+      ),
     );
   }
 
+  /// Changes password for currently authenticated account.
   Future<void> changePassword({
     required String currentPassword,
     required String newPassword,
   }) async {
     await _handleResult<void>(
       _changePasswordUseCase(
-        ChangePasswordParams(currentPassword: currentPassword, newPassword: newPassword),
+        ChangePasswordParams(
+          currentPassword: currentPassword,
+          newPassword: newPassword,
+        ),
       ),
-      onSuccess: (_) =>
-          emit(state.copyWith(isLoading: false, clearErrorMessage: true, isSuccess: true)),
+      onSuccess: (_) => emit(
+        state.copyWith(
+          isLoading: false,
+          clearErrorMessage: true,
+          isSuccess: true,
+        ),
+      ),
     );
   }
 
+  /// Requests verification code email.
   Future<void> sendEmailVerification(String email) async {
     await _handleResult<void>(
       _sendEmailVerificationUseCase(email),
-      onSuccess: (_) =>
-          emit(state.copyWith(isLoading: false, clearErrorMessage: true, isSuccess: true)),
+      onSuccess: (_) => emit(
+        state.copyWith(
+          isLoading: false,
+          clearErrorMessage: true,
+          isSuccess: true,
+        ),
+      ),
     );
   }
 
-  Future<void> verifyEmail({required String email, required String verificationCode}) async {
+  /// Verifies email using code sent to the user.
+  Future<void> verifyEmail({
+    required String email,
+    required String verificationCode,
+  }) async {
     await _handleResult<void>(
-      _verifyEmailUseCase(VerifyEmailParams(email: email, verificationCode: verificationCode)),
-      onSuccess: (_) =>
-          emit(state.copyWith(isLoading: false, clearErrorMessage: true, isSuccess: true)),
+      _verifyEmailUseCase(
+        VerifyEmailParams(email: email, verificationCode: verificationCode),
+      ),
+      onSuccess: (_) => emit(
+        state.copyWith(
+          isLoading: false,
+          clearErrorMessage: true,
+          isSuccess: true,
+        ),
+      ),
     );
   }
 
+  /// Clears local session state via logout use case.
   Future<void> logout() async {
     await _handleResult<void>(
       _logoutUseCase(NoParams()),
@@ -142,22 +196,37 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
+  /// Clears transient success/error flags for next screen action.
   void clearStatus() {
     emit(state.copyWith(clearErrorMessage: true, isSuccess: false));
   }
 
+  /// Shared async operation wrapper used by all auth flows.
   Future<void> _handleResult<T>(
     Future<Either<Failure, T>> call, {
     required void Function(T data) onSuccess,
   }) async {
-    emit(state.copyWith(isLoading: true, clearErrorMessage: true, isSuccess: false));
+    emit(
+      state.copyWith(
+        isLoading: true,
+        clearErrorMessage: true,
+        isSuccess: false,
+      ),
+    );
 
     final result = await call;
 
     result.fold(
-      (failure) =>
-          emit(state.copyWith(isLoading: false, errorMessage: failure.message, isSuccess: false)),
+      (failure) => emit(
+        state.copyWith(
+          isLoading: false,
+          errorMessage: failure.message,
+          isSuccess: false,
+        ),
+      ),
       onSuccess,
     );
+
+    // End auth operation dispatch flow.
   }
 }

@@ -1,23 +1,29 @@
 // ignore_for_file:use_build_context_synchronously
 import 'package:easy_localization/easy_localization.dart';
+import 'package:enaya/features/appointments/presentation/cubit/details/appointment_details_cubit.dart';
+import 'package:enaya/features/appointments/presentation/cubit/details/appointment_details_state.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/cards/app_base_card.dart';
+import '../../../../core/widgets/section_header.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../data/models/appointments_overview_view_mode.dart';
 import '../../domain/entities/appointment_entity.dart';
 import '../../domain/entities/appointment_status.dart';
-import '../../domain/usecases/cancel_appointment_usecase.dart';
-import '../../domain/usecases/reschedule_appointment_usecase.dart';
-import '../../domain/usecases/update_appointment_status_usecase.dart';
+import 'schedule_appointment_screen.dart';
 import '../widgets/shared/appointment_status_chip.dart';
 import 'appointment_status_dialog.dart';
+import 'cancellation_reason_dialog.dart';
 
+/// Refined Appointment Details screen with structured sections and clear visual hierarchy.
 class AppointmentDetailsScreen extends StatefulWidget {
   final AppointmentEntity appointment;
   final AppointmentsOverviewMode role;
-  final VoidCallback? onDataChanged; // 🔄 لإعلام الشاشة السابقة بأي تغيير
+  final VoidCallback? onDataChanged;
 
   const AppointmentDetailsScreen({
     super.key,
@@ -31,30 +37,159 @@ class AppointmentDetailsScreen extends StatefulWidget {
 }
 
 class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
-  bool _isLoading = false;
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('appointment_details'.tr())),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.w),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    return BlocProvider(
+      create: (_) {
+        final cubit = getIt<AppointmentDetailsCubit>();
+        cubit.setAppointment(widget.appointment);
+        return cubit;
+      },
+      child: BlocListener<AppointmentDetailsCubit, AppointmentDetailsState>(
+        listener: (context, state) {
+          if (state.isCancelled) {
+            _showSuccess(context, 'appointment_cancelled'.tr());
+            widget.onDataChanged?.call();
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) context.pop(true);
+            });
+          }
+
+          if (state.isRescheduled) {
+            _showSuccess(context, 'appointment_rescheduled'.tr());
+            widget.onDataChanged?.call();
+          }
+
+          if (state.isDeleted) {
+            _showSuccess(context, 'appointment_deleted'.tr());
+            widget.onDataChanged?.call();
+            Future.delayed(const Duration(milliseconds: 500), () {
+              if (mounted) context.pop(true);
+            });
+          }
+
+          if (state.errorMessage != null) {
+            _showError(context, state.errorMessage!);
+          }
+        },
+        child: BlocBuilder<AppointmentDetailsCubit, AppointmentDetailsState>(
+          builder: (context, state) {
+            final appointment = state.appointment ?? widget.appointment;
+
+            return Scaffold(
+              backgroundColor: isDark ? AppColors.darkBackground : AppColors.background,
+              appBar: AppBar(
+                title: Text('appointment_details'.tr()),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                centerTitle: true,
+              ),
+              body: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 800),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildHeaderCard(context, appointment),
+                              const SizedBox(height: 24),
+
+                              if (_isFinalStatus(appointment)) ...[
+                                _buildStatusBanner(context, appointment),
+                                const SizedBox(height: 24),
+                              ],
+
+                              _buildInfoSection(context, appointment),
+                              const SizedBox(height: 24),
+
+                              _buildClinicalSection(context, appointment),
+                              const SizedBox(height: 32),
+                            ],
+                          ),
+                        ),
+                      ),
+                      _buildBottomActions(context, state),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderCard(BuildContext context, AppointmentEntity appointment) {
+    final theme = Theme.of(context);
+    return AppBaseCard(
+      padding: EdgeInsets.zero,
+      borderRadius: 24,
+      elevation: 8,
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [theme.colorScheme.primary, theme.colorScheme.primary.withAlpha(200)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Stack(
           children: [
-            _buildMainInfoCard(context),
-            SizedBox(height: 16.h),
-            _buildMetaCard(context),
-            SizedBox(height: 16.h),
-            _buildReasonCard(context),
-            SizedBox(height: 24.h),
-            _buildActionRow(context),
-            SizedBox(height: 24.h),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('done'.tr()),
+            Positioned(
+              right: -20,
+              top: -20,
+              child: Icon(Icons.calendar_month, size: 140, color: Colors.white.withAlpha(20)),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildRoleBadge(),
+                      AppointmentStatusChip(status: appointment.status),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    appointment.patientName,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 26,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.medical_services_outlined, color: Colors.white70, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        appointment.doctorName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: Colors.white.withAlpha(230),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ],
@@ -63,387 +198,568 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     );
   }
 
-  Widget _buildMainInfoCard(BuildContext context) {
+  Widget _buildRoleBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withAlpha(40),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_roleIcon(widget.role), color: Colors.white, size: 14),
+          const SizedBox(width: 6),
+          Text(
+            _roleLabel(widget.role),
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoSection(BuildContext context, AppointmentEntity appointment) {
+    final theme = Theme.of(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 520;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppSectionHeader(title: 'appointment_info'.tr()),
+            const SizedBox(height: 12),
+            if (isCompact) ...[
+              _buildInfoCard(
+                icon: Icons.event_available,
+                label: 'date'.tr(),
+                value: DateFormat('EEEE, MMM d', 'en_US').format(appointment.dateTime),
+                color: theme.colorScheme.primary,
+              ),
+              const SizedBox(height: 12),
+              _buildInfoCard(
+                icon: Icons.access_time,
+                label: 'time'.tr(),
+                value: DateFormat.jm('en_US').format(appointment.dateTime),
+                color: AppColors.accentMint,
+              ),
+            ] else ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildInfoCard(
+                      icon: Icons.event_available,
+                      label: 'date'.tr(),
+                      value: DateFormat('EEEE, MMM d', 'en_US').format(appointment.dateTime),
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildInfoCard(
+                      icon: Icons.access_time,
+                      label: 'time'.tr(),
+                      value: DateFormat.jm('en_US').format(appointment.dateTime),
+                      color: AppColors.accentMint,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 12),
+            _buildInfoCard(
+              icon: Icons.tag,
+              label: 'appointment_id'.tr(),
+              value: '#${appointment.id}',
+              color: theme.brightness == Brightness.dark
+                  ? AppColors.darkTextSecondary
+                  : AppColors.gray500,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildClinicalSection(BuildContext context, AppointmentEntity appointment) {
+    Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppSectionHeader(title: 'clinical_details'.tr()),
+        const SizedBox(height: 12),
+        _buildDataBlock(
+          context,
+          icon: Icons.note_alt_outlined,
+          label: 'reason_for_visit'.tr(),
+          content: appointment.reason?.isNotEmpty == true
+              ? appointment.reason!
+              : 'no_reason_provided'.tr(),
+        ),
+        const SizedBox(height: 16),
+        _buildDataBlock(
+          context,
+          icon: Icons.description_outlined,
+          label: 'notes'.tr(),
+          content: appointment.notes?.isNotEmpty == true
+              ? appointment.notes!
+              : 'no_notes_available'.tr(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInfoCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Builder(
+      builder: (context) {
+        final theme = Theme.of(context);
+        return AppBaseCard(
+          padding: const EdgeInsets.all(16),
+          borderRadius: 16,
+          elevation: 0,
+          backgroundColor: theme.colorScheme.surface,
+          borderSide: BorderSide(color: theme.colorScheme.outlineVariant),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withAlpha(20),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 11),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      value,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDataBlock(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required String content,
+  }) {
+    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(8.w),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.appointment.patientName,
-            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w700),
+          Row(
+            children: [
+              Icon(icon, size: 16, color: theme.colorScheme.primary),
+              const SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 8.h),
+          const SizedBox(height: 10),
           Text(
-            '${'doctor'.tr()}: ${widget.appointment.doctorName}',
-            style: TextStyle(color: Colors.white.withAlpha(220), fontSize: 14),
+            content,
+            style: TextStyle(fontSize: 14, color: theme.colorScheme.onSurface, height: 1.5),
           ),
-          SizedBox(height: 12.h),
-          AppointmentStatusChip(status: widget.appointment.status),
         ],
       ),
     );
   }
 
-  Widget _buildMetaCard(BuildContext context) {
-    return _SectionCard(
-      title: 'scheduled_for'.tr(),
-      children: [
-        _LabeledValue(
-          label: 'scheduled_for'.tr(),
-          value: DateFormat(
-            'EEEE, d MMMM yyyy - HH:mm',
-            context.locale.toString(),
-          ).format(widget.appointment.dateTime),
+  Widget _buildBottomActions(BuildContext context, AppointmentDetailsState state) {
+    final appointment = state.appointment ?? widget.appointment;
+    final isLoading = state.isLoading;
+    final theme = Theme.of(context);
+    final width = MediaQuery.sizeOf(context).width;
+    final isCompact = width < 520;
+
+    if (appointment.status.isReadOnly) {
+      return Container(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(10),
+              blurRadius: 10,
+              offset: const Offset(0, -5),
+            ),
+          ],
         ),
-        _LabeledValue(label: 'appointment_id'.tr(), value: widget.appointment.id),
-        if (widget.appointment.queueNumber != null)
-          _LabeledValue(
-            label: 'queue_number'.tr(),
-            value: widget.appointment.queueNumber.toString(),
-          ),
-      ],
+        child: _buildReadOnlyActionsHint(context, appointment),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 10, offset: const Offset(0, -5)),
+        ],
+      ),
+      child: isCompact
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: _buildActionControls(context, appointment, isLoading, compact: true),
+            )
+          : Row(children: _buildActionControls(context, appointment, isLoading, compact: false)),
     );
   }
 
-  Widget _buildReasonCard(BuildContext context) {
-    final reason = (widget.appointment.reason == null || widget.appointment.reason!.trim().isEmpty)
-        ? 'no_reason_provided'.tr()
-        : widget.appointment.reason!;
-    final notes = (widget.appointment.notes == null || widget.appointment.notes!.trim().isEmpty)
-        ? 'no_notes'.tr()
-        : widget.appointment.notes!;
+  List<Widget> _buildActionControls(
+    BuildContext context,
+    AppointmentEntity appointment,
+    bool isLoading, {
+    required bool compact,
+  }) {
+    final controls = <Widget>[];
 
-    return _SectionCard(
-      title: 'reason'.tr(),
-      children: [
-        _LabeledValue(label: 'reason'.tr(), value: reason),
-        _LabeledValue(label: 'notes'.tr(), value: notes),
-      ],
-    );
+    if (widget.role == AppointmentsOverviewMode.receptionist) {
+      controls.add(
+        Expanded(
+          child: _buildPrimaryAction(
+            label: 'change_status'.tr(),
+            icon: Icons.edit_calendar,
+            onPressed: isLoading ? null : () => _showStatusDialog(context),
+          ),
+        ),
+      );
+      controls.add(const SizedBox(width: 12));
+      controls.add(
+        _buildCircleAction(
+          icon: Icons.cancel_outlined,
+          color: AppColors.medicalRed,
+          onPressed: isLoading ? null : () => _showCancelConfirmation(context),
+        ),
+      );
+    } else if (widget.role == AppointmentsOverviewMode.doctor) {
+      controls.add(Expanded(child: _buildDoctorPrimaryAction(context, appointment, isLoading)));
+      controls.add(const SizedBox(width: 12));
+      controls.add(
+        _buildCircleAction(
+          icon: Icons.more_vert,
+          color: AppColors.gray600,
+          onPressed: () => _showDoctorMoreActions(context, appointment),
+        ),
+      );
+    } else if (widget.role == AppointmentsOverviewMode.patient) {
+      controls.add(
+        Expanded(
+          child: _buildPrimaryAction(
+            label: 'reschedule'.tr(),
+            icon: Icons.history_toggle_off,
+            onPressed: isLoading ? null : () => _rescheduleAppointment(context),
+          ),
+        ),
+      );
+      controls.add(const SizedBox(width: 12));
+      controls.add(
+        _buildCircleAction(
+          icon: Icons.close,
+          color: AppColors.medicalRed,
+          onPressed: isLoading ? null : () => _showCancelConfirmation(context),
+        ),
+      );
+    }
+
+    if (compact) {
+      return controls.map((widget) {
+        if (widget is SizedBox) {
+          return const SizedBox(height: 12);
+        }
+
+        if (widget is Expanded) {
+          return SizedBox(width: double.infinity, child: widget.child);
+        }
+
+        return Align(alignment: AlignmentDirectional.centerEnd, child: widget);
+      }).toList();
+    }
+
+    return controls;
   }
 
-  Widget _buildActionRow(BuildContext context) {
-    final isFuture = widget.appointment.dateTime.isAfter(DateTime.now());
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (widget.role == AppointmentsOverviewMode.receptionist) ...[
-          FilledButton.tonal(
-            onPressed: _isLoading ? null : () => _showStatusDialog(context),
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text('change_status'.tr()),
+  Widget _buildPrimaryAction({
+    required String label,
+    required IconData icon,
+    required VoidCallback? onPressed,
+    Color? color,
+  }) {
+    return Builder(
+      builder: (context) {
+        final theme = Theme.of(context);
+        return FilledButton.icon(
+          onPressed: onPressed,
+          icon: Icon(icon, size: 20),
+          label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+          style: FilledButton.styleFrom(
+            backgroundColor: color ?? theme.colorScheme.primary,
+            foregroundColor: theme.colorScheme.onPrimary,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           ),
-          SizedBox(height: 10.h),
-          FilledButton(
-            onPressed: _isLoading ? null : () => _showCancelConfirmation(context),
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text('cancel_appointment'.tr()),
-          ),
-        ],
-        if (widget.role == AppointmentsOverviewMode.doctor) ...[
-          FilledButton(
-            onPressed: _isLoading ? null : () => _startAppointment(context), // استخدم UseCase حقيقي
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text('start_appointment'.tr()),
-          ),
-          SizedBox(height: 10.h),
-          FilledButton.tonal(
-            onPressed: _isLoading ? null : () => _addMedicalNote(context),
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text('add_medical_note'.tr()),
-          ),
-        ],
-        if (widget.role == AppointmentsOverviewMode.patient && isFuture) ...[
-          FilledButton(
-            onPressed: _isLoading ? null : () => _showCancelConfirmation(context),
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text('cancel_appointment'.tr()),
-          ),
-          SizedBox(height: 10.h),
-          FilledButton.tonal(
-            onPressed: _isLoading ? null : () => _rescheduleAppointment(context),
-            child: _isLoading
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : Text('reschedule'.tr()),
-          ),
-        ],
-      ],
-    );
-  }
-
-  // ================== الإجراءات (مع حالة تحميل) ==================
-
-  Future<void> _updateAppointmentStatus(BuildContext context, AppointmentStatus status) async {
-    if (_isLoading) return;
-    setState(() => _isLoading = true);
-
-    final result = await getIt<UpdateAppointmentStatusUseCase>().call(
-      UpdateAppointmentStatusParams(appointmentId: widget.appointment.id, status: status),
-    );
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    result.fold(
-      (failure) {
-        if (!mounted) return;
-        _showError(context, failure.message);
-      },
-      (updated) {
-        if (!mounted) return;
-        _showSuccess(context, 'status_changed'.tr());
-        widget.onDataChanged?.call();
-        Navigator.pop(context, true);
+        );
       },
     );
   }
 
-  Future<void> _cancelAppointment(BuildContext context) async {
-    if (_isLoading) return;
-    setState(() => _isLoading = true);
-
-    final cancelledBy = widget.role == AppointmentsOverviewMode.patient
-        ? 'patient'
-        : 'receptionist';
-    final result = await getIt<CancelAppointmentUseCase>().call(
-      CancelAppointmentParams(
-        appointmentId: widget.appointment.id,
-        cancelledBy: cancelledBy,
-        reason: null,
+  Widget _buildCircleAction({
+    required IconData icon,
+    required Color color,
+    required VoidCallback? onPressed,
+  }) {
+    return IconButton.filledTonal(
+      onPressed: onPressed,
+      icon: Icon(icon, size: 24),
+      style: IconButton.styleFrom(
+        backgroundColor: color.withAlpha(20),
+        foregroundColor: color,
+        padding: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
+  }
 
-    if (!mounted) return;
-    setState(() => _isLoading = false);
+  Widget _buildDoctorPrimaryAction(
+    BuildContext context,
+    AppointmentEntity appointment,
+    bool isLoading,
+  ) {
+    String label = 'confirm_appointment'.tr();
+    IconData icon = Icons.check_circle_outline;
+    Color color = AppColors.success;
+    AppointmentStatus? nextStatus;
 
-    result.fold(
-      (failure) {
-        if (!mounted) return;
-        _showError(context, failure.message);
-      },
-      (_) {
-        if (!mounted) return;
-        _showSuccess(context, 'appointment_cancelled'.tr());
-        widget.onDataChanged?.call();
-        Navigator.pop(context, true);
-      },
+    if (appointment.status == AppointmentStatus.scheduled) {
+      nextStatus = AppointmentStatus.confirmed;
+    } else if (appointment.status == AppointmentStatus.confirmed ||
+        appointment.status == AppointmentStatus.arrived) {
+      label = 'start_session'.tr();
+      icon = Icons.play_arrow_rounded;
+      color = AppColors.accentMint;
+      nextStatus = AppointmentStatus.inProgress;
+    } else if (appointment.status == AppointmentStatus.inProgress) {
+      label = 'end_session'.tr();
+      icon = Icons.stop_circle_outlined;
+      color = AppColors.medicalRed;
+      nextStatus = AppointmentStatus.completed;
+    }
+
+    return _buildPrimaryAction(
+      label: label,
+      icon: icon,
+      color: color,
+      onPressed: isLoading || nextStatus == null
+          ? null
+          : () => context.read<AppointmentDetailsCubit>().updateStatus(nextStatus!),
     );
   }
 
-  Future<void> _rescheduleAppointment(BuildContext context) async {
-    if (_isLoading) return;
-
-    final pickedDate = await showDatePicker(
+  void _showDoctorMoreActions(BuildContext context, AppointmentEntity appointment) {
+    showModalBottomSheet(
       context: context,
-      initialDate: widget.appointment.dateTime,
-      firstDate: DateTime.now(),
-      lastDate: DateTime.now().add(const Duration(days: 180)),
-    );
-    if (pickedDate == null || !mounted) return;
-
-    final pickedTime = await showTimePicker(
-      context: context,
-      initialTime: TimeOfDay.fromDateTime(widget.appointment.dateTime),
-    );
-    if (pickedTime == null || !mounted) return;
-
-    final newDateTime = DateTime(
-      pickedDate.year,
-      pickedDate.month,
-      pickedDate.day,
-      pickedTime.hour,
-      pickedTime.minute,
-    );
-
-    if (!mounted) return;
-    setState(() => _isLoading = true);
-    final result = await getIt<RescheduleAppointmentUseCase>().call(
-      RescheduleAppointmentParams(appointmentId: widget.appointment.id, newDateTime: newDateTime),
-    );
-
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    result.fold(
-      (failure) {
-        if (mounted) {
-          _showError(context, failure.message);
-        }
-      },
-      (_) {
-        if (mounted) {
-          _showSuccess(context, 'appointment_rescheduled'.tr());
-          widget.onDataChanged?.call();
-          Navigator.pop(context, true);
-        }
-      },
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.history_toggle_off),
+              title: Text('reschedule'.tr()),
+              onTap: () {
+                context.pop();
+                _rescheduleAppointment(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.cancel_outlined, color: AppColors.medicalRed),
+              title: Text(
+                'cancel_appointment'.tr(),
+                style: const TextStyle(color: AppColors.medicalRed),
+              ),
+              onTap: () {
+                context.pop();
+                _showCancelConfirmation(context);
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
-
-  // مؤقتاً – يجب استبدالها بـ UseCase حقيقي
-  Future<void> _startAppointment(BuildContext context) async {
-    // TODO: استدعاء StartAppointmentUseCase
-    _showInfo(context, 'start_appointment_feature_coming_soon'.tr());
-  }
-
-  Future<void> _addMedicalNote(BuildContext context) async {
-    // TODO: فتح شاشة إضافة ملاحظة طبية
-    _showInfo(context, 'add_medical_note_feature_coming_soon'.tr());
-  }
-
-  // ================== حوارات مساعدة ==================
 
   void _showStatusDialog(BuildContext context) {
     showAppointmentStatusDialog(
       context: context,
       currentStatus: widget.appointment.status,
       onStatusSelected: (newStatus) {
-        _updateAppointmentStatus(context, newStatus);
+        context.read<AppointmentDetailsCubit>().updateStatus(newStatus);
       },
     );
   }
 
-  void _showCancelConfirmation(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('cancel_appointment'.tr()),
-        content: Text('confirm_action'.tr()),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text('cancel'.tr())),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _cancelAppointment(context);
-            },
-            child: Text('confirm'.tr()),
-          ),
-        ],
-      ),
-    );
+  void _showCancelConfirmation(BuildContext context) async {
+    final String? reason = await showCancellationReasonDialog(context);
+    if (reason != null && context.mounted) {
+      final cancelledBy = switch (widget.role) {
+        AppointmentsOverviewMode.patient => 'patient',
+        AppointmentsOverviewMode.doctor => 'doctor',
+        AppointmentsOverviewMode.receptionist => 'receptionist',
+        _ => 'admin',
+      };
+
+      context.read<AppointmentDetailsCubit>().cancelAppointment(
+        cancelledBy: cancelledBy,
+        reason: reason,
+      );
+    }
   }
 
-  // ================== ملاحظات ورسائل ==================
+  Future<void> _rescheduleAppointment(BuildContext context) async {
+    final result = await context.push(
+      AppRouter.scheduleAppointment,
+      extra: {'appointment': widget.appointment, 'mode': AppointmentScreenMode.reschedule},
+    );
+
+    if (result == true) {
+      widget.onDataChanged?.call();
+    }
+  }
 
   void _showError(BuildContext context, String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: AppColors.error));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.error,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
   void _showSuccess(BuildContext context, String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: AppColors.success));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
-  void _showInfo(BuildContext context, String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: AppColors.info));
+  bool _isFinalStatus(AppointmentEntity appointment) {
+    return appointment.status == AppointmentStatus.completed ||
+        appointment.status == AppointmentStatus.cancelled;
   }
-}
 
-// ================== ويدجيتات مساعدة (يمكن نقلها لاحقاً) ==================
+  Widget _buildStatusBanner(BuildContext context, AppointmentEntity appointment) {
+    final isCancelled = appointment.status == AppointmentStatus.cancelled;
 
-class _SectionCard extends StatelessWidget {
-  final String title;
-  final List<Widget> children;
-  const _SectionCard({required this.title, required this.children});
-
-  @override
-  Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.gray200),
+        color: (isCancelled ? AppColors.error : AppColors.success).withAlpha(12),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: (isCancelled ? AppColors.error : AppColors.success).withAlpha(40),
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              color: AppColors.secondary,
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
+          Icon(
+            isCancelled ? Icons.block_rounded : Icons.verified_rounded,
+            color: isCancelled ? AppColors.error : AppColors.success,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              isCancelled ? 'appointment_cancelled'.tr() : 'appointment_completed'.tr(),
+              style: TextStyle(
+                color: isCancelled ? AppColors.error : AppColors.success,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-          SizedBox(height: 10.h),
-          ...children,
         ],
       ),
     );
   }
-}
 
-class _LabeledValue extends StatelessWidget {
-  final String label;
-  final String value;
-  const _LabeledValue({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: 10.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label, style: const TextStyle(fontSize: 12, color: AppColors.gray500)),
-          SizedBox(height: 3.h),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.gray800,
-            ),
+  Widget _buildReadOnlyActionsHint(BuildContext context, AppointmentEntity appointment) {
+    return Row(
+      children: [
+        const Icon(Icons.info_outline, color: AppColors.gray500, size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            'appointment_read_only_hint'.tr(),
+            style: const TextStyle(fontSize: 13, color: AppColors.gray600),
           ),
-        ],
-      ),
+        ),
+      ],
     );
+  }
+
+  IconData _roleIcon(AppointmentsOverviewMode role) {
+    return switch (role) {
+      AppointmentsOverviewMode.patient => Icons.person_outline,
+      AppointmentsOverviewMode.doctor => Icons.medical_services_outlined,
+      AppointmentsOverviewMode.receptionist => Icons.support_agent_rounded,
+      _ => Icons.badge_outlined,
+    };
+  }
+
+  String _roleLabel(AppointmentsOverviewMode role) {
+    return switch (role) {
+      AppointmentsOverviewMode.patient => 'patient'.tr(),
+      AppointmentsOverviewMode.doctor => 'doctor'.tr(),
+      AppointmentsOverviewMode.receptionist => 'receptionist'.tr(),
+      _ => 'details'.tr(),
+    };
   }
 }

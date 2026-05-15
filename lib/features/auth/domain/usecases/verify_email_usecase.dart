@@ -18,6 +18,9 @@ class VerifyEmailUseCase implements UseCase<Unit, VerifyEmailParams> {
 
   @override
   Future<Either<Failure, Unit>> call(VerifyEmailParams params) {
-    return repository.verifyEmail(email: params.email, verificationCode: params.verificationCode);
+    return repository.verifyEmail(
+      email: params.email,
+      verificationCode: params.verificationCode,
+    );
   }
 }

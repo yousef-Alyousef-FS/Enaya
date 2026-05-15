@@ -35,7 +35,7 @@ class GreetingSection extends StatelessWidget {
       '${_formatTime(context, shiftStart)} - ${_formatTime(context, shiftEnd)}';
 
   String _formatTime(BuildContext context, DateTime dateTime) {
-    return DateFormat.jm(context.locale.toString()).format(dateTime);
+    return DateFormat.jm('en_US').format(dateTime);
   }
 
   Color get _statusColor {
@@ -79,14 +79,16 @@ class GreetingSection extends StatelessWidget {
                 // الترحيب والأيقونة
                 Row(
                   children: [
-                    Icon(_greetingIcon, size: 26, color: AppColors.primary),
+                    Icon(_greetingIcon, size: 20, color: Theme.of(context).colorScheme.primary),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
                         '${_localizedGreeting(context)}, $receptionistName 👋',
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                          color: Theme.of(context).colorScheme.primary,
+                          fontSize: 22,
+                          height: 1.1,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -94,20 +96,23 @@ class GreetingSection extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 16),
-                // معلومات الوردية والحالة
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     _statusChip(context),
                     Row(
                       children: [
-                        const Icon(Icons.schedule, color: AppColors.gray500, size: 18),
+                        Icon(
+                          Icons.schedule,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          size: 18,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           _shiftTimeRange(context),
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.copyWith(color: AppColors.gray700),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                       ],
                     ),
@@ -122,14 +127,14 @@ class GreetingSection extends StatelessWidget {
                 Expanded(
                   child: Row(
                     children: [
-                      Icon(_greetingIcon, size: 26, color: AppColors.primary),
+                      Icon(_greetingIcon, size: 26, color: Theme.of(context).colorScheme.primary),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
                           '${_localizedGreeting(context)}, $receptionistName 👋',
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primary,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -146,13 +151,17 @@ class GreetingSection extends StatelessWidget {
                     const SizedBox(width: 20),
                     Row(
                       children: [
-                        const Icon(Icons.schedule, color: AppColors.gray500, size: 18),
+                        Icon(
+                          Icons.schedule,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          size: 18,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           _shiftTimeRange(context),
-                          style: Theme.of(
-                            context,
-                          ).textTheme.bodyMedium?.copyWith(color: AppColors.gray700),
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
                       ],
                     ),

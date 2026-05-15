@@ -5,7 +5,11 @@ class SectionWrapper extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
 
-  const SectionWrapper({super.key, required this.child, this.padding = const EdgeInsets.all(16)});
+  const SectionWrapper({
+    super.key,
+    required this.child,
+    this.padding = const EdgeInsets.all(16),
+  });
 
   @override
   Widget build(BuildContext context) {

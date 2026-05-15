@@ -1,62 +1,47 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../../core/error/failures.dart';
-import '../../../../core/network/api_error_handler.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../entities/appointment_entity.dart';
-import '../entities/patient_cancellation_result.dart';
-import '../repositories/appointment_management_repository.dart';
-import '../repositories/patient_appointments_repository.dart';
+import '../repositories/appointment_repository.dart';
 
 class CancelAppointmentParams {
   final String appointmentId;
   final String cancelledBy;
   final String? reason;
 
-  CancelAppointmentParams({required this.appointmentId, required this.cancelledBy, this.reason});
+  CancelAppointmentParams({
+    required this.appointmentId,
+    required this.cancelledBy,
+    this.reason,
+  });
 }
 
 class CancelAppointmentResult {
   final AppointmentEntity? appointment;
-  final PatientCancellationResult? patientResult;
 
-  const CancelAppointmentResult({this.appointment, this.patientResult});
-
-  bool get cancelledByPatient => patientResult != null;
+  const CancelAppointmentResult({this.appointment});
 }
 
 class CancelAppointmentUseCase
     implements UseCase<CancelAppointmentResult, CancelAppointmentParams> {
-  final AppointmentManagementRepository managementRepository;
-  final PatientAppointmentsRepository patientRepository;
+  final IAppointmentRepository repository;
 
-  CancelAppointmentUseCase({required this.managementRepository, required this.patientRepository});
+  CancelAppointmentUseCase({required this.repository});
 
   @override
-  Future<Either<Failure, CancelAppointmentResult>> call(CancelAppointmentParams params) async {
-    final isPatient = params.cancelledBy.toLowerCase() == 'patient';
+  Future<Either<Failure, CancelAppointmentResult>> call(
+    CancelAppointmentParams params,
+  ) async {
+    final result = await repository.cancelAppointment(
+      params.appointmentId,
+      params.cancelledBy,
+      params.reason,
+    );
 
-    if (isPatient) {
-      final patientResult = await patientRepository.cancelAppointmentByPatient(
-        appointmentId: params.appointmentId,
-        cancellationReason: params.reason ?? '',
-      );
-
-      return patientResult.fold(
-        Left.new,
-        (result) => Right(CancelAppointmentResult(patientResult: result)),
-      );
-    }
-
-    try {
-      final appointment = await managementRepository.cancelAppointment(
-        params.appointmentId,
-        params.cancelledBy,
-        params.reason,
-      );
-      return Right(CancelAppointmentResult(appointment: appointment));
-    } catch (e) {
-      return Left(ApiErrorHandler.handle(e));
-    }
+    return result.fold(
+      (failure) => Left(failure),
+      (appointment) => Right(CancelAppointmentResult(appointment: appointment)),
+    );
   }
 }

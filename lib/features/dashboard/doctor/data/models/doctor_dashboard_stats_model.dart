@@ -1,10 +1,14 @@
-import '../../domain/entities/doctor_dashboard_stats.dart';
+import '../../domain/entities/doctor_dashboard_data.dart';
 
-class DoctorDashboardStatsModel extends DoctorDashboardStats {
+class DoctorDashboardStatsModel {
+  final int todayPatients;
+  final int totalConsultations;
+  final int pendingReports;
+
   DoctorDashboardStatsModel({
-    required super.todayPatients,
-    required super.totalConsultations,
-    required super.pendingReports,
+    required this.todayPatients,
+    required this.totalConsultations,
+    required this.pendingReports,
   });
 
   factory DoctorDashboardStatsModel.fromJson(Map<String, dynamic> json) {
@@ -12,6 +16,14 @@ class DoctorDashboardStatsModel extends DoctorDashboardStats {
       todayPatients: json['today_patients'] ?? 0,
       totalConsultations: json['total_consultations'] ?? 0,
       pendingReports: json['pending_reports'] ?? 0,
+    );
+  }
+
+  DoctorDashboardData toEntity() {
+    return DoctorDashboardData(
+      todayPatients: todayPatients,
+      totalConsultations: totalConsultations,
+      pendingReports: pendingReports,
     );
   }
 

@@ -1,11 +1,15 @@
 import 'package:dio/dio.dart';
 
 import '../../../../core/constants/api_constants.dart';
+import '../../../../core/services/session_manager.dart';
 import '../../../../core/services/token_manager.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRemoteDataSource {
-  Future<UserModel> login({required String usernameOrEmail, required String password});
+  Future<UserModel> login({
+    required String usernameOrEmail,
+    required String password,
+  });
 
   Future<UserModel> signup({
     required String email,
@@ -22,11 +26,17 @@ abstract class AuthRemoteDataSource {
     required String newPassword,
   });
 
-  Future<void> changePassword({required String currentPassword, required String newPassword});
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 
   Future<void> sendEmailVerification({required String email});
 
-  Future<void> verifyEmail({required String email, required String verificationCode});
+  Future<void> verifyEmail({
+    required String email,
+    required String verificationCode,
+  });
 
   Future<void> logout();
 }
@@ -34,8 +44,13 @@ abstract class AuthRemoteDataSource {
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   final Dio dio;
   final TokenManager tokenManager;
+  final SessionManager sessionManager;
 
-  AuthRemoteDataSourceImpl({required this.dio, required this.tokenManager});
+  AuthRemoteDataSourceImpl({
+    required this.dio,
+    required this.tokenManager,
+    required this.sessionManager,
+  });
 
   Map<String, dynamic> _asMap(dynamic value, {required String errorMessage}) {
     if (value is Map<String, dynamic>) {
@@ -50,7 +65,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   Map<String, dynamic> _asResponseData(Response response) {
-    return _asMap(response.data, errorMessage: 'Invalid auth API response format');
+    return _asMap(
+      response.data,
+      errorMessage: 'Invalid auth API response format',
+    );
   }
 
   void _validateStatusCode(Response response, List<int> expectedCodes) {
@@ -94,7 +112,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     final user = payload['user'];
 
     if (user != null) {
-      return _asMap(user, errorMessage: 'Invalid user payload in auth API response');
+      return _asMap(
+        user,
+        errorMessage: 'Invalid user payload in auth API response',
+      );
     }
 
     if (payload.containsKey('id') &&
@@ -119,17 +140,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     await tokenManager.saveToken(token);
 
     final refreshToken =
-        payload['refresh_token']?.toString() ?? payload['refreshToken']?.toString();
+        payload['refresh_token']?.toString() ??
+        payload['refreshToken']?.toString();
     if (refreshToken != null && refreshToken.isNotEmpty) {
       await tokenManager.saveRefreshToken(refreshToken);
     }
 
     await tokenManager.saveTokenExpiry(_resolveTokenExpiry(payload));
-    await tokenManager.saveUserData(user.toJson());
+    await sessionManager.saveUserData(user.toJson());
   }
 
   @override
-  Future<UserModel> login({required String usernameOrEmail, required String password}) async {
+  Future<UserModel> login({
+    required String usernameOrEmail,
+    required String password,
+  }) async {
     final response = await dio.post(
       ApiConstants.login,
       data: {'usernameOrEmail': usernameOrEmail, 'password': password},
@@ -155,7 +180,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     final response = await dio.post(
       ApiConstants.signup,
-      data: {'email': email, 'password': password, 'username': username, 'phone': phone , 'password_confirmation':password},
+      data: {
+        'email': email,
+        'password': password,
+        'username': username,
+        'phone': phone,
+        'password_confirmation': password,
+      },
     );
 
     _validateStatusCode(response, [200, 201]);
@@ -171,7 +202,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> forgotPassword({required String email}) async {
-    final response = await dio.post(ApiConstants.forgotPassword, data: {'email': email});
+    final response = await dio.post(
+      ApiConstants.forgotPassword,
+      data: {'email': email},
+    );
     _validateStatusCode(response, [200, 202, 204]);
   }
 
@@ -183,7 +217,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }) async {
     final response = await dio.post(
       ApiConstants.resetPassword,
-      data: {'email': email, 'verificationCode': verificationCode, 'newPassword': newPassword},
+      data: {
+        'email': email,
+        'verificationCode': verificationCode,
+        'newPassword': newPassword,
+      },
     );
 
     _validateStatusCode(response, [200, 204]);
@@ -204,13 +242,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<void> sendEmailVerification({required String email}) async {
-    final response = await dio.post(ApiConstants.sendEmailVerification, data: {'email': email});
+    final response = await dio.post(
+      ApiConstants.sendEmailVerification,
+      data: {'email': email},
+    );
 
     _validateStatusCode(response, [200, 202, 204]);
   }
 
   @override
-  Future<void> verifyEmail({required String email, required String verificationCode}) async {
+  Future<void> verifyEmail({
+    required String email,
+    required String verificationCode,
+  }) async {
     final response = await dio.post(
       ApiConstants.verifyEmail,
       data: {'email': email, 'verificationCode': verificationCode},
@@ -226,6 +270,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       _validateStatusCode(response, [200, 204]);
     } finally {
       await tokenManager.clearAll();
+      await sessionManager.clearSession();
     }
   }
 }

@@ -1,41 +1,33 @@
-﻿import 'package:easy_localization/easy_localization.dart';
-import 'package:enaya/core/widgets/common/feature_coming_soon_state.dart';
-import 'package:enaya/features/appointments/presentation/appointments_page.dart';
-import 'package:enaya/features/appointments/presentation/screens/schedule_appointment_screen.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:enaya/features/appointments/data/models/appointments_overview_view_mode.dart';
+import 'package:enaya/features/dashboard/shared/presentation/models/dashboard_nav_item.dart';
+import 'package:enaya/features/dashboard/shared/presentation/pages/base_dashboard_page.dart';
+import 'package:enaya/features/dashboard/shared/presentation/widgets/dashboard_overview_builder.dart';
+import '../../../../../core/widgets/feature_coming_soon_state.dart';
+import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../../core/di/injection.dart';
-import '../../../../../core/widgets/common/section_header.dart';
-import '../../../../appointments/data/models/appointments_overview_view_mode.dart';
-import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
-import '../../../shared/presentation/widgets/dashboard_overview_builder.dart';
-import '../../../shared/presentation/models/dashboard_overview_config.dart';
-import '../../../shared/presentation/pages/base_dashboard_page.dart';
-import '../../../shared/presentation/models/dashboard_nav_item.dart';
+import '../../../../appointments/presentation/appointments_page.dart';
 import '../cubit/receptionist_dashboard_cubit.dart';
 import '../cubit/receptionist_dashboard_state.dart';
-
-// Widgets
 import '../widgets/greeting_section.dart';
-import '../widgets/stats_section.dart';
 import '../widgets/quick_actions.dart';
-import '../widgets/appointments_table.dart';
+import '../widgets/stats_section.dart';
 
 class ReceptionistDashboardPage extends StatefulWidget {
   const ReceptionistDashboardPage({super.key});
 
   @override
-  State<ReceptionistDashboardPage> createState() => _ReceptionistDashboardPageState();
+  State<ReceptionistDashboardPage> createState() =>
+      _ReceptionistDashboardPageState();
 }
 
 class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
-  static const List<DashboardNavItem> _navigationItems = receptionistNavigationItems;
+  static const List<DashboardNavItem> _navigationItems =
+      receptionistNavigationItems;
   int _selectedIndex = 0;
-
-  void _onNavigationSelected(int index) {
-    if (_selectedIndex == index) return;
-    setState(() => _selectedIndex = index);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,13 +52,37 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
       case 0:
         return _buildOverviewSection(state);
       case 1:
-        return const FeatureComingSoonState(titleKey: 'patients_management');
+        return FeatureComingSoonState(
+          titleKey: 'nav_patients',
+          icon: Icons.people_outline,
+          onBack: () => _onNavigationSelected(0),
+        );
       case 2:
-        return _buildAppointmentsSection();
+        return AppointmentsPage(mode: AppointmentsOverviewMode.receptionist);
       case 3:
-        return const FeatureComingSoonState(titleKey: 'queue_management');
+        return FeatureComingSoonState(
+          titleKey: 'nav_queue',
+          icon: Icons.how_to_reg,
+          onBack: () => _onNavigationSelected(0),
+        );
       case 4:
-        return const FeatureComingSoonState(titleKey: 'registrations');
+        return FeatureComingSoonState(
+          titleKey: 'nav_registrations',
+          icon: Icons.note_add,
+          onBack: () => _onNavigationSelected(0),
+        );
+      case 5:
+        return FeatureComingSoonState(
+          titleKey: 'nav_billing',
+          icon: Icons.payments_outlined,
+          onBack: () => _onNavigationSelected(0),
+        );
+      case 6:
+        return FeatureComingSoonState(
+          titleKey: 'nav_settings',
+          icon: Icons.settings_outlined,
+          onBack: () => _onNavigationSelected(0),
+        );
       default:
         return _buildOverviewSection(state);
     }
@@ -76,82 +92,64 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (state.isError) {
-      return _buildErrorState(state.errorMessage);
-    }
-    if (!state.hasData || state.stats == null) {
-      return Center(child: Text('no_data_available'.tr()));
-    }
-
-    final stats = state.stats!;
 
     return DashboardOverviewBuilder(
-      config: DashboardOverviewConfig(
-
-        appointmentsSectionTitle: '',
-        appointmentsContent: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GreetingSection(
-              receptionistName: stats.receptionistName,
-              shiftStatus: stats.shiftStatus,
-              shiftStart: stats.shiftStart ,
-              shiftEnd: stats.shiftEnd ,
-            ),
-            const SizedBox(height: 20),
-            AppSectionHeader(title: 'quick_actions'.tr()),
-            const SizedBox(height: 16),
-            const QuickActions(),
-            const SizedBox(height: 24),
-            AppSectionHeader(title: 'stats'.tr()),
-            const SizedBox(height: 16),
-            StatsSection(stats: stats),
-            const SizedBox(height: 24),
-            AppSectionHeader(title: 'today_appointments'.tr()),
-            const SizedBox(height: 16),
-            AppointmentsTable(stats: stats),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppointmentsSection() {
-    return AppointmentsPage(
-      mode: AppointmentsOverviewMode.receptionist,
-      onAddAppointment: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const ScheduleAppointmentScreen(
-              patientId: 'p1',
-              patientName: 'Jane Doe',
-              doctorId: 'd1',
-              doctorName: 'Dr. Samir',
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildErrorState(String? message) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      header: _buildGreeting(state),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline, color: Colors.red, size: 40),
-          const SizedBox(height: 12),
-          Text(
-            message ?? 'error_loading_dashboard'.tr(),
-            style: const TextStyle(color: Colors.red),
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: () => context.read<ReceptionistDashboardCubit>().loadDashboard(),
-            child: Text('retry'.tr()),
+          _buildSectionTitle('quick_actions'.tr()),
+          const SizedBox(height: 10),
+          const QuickActions(),
+          const SizedBox(height: 30),
+
+          _buildSectionTitle('stats'.tr()),
+          const SizedBox(height: 10),
+          _buildStatsGrid(state),
+          const SizedBox(height: 30),
+          _buildSectionTitle('today_appointments'.tr()),
+          const SizedBox(height: 10),
+          const AppointmentsPage(
+            mode: AppointmentsOverviewMode.receptionist,
+            provideCubit: true,
+            isEmbedded: true,
+            showFiltersWhenEmbedded: true,
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+    );
+  }
+
+  Widget _buildGreeting(ReceptionistDashboardState state) {
+    if (state.stats == null) return const SizedBox.shrink();
+
+    return GreetingSection(
+      receptionistName: state.stats!.receptionistName,
+      shiftStatus: state.stats!.shiftStatus,
+      shiftStart: state.stats!.shiftStart,
+      shiftEnd: state.stats!.shiftEnd,
+    );
+  }
+
+  Widget _buildStatsGrid(ReceptionistDashboardState state) {
+    return StatsSection(stats: state.stats);
+  }
+
+  void _onNavigationSelected(int index) {
+    if (_selectedIndex == index) return;
+    setState(() {
+      _selectedIndex = index;
+    });
   }
 }

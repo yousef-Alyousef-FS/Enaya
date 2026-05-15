@@ -12,10 +12,10 @@ void main() {
   testWidgets('App initialization smoke test', (WidgetTester tester) async {
     // 1. Reset GetIt if it was already initialized
     await GetIt.instance.reset();
-    
+
     // 2. Mock SharedPreferences
     SharedPreferences.setMockInitialValues({});
-    
+
     // 3. Initialize DI
     await initGetIt();
 
@@ -37,9 +37,10 @@ void main() {
     // (depends on DevConfig.isDevMode in debug mode)
     final splashScreenFound = find.byType(SplashScreen);
     final devScreenFound = find.byType(DeveloperScreen);
-    
+
     expect(
-      splashScreenFound.evaluate().isNotEmpty || devScreenFound.evaluate().isNotEmpty,
+      splashScreenFound.evaluate().isNotEmpty ||
+          devScreenFound.evaluate().isNotEmpty,
       true,
     );
   });

@@ -1,73 +1,53 @@
 // =====================
 // ENUM EXTENSION
 // =====================
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/app_colors.dart';
 import '../../../domain/entities/appointment_status.dart';
 
-extension AppointmentStatusX on AppointmentStatus {
-  String get labelKey {
+extension AppointmentStatusChipStyle on AppointmentStatus {
+  Color bgColor(BuildContext context) {
+    final theme = Theme.of(context);
+
     switch (this) {
       case AppointmentStatus.scheduled:
-        return 'scheduled';
+        return theme.colorScheme.primary.withAlpha(30);
       case AppointmentStatus.confirmed:
-        return 'confirmed';
+        return theme.colorScheme.secondaryContainer.withAlpha(120);
       case AppointmentStatus.arrived:
-        return 'arrived';
+        return theme.colorScheme.tertiaryContainer.withAlpha(120);
       case AppointmentStatus.inProgress:
-        return 'in_progress';
+        return theme.colorScheme.primaryContainer.withAlpha(120);
       case AppointmentStatus.completed:
-        return 'completed';
+        return theme.colorScheme.secondaryContainer.withAlpha(120);
       case AppointmentStatus.cancelled:
-        return 'cancelled';
+        return theme.colorScheme.errorContainer.withAlpha(120);
       case AppointmentStatus.noShow:
-        return 'no_show';
+        return theme.colorScheme.surfaceContainerHighest;
       case AppointmentStatus.rescheduled:
-        return 'rescheduled';
+        return theme.colorScheme.tertiaryContainer.withAlpha(120);
     }
   }
 
-  Color get bgColor {
+  Color fgColor(BuildContext context) {
+    final theme = Theme.of(context);
     switch (this) {
       case AppointmentStatus.scheduled:
-        return AppColors.primaryExtraLight;
+        return theme.colorScheme.primary;
       case AppointmentStatus.confirmed:
-        return const Color(0xFFE8F7EF);
+        return theme.colorScheme.onSecondaryContainer;
       case AppointmentStatus.arrived:
-        return const Color(0xFFFFF4E5);
+        return theme.colorScheme.onTertiaryContainer;
       case AppointmentStatus.inProgress:
-        return const Color(0xFFEAF2FF);
+        return theme.colorScheme.onPrimaryContainer;
       case AppointmentStatus.completed:
-        return const Color(0xFFE8F7EF);
+        return theme.colorScheme.onSecondaryContainer;
       case AppointmentStatus.cancelled:
-        return const Color(0xFFFFEBEE);
+        return theme.colorScheme.onErrorContainer;
       case AppointmentStatus.noShow:
-        return AppColors.gray100;
+        return theme.colorScheme.onSurfaceVariant;
       case AppointmentStatus.rescheduled:
-        return const Color(0xFFF0ECFF);
-    }
-  }
-
-  Color get fgColor {
-    switch (this) {
-      case AppointmentStatus.scheduled:
-        return AppColors.primaryDark;
-      case AppointmentStatus.confirmed:
-        return AppColors.success;
-      case AppointmentStatus.arrived:
-        return AppColors.warning;
-      case AppointmentStatus.inProgress:
-        return AppColors.info;
-      case AppointmentStatus.completed:
-        return AppColors.success;
-      case AppointmentStatus.cancelled:
-        return AppColors.error;
-      case AppointmentStatus.noShow:
-        return AppColors.gray600;
-      case AppointmentStatus.rescheduled:
-        return AppColors.accent;
+        return theme.colorScheme.onTertiaryContainer;
     }
   }
 }
@@ -82,12 +62,19 @@ class AppointmentStatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bgColor = status.bgColor(context);
+    final fgColor = status.fgColor(context);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(color: status.bgColor, borderRadius: BorderRadius.circular(999)),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: fgColor.withAlpha(80)),
+      ),
       child: Text(
-        status.labelKey.tr(),
-        style: TextStyle(color: status.fgColor, fontSize: 12, fontWeight: FontWeight.w700),
+        status.displayName,
+        style: TextStyle(color: fgColor, fontSize: 12, fontWeight: FontWeight.w700),
       ),
     );
   }

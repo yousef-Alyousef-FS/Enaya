@@ -1,12 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/layout/responsive_layout.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/loaders/app_loaders.dart';
 import '../widgets/auth_card_container.dart';
 import '../cubit/auth_cubit.dart';
@@ -20,7 +18,8 @@ class ChangePasswordScreen extends StatefulWidget {
   State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
 }
 
-class _ChangePasswordScreenState extends State<ChangePasswordScreen> with TickerProviderStateMixin {
+class _ChangePasswordScreenState extends State<ChangePasswordScreen>
+    with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
@@ -35,8 +34,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> with Ticker
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
-    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
   }
 
   @override
@@ -80,19 +85,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> with Ticker
                   Text(
                     'change_password'.tr(),
                     textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      fontSize: config.titleFontSize,
+                    ),
                   ),
-                  SizedBox(height: config.isPortrait ? 10.h : 8.h),
+                  const SizedBox(height: 8),
                   Text(
                     'change_password_description'.tr(),
                     textAlign: TextAlign.center,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontSize: config.bodyFontSize,
+                    ),
                   ),
-                  SizedBox(height: config.isPortrait ? 30.h : 20.h),
+                  const SizedBox(height: 32),
                   _buildForm(config),
                 ],
               );
@@ -119,7 +124,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> with Ticker
               return null;
             },
           ),
-          SizedBox(height: config.isPortrait ? 16.h : 12.h),
+          const SizedBox(height: 16),
           AuthTextField(
             labelText: 'new_password'.tr(),
             hintText: 'new_password'.tr(),
@@ -132,7 +137,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> with Ticker
               return null;
             },
           ),
-          SizedBox(height: config.isPortrait ? 16.h : 12.h),
+          const SizedBox(height: 16),
           AuthTextField(
             labelText: 'confirm_new_password'.tr(),
             hintText: 'confirm_new_password'.tr(),
@@ -140,22 +145,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> with Ticker
             isPassword: true,
             prefixIcon: Icons.lock_outline,
             validator: (value) {
-              if (value == null || value.isEmpty) return 'enter_confirm_password'.tr();
-              if (value != _newPasswordController.text) return 'passwords_do_not_match'.tr();
+              if (value == null || value.isEmpty) {
+                return 'enter_confirm_password'.tr();
+              }
+              if (value != _newPasswordController.text) {
+                return 'passwords_do_not_match'.tr();
+              }
               return null;
             },
           ),
-          SizedBox(height: config.isPortrait ? 20.h : 14.h),
+          const SizedBox(height: 32),
           BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {
               final cubit = context.read<AuthCubit>();
-
               if (state.isError) {
-                _triggerMessage(state.errorMessage ?? 'error_occurred'.tr(), false);
+                _triggerMessage(
+                  state.errorMessage ?? 'error_occurred'.tr(),
+                  false,
+                );
                 cubit.clearStatus();
                 return;
               }
-
               if (state.isSuccess) {
                 _triggerMessage('change_password_success'.tr(), true);
                 cubit.clearStatus();
@@ -163,7 +173,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> with Ticker
             },
             builder: (context, state) {
               final cubit = context.read<AuthCubit>();
-
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -189,25 +198,27 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> with Ticker
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: Padding(
-                        padding: EdgeInsets.only(top: 12.h),
+                        padding: const EdgeInsets.only(top: 12),
                         child: Text(
                           _message!,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: _isSuccess ? Colors.green : Theme.of(context).colorScheme.error,
+                            color: _isSuccess
+                                ? Colors.green
+                                : Theme.of(context).colorScheme.error,
                             fontSize: config.bodyFontSize,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ),
-                  SizedBox(height: config.isPortrait ? 6.h : 4.h),
+                  const SizedBox(height: 16),
                   TextButton(
                     onPressed: () => context.pop(),
                     child: Text(
                       'cancel'.tr(),
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: Theme.of(context).colorScheme.primary,
                         fontSize: config.buttonFontSize,
                         fontWeight: FontWeight.w600,
                       ),

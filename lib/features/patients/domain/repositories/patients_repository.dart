@@ -4,6 +4,7 @@ import '../entities/patient_entity.dart';
 
 abstract class PatientsRepository {
   Future<Either<Failure, List<PatientEntity>>> getPatients();
+  Future<Either<Failure, List<PatientEntity>>> searchPatients(String query);
   Future<Either<Failure, PatientEntity>> getPatientById(String id);
   Future<Either<Failure, PatientEntity>> createPatient(PatientEntity patient);
   Future<Either<Failure, PatientEntity>> updatePatient(PatientEntity patient);

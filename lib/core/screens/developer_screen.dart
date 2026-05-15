@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../routing/app_router.dart';
 
+/// Developer-only shortcut screen used to jump directly into common flows.
 class DeveloperScreen extends StatelessWidget {
   const DeveloperScreen({super.key});
 
@@ -9,57 +11,42 @@ class DeveloperScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Developer Sandbox'),
+        title: Text('developer_sandbox'.tr()),
         backgroundColor: Colors.black87,
         foregroundColor: Colors.white,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildSection('Authentication', [
-            _buildItem(context, 'Login Screen', AppRouter.login),
-            _buildItem(context, 'Signup Screen', AppRouter.signup),
-            _buildItem(context, 'Forgot Password', AppRouter.forgotPassword),
-            _buildItem(context, 'Verify Email', '${AppRouter.verifyEmail}?email=test@enaya.com'),
-          ]),
-          const SizedBox(height: 20),
-          _buildSection('Dashboards', [
-            _buildItem(context, 'Doctor Dashboard', AppRouter.doctorHome),
-            _buildItem(context, 'Patient Dashboard', AppRouter.patientHome),
-            _buildItem(context, 'Receptionist Dashboard', AppRouter.receptionistHome),
-          ]),
-          const SizedBox(height: 20),
-          _buildSection('Appointments', [
+          _buildSection('developer_authentication'.tr(), [
+            _buildItem(context, 'developer_login_screen'.tr(), AppRouter.login),
+            _buildItem(context, 'developer_signup_screen'.tr(), AppRouter.signup),
+            _buildItem(context, 'developer_forgot_password'.tr(), AppRouter.forgotPassword),
             _buildItem(
               context,
-              'Appointments Overview (Auto Mode)',
-              AppRouter.appointmentsOverview,
-            ),
-            _buildItem(
-              context,
-              'Appointments (Doctor Mode)',
-              '${AppRouter.appointmentsOverview}?mode=doctor',
-            ),
-            _buildItem(
-              context,
-              'Appointments (Patient Mode)',
-              '${AppRouter.appointmentsOverview}?mode=patient',
-            ),
-            _buildItem(
-              context,
-              'Appointments (Receptionist Mode)',
-              '${AppRouter.appointmentsOverview}?mode=receptionist',
+              'developer_verify_email'.tr(),
+              '${AppRouter.verifyEmail}?email=test@enaya.com',
             ),
           ]),
           const SizedBox(height: 20),
-          _buildSection('System & Misc', [
-            _buildItem(context, 'Splash Screen', AppRouter.splash),
-            _buildItem(context, 'No Internet Screen', AppRouter.noInternet),
+          _buildSection('developer_dashboards'.tr(), [
+            _buildItem(context, 'developer_doctor_dashboard'.tr(), AppRouter.doctorHome),
+            _buildItem(context, 'developer_patient_dashboard'.tr(), AppRouter.patientHome),
+            _buildItem(
+              context,
+              'developer_receptionist_dashboard'.tr(),
+              AppRouter.receptionistHome,
+            ),
+          ]),
+          const SizedBox(height: 20),
+          _buildSection('developer_system_misc'.tr(), [
+            _buildItem(context, 'developer_splash_screen'.tr(), AppRouter.splash),
+            _buildItem(context, 'developer_no_internet_screen'.tr(), AppRouter.noInternet),
           ]),
           const SizedBox(height: 40),
           Center(
             child: Text(
-              'Dev Mode is ACTIVE',
+              'developer_dev_mode_active'.tr(),
               style: TextStyle(color: Colors.red[700], fontWeight: FontWeight.bold),
             ),
           ),
@@ -96,6 +83,7 @@ class DeveloperScreen extends StatelessWidget {
     );
   }
 
+  /// Creates one tappable launcher entry for the requested route.
   Widget _buildItem(BuildContext context, String title, String route) {
     return ListTile(
       title: Text(title),
