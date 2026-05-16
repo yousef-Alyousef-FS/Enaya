@@ -344,3 +344,322 @@ Expected success body:
 On failure:
 
 - client clears local auth session
+
+---
+
+## Appointments API Documentation (Ready for Current Client)
+
+## Overview
+
+This section describes the appointments-related APIs that are ready to be used by the current Flutter client implementation.
+
+Main implementation:
+
+- [Appointment remote datasource](lib/features/appointments/data/datasources/appointment_remote_data_source.dart)
+- [Doctor directory remote datasource](lib/features/appointments/data/datasources/doctor_directory_remote_data_source.dart)
+- [Doctor availability remote datasource](lib/features/appointments/data/datasources/doctor_availability_remote_data_source.dart)
+- [Appointment repository](lib/features/appointments/data/repositories/appointment_repository_impl.dart)
+- [Availability repository](lib/features/appointments/data/repositories/doctor_availability_repository_impl.dart)
+
+## Core Response Contract
+
+The client expects standard API payloads to be wrapped in `data`:
+
+```json
+{
+  "data": {}
+}
+```
+
+For list responses:
+
+```json
+{
+  "data": []
+}
+```
+
+## Endpoints
+
+## 1) Get Appointments
+
+- Method: `GET`
+- Path: `/appointments`
+- Query params:
+  - `date` (YYYY-MM-DD)
+  - `end_date` (YYYY-MM-DD)
+  - `doctor_id`
+  - `patient_id`
+  - `status`
+  - `page`
+  - `limit`
+- Expected success code: `200`
+
+Response shape:
+
+```json
+{
+  "data": [
+    {
+      "id": "1",
+      "patientId": "p1",
+      "patientName": "Ahmed Ali",
+      "patientPhone": "+966500000000",
+      "doctorId": "d1",
+      "doctorName": "Dr. Samir",
+      "dateTime": "2026-05-16T09:00:00Z",
+      "status": "scheduled",
+      "reason": "Regular Checkup",
+      "notes": "Optional notes",
+      "queueNumber": 3,
+      "cancelledBy": null,
+      "cancellationReason": null
+    }
+  ]
+}
+```
+
+## 2) Get Appointment By ID
+
+- Method: `GET`
+- Path: `/appointments/{appointmentId}`
+- Expected success code: `200`
+
+Response shape:
+
+```json
+{
+  "data": {
+    "id": "1",
+    "patientId": "p1",
+    "patientName": "Ahmed Ali",
+    "patientPhone": "+966500000000",
+    "doctorId": "d1",
+    "doctorName": "Dr. Samir",
+    "dateTime": "2026-05-16T09:00:00Z",
+    "status": "scheduled",
+    "reason": "Regular Checkup",
+    "notes": "Optional notes",
+    "queueNumber": 3,
+    "cancelledBy": null,
+    "cancellationReason": null
+  }
+}
+```
+
+## 3) Create Appointment
+
+- Method: `POST`
+- Path: `/appointments`
+- Expected success codes: `200`, `201`
+
+Request body:
+
+```json
+{
+  "id": "temporary-or-server-generated",
+  "patientId": "p1",
+  "patientName": "Ahmed Ali",
+  "patientPhone": "+966500000000",
+  "doctorId": "d1",
+  "doctorName": "Dr. Samir",
+  "dateTime": "2026-05-16T09:00:00Z",
+  "status": "scheduled",
+  "reason": "Regular Checkup",
+  "notes": "Optional notes",
+  "queueNumber": 3,
+  "cancelledBy": null,
+  "cancellationReason": null
+}
+```
+
+## 4) Update Appointment Status
+
+- Method: `PUT`
+- Path: `/appointments/{appointmentId}/status`
+- Expected success code: `200`
+
+Request body:
+
+```json
+{
+  "status": "arrived",
+  "reason": "Optional reason"
+}
+```
+
+## 5) Cancel Appointment
+
+- Method: `PUT`
+- Path: `/appointments/{appointmentId}/cancel`
+- Expected success code: `200`
+
+Request body:
+
+```json
+{
+  "cancelled_by": "doctor",
+  "reason": "Patient requested cancellation"
+}
+```
+
+## 6) Reschedule Appointment
+
+- Method: `PUT`
+- Path: `/appointments/{appointmentId}/reschedule`
+- Expected success code: `200`
+
+Request body:
+
+```json
+{
+  "new_date_time": "2026-05-16T10:30:00Z"
+}
+```
+
+## 7) Delete Appointment
+
+- Method: `DELETE`
+- Path: `/appointments/{appointmentId}`
+- Expected success codes: `200`, `204`
+
+## 8) Get Available Slots
+
+- Method: `GET`
+- Path: `/appointments/available-slots`
+- Query params:
+  - `doctor_id`
+  - `date` (YYYY-MM-DD)
+- Expected success code: `200`
+
+Response shape:
+
+```json
+{
+  "data": ["09:00", "09:30", "10:00", "10:30"]
+}
+```
+
+## 9) Appointments Stats
+
+- Method: `GET`
+- Path: `/appointments/stats`
+- Query params:
+  - `date` (optional)
+  - `doctor_id` (optional)
+- Expected success code: `200`
+
+Response shape:
+
+```json
+{
+  "data": {
+    "total_appointments": 20,
+    "scheduled": 5,
+    "confirmed": 4,
+    "completed": 7,
+    "cancelled": 2,
+    "no_show": 1,
+    "utilization_rate": 75.5,
+    "completion_rate": 68.0,
+    "by_doctor": [
+      {
+        "doctor_id": "d1",
+        "doctor_name": "Dr. Samir",
+        "total_appointments": 12,
+        "completed": 8,
+        "completion_rate": 66.7,
+        "average_wait_time": 14.2
+      }
+    ]
+  }
+}
+```
+
+## 10) Get Doctors Directory
+
+- Method: `GET`
+- Path: `/doctors`
+- Expected success code: `200`
+
+Response shape:
+
+```json
+{
+  "data": [
+    { "id": "d1", "name": "Dr. Samir" },
+    { "id": "d2", "name": "Dr. Laila" }
+  ]
+}
+```
+
+## 11) Get Doctor Availability
+
+- Method: `GET`
+- Path: `/doctors/{doctorId}/availability`
+- Expected success code: `200`
+
+Response shape:
+
+```json
+{
+  "data": {
+    "doctor_id": "d1",
+    "appointment_duration_minutes": 30,
+    "working_days": [
+      {
+        "day_of_week": 1,
+        "start_time": "09:00",
+        "end_time": "17:00",
+        "breaks": [
+          {
+            "start_time": "13:00",
+            "end_time": "14:00"
+          }
+        ]
+      }
+    ],
+    "off_days": ["2026-05-18T00:00:00Z"]
+  }
+}
+```
+
+## 12) Save Doctor Availability
+
+- Method: `POST`
+- Path: `/doctors/{doctorId}/availability`
+- Expected success codes: `200`, `201`
+
+Request body:
+
+```json
+{
+  "doctor_id": "d1",
+  "appointment_duration_minutes": 30,
+  "working_days": [
+    {
+      "day_of_week": 1,
+      "start_time": "09:00",
+      "end_time": "17:00",
+      "breaks": [
+        {
+          "start_time": "13:00",
+          "end_time": "14:00"
+        }
+      ]
+    }
+  ],
+  "off_days": ["2026-05-18T00:00:00Z"]
+}
+```
+
+## Required Status Values
+
+- `scheduled`
+- `confirmed`
+- `arrived`
+- `inProgress`
+- `completed`
+- `cancelled`
+- `noShow`
+- `rescheduled`

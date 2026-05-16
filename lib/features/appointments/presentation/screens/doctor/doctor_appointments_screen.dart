@@ -86,7 +86,7 @@ class DoctorAppointmentsScreen extends StatelessWidget {
               const SizedBox(height: 24),
 
               SizedBox(
-                height: 57,
+                height: 56,
                 child: AppointmentSearchBar(
                   onSearch: (query) =>
                       context.read<DoctorAppointmentsCubit>().updateSearchQuery(query),

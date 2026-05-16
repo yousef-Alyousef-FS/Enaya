@@ -22,72 +22,77 @@ class StepParticipants extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AppointmentScheduleCubit, AppointmentScheduleState>(
       builder: (context, state) {
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 700;
+        final patientWidget = isPatientMode
+            ? const SizedBox.shrink()
+            : PatientSearchField(
+                initialPatient: initialPatient,
+                showLabel: false,
+                height: 56,
+                onPatientSelected: (p) =>
+                    context.read<AppointmentScheduleCubit>().updateSelectedPatient(p),
+                onClearPatient: () =>
+                    context.read<AppointmentScheduleCubit>().clearSelectedPatient(),
+              );
 
-            final patientWidget = isPatientMode
-                ? const SizedBox.shrink()
-                : PatientSearchField(
-                    initialPatient: initialPatient,
-                    onPatientSelected: (p) =>
-                        context.read<AppointmentScheduleCubit>().updateSelectedPatient(p),
-                    onClearPatient: () =>
-                        context.read<AppointmentScheduleCubit>().clearSelectedPatient(),
-                  );
+        final doctorInputWidget = state.selectedDoctorId == null
+            ? state.isDoctorsLoading
+                  ? const LinearProgressIndicator()
+                  : DoctorSelectorButton(
+                      doctors: state.availableDoctors
+                          .map((d) => DoctorOption(id: d.id, name: d.name))
+                          .toList(),
+                      selectedDoctorName: state.selectedDoctorName,
+                      onClearSelection: () =>
+                          context.read<AppointmentScheduleCubit>().clearSelectedDoctor(),
+                      onSelected: (d) => context
+                          .read<AppointmentScheduleCubit>()
+                          .updateSelectedDoctor(d.id, d.name),
+                    )
+            : _buildSelectedInfoRow(
+                context,
+                Icons.medical_services_rounded,
+                'doctor'.tr(),
+                state.selectedDoctorName ?? '',
+                onEdit: () => context.read<AppointmentScheduleCubit>().clearSelectedDoctor(),
+              );
 
-            final doctorWidget = state.selectedDoctorId == null
-                ? state.isDoctorsLoading
-                      ? const LinearProgressIndicator()
-                      : DoctorSelectorButton(
-                          doctors: state.availableDoctors
-                              .map((d) => DoctorOption(id: d.id, name: d.name))
-                              .toList(),
-                          selectedDoctorName: state.selectedDoctorName,
-                          onClearSelection: () =>
-                              context.read<AppointmentScheduleCubit>().clearSelectedDoctor(),
-                          onSelected: (d) => context
-                              .read<AppointmentScheduleCubit>()
-                              .updateSelectedDoctor(d.id, d.name),
-                        )
-                : _buildSelectedInfoRow(
-                    context,
-                    Icons.medical_services_rounded,
-                    'doctor'.tr(),
-                    state.selectedDoctorName ?? '',
-                    onEdit: () => context.read<AppointmentScheduleCubit>().clearSelectedDoctor(),
-                  );
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionLabel(context, 'patient_and_doctor_info'.tr()),
-                const SizedBox(height: 12),
-                _buildCard(
-                  context,
-                  child: isWide
-                      ? Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (!isPatientMode)
-                              Expanded(child: patientWidget)
-                            else
-                              const SizedBox.shrink(),
-                            if (!isPatientMode) const SizedBox(width: 16),
-                            Expanded(child: doctorWidget),
-                          ],
-                        )
-                      : Column(
-                          children: [
-                            if (!isPatientMode) patientWidget,
-                            if (!isPatientMode) const SizedBox(height: 14),
-                            doctorWidget,
-                          ],
-                        ),
-                ),
-              ],
-            );
-          },
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSectionLabel(context, 'patient_and_doctor_info'.tr()),
+            const SizedBox(height: 12),
+            _buildCard(
+              context,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (!isPatientMode) ...[
+                    Text(
+                      'select_patient'.tr(),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    patientWidget,
+                    const SizedBox(height: 14),
+                  ],
+                  Text(
+                    'select_doctor'.tr(),
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(width: double.infinity, child: doctorInputWidget),
+                ],
+              ),
+            ),
+          ],
         );
       },
     );

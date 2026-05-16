@@ -13,7 +13,11 @@ import '../../../domain/entities/appointment_entity.dart';
 ///
 /// Renamed to `AppointmentsFilterWidget` to avoid collision with the filter model.
 class AppointmentsFilterWidget extends StatelessWidget {
-  static const double _kControlHeight = 52;
+  // Control heights
+  // `search` has its own height so changes to the search field don't affect
+  // the doctor selector or date range picker.
+  static const double _kSearchHeight = 66.0;
+  static const double _kControlHeight = 52.0;
 
   final List<AppointmentEntity> appointments;
   final List<DoctorOption>? doctors; // optional: if not provided we derive from appointments
@@ -58,10 +62,12 @@ class AppointmentsFilterWidget extends StatelessWidget {
         const double minDate = 220.0;
 
         Widget buildSearch() => SizedBox(
-          height: _kControlHeight,
+          height: _kSearchHeight,
           child: AppointmentSearchBar(
+            height: _kSearchHeight,
             onSearch: cubit.updateSearchQuery,
             onClear: cubit.clearSearch,
+
           ),
         );
 
@@ -265,7 +271,7 @@ class AppointmentsFilterWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 250),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
           decoration: BoxDecoration(
             color: backgroundColor,
             borderRadius: BorderRadius.circular(14),
