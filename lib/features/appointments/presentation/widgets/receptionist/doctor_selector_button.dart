@@ -30,23 +30,38 @@ class DoctorSelectorButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return OutlinedButton.icon(
-      onPressed: () => _openDoctorsSheet(context),
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size(60, 56),
-        side: BorderSide(
-          color: theme.colorScheme.primary.withValues(alpha: 0.22),
+    const double controlHeight = 56.0;
+
+    return SizedBox(
+      height: controlHeight,
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: theme.shadowColor.withValues(alpha: 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: theme.colorScheme.surface,
-        foregroundColor: theme.colorScheme.primary,
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-      ),
-      icon: const Icon(Icons.person_search_rounded),
-      label: Text(
-        selectedDoctorName ?? "select_doctor".tr(),
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontSize: 14),
+        child: OutlinedButton.icon(
+          onPressed: () => _openDoctorsSheet(context),
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(60, controlHeight),
+            side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.22)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            backgroundColor: theme.colorScheme.surface,
+            foregroundColor: theme.colorScheme.primary,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
+          ),
+          icon: const Icon(Icons.person_search_rounded, size: 20),
+          label: Text(
+            selectedDoctorName ?? "select_doctor".tr(),
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 14),
+          ),
+        ),
       ),
     );
   }
@@ -73,15 +88,9 @@ class DoctorSelectorButton extends StatelessWidget {
               ),
               Center(
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: 520,
-                    maxHeight: 520,
-                  ),
+                  constraints: const BoxConstraints(maxWidth: 520, maxHeight: 520),
                   child: ScaleTransition(
-                    scale: CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutBack,
-                    ),
+                    scale: CurvedAnimation(parent: animation, curve: Curves.easeOutBack),
                     child: FadeTransition(
                       opacity: animation,
                       child: Container(
@@ -90,14 +99,10 @@ class DoctorSelectorButton extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: theme.colorScheme.surface,
                           borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: theme.colorScheme.outlineVariant,
-                          ),
+                          border: Border.all(color: theme.colorScheme.outlineVariant),
                           boxShadow: [
                             BoxShadow(
-                              color: theme.colorScheme.shadow.withValues(
-                                alpha: 0.1,
-                              ),
+                              color: theme.colorScheme.shadow.withValues(alpha: 0.1),
                               blurRadius: 30,
                               offset: const Offset(0, 16),
                             ),
@@ -111,10 +116,7 @@ class DoctorSelectorButton extends StatelessWidget {
                               children: [
                                 Text(
                                   'select_doctor'.tr(),
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
-                                  ),
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                                 ),
                                 const Spacer(),
                                 TextButton(
@@ -133,15 +135,11 @@ class DoctorSelectorButton extends StatelessWidget {
                             const SizedBox(height: 12),
                             if (doctors.isEmpty)
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 24,
-                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 24),
                                 child: Center(
                                   child: Text(
                                     'no_doctors_available'.tr(),
-                                    style: TextStyle(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
+                                    style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
                                   ),
                                 ),
                               )
@@ -150,20 +148,17 @@ class DoctorSelectorButton extends StatelessWidget {
                                 child: ListView.separated(
                                   shrinkWrap: true,
                                   itemCount: doctors.length,
-                                  separatorBuilder: (context, index) =>
-                                      const Divider(height: 1),
+                                  separatorBuilder: (context, index) => const Divider(height: 1),
                                   itemBuilder: (context, index) {
                                     final doctor = doctors[index];
-                                    final isSelected =
-                                        doctor.name == selectedDoctorName;
+                                    final isSelected = doctor.name == selectedDoctorName;
 
                                     return ListTile(
                                       contentPadding: EdgeInsets.zero,
                                       leading: CircleAvatar(
-                                        backgroundColor: theme
-                                            .colorScheme
-                                            .primary
-                                            .withValues(alpha: 0.12),
+                                        backgroundColor: theme.colorScheme.primary.withValues(
+                                          alpha: 0.12,
+                                        ),
                                         child: Icon(
                                           Icons.medical_services_rounded,
                                           color: theme.colorScheme.primary,

@@ -5,9 +5,16 @@ import '../../../../../core/widgets/inputs/search_field.dart';
 class AppointmentSearchBar extends StatefulWidget {
   final Function(String) onSearch;
   final VoidCallback? onClear;
+  final double? height;
   final String? hintText;
 
-  const AppointmentSearchBar({super.key, required this.onSearch, this.onClear, this.hintText});
+  const AppointmentSearchBar({
+    super.key,
+    required this.onSearch,
+    this.onClear,
+    this.hintText,
+    this.height,
+  });
 
   @override
   State<AppointmentSearchBar> createState() => _AppointmentSearchBarState();
@@ -47,14 +54,12 @@ class _AppointmentSearchBarState extends State<AppointmentSearchBar> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.expand(
-      child: AppSearchField(
-        controller: _controller,
-        onChanged: widget.onSearch,
-        hint: widget.hintText ?? 'search_patient_or_appointment'.tr(),
-        onClear: _clearSearch,
-        height: 57,
-      ),
+    return AppSearchField(
+      controller: _controller,
+      onChanged: widget.onSearch,
+      hint: widget.hintText ?? 'search_patient_or_appointment'.tr(),
+      onClear: _clearSearch,
+      height: widget.height,
     );
   }
 }
