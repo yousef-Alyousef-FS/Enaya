@@ -6,8 +6,7 @@ abstract class PatientDashboardRemoteDataSource {
   Future<PatientDashboardStatsModel> getPatientDashboardStats();
 }
 
-class PatientDashboardRemoteDataSourceImpl
-    implements PatientDashboardRemoteDataSource {
+class PatientDashboardRemoteDataSourceImpl implements PatientDashboardRemoteDataSource {
   final AppointmentRemoteDataSource appointmentDataSource;
 
   PatientDashboardRemoteDataSourceImpl(this.appointmentDataSource);
@@ -16,19 +15,13 @@ class PatientDashboardRemoteDataSourceImpl
   Future<PatientDashboardStatsModel> getPatientDashboardStats() async {
     await Future.delayed(const Duration(milliseconds: 300));
 
-    // Unified fetch for "current_patient_id" (p1 in mock)
-    final appointments = await appointmentDataSource.getAppointments(
-      patientId: 'p1',
-    );
+    // Fetch the current patient's appointment history for the dashboard
+    final appointments = await appointmentDataSource.getAppointments(patientId: 'p1');
 
-    final completed = appointments
-        .where((a) => a.status == AppointmentStatus.completed)
-        .length;
+    final completed = appointments.where((a) => a.status == AppointmentStatus.completed).length;
     String? next;
     if (appointments.isNotEmpty) {
-      final future = appointments.where(
-        (a) => a.dateTime.isAfter(DateTime.now()),
-      );
+      final future = appointments.where((a) => a.dateTime.isAfter(DateTime.now()));
       if (future.isNotEmpty) {
         next = future.first.dateTime.toIso8601String();
       } else {

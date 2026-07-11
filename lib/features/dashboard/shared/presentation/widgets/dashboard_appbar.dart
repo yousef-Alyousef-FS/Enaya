@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../../core/routing/app_router.dart';
 import '../../../../auth/presentation/cubit/auth_cubit.dart';
 
 /// A reusable AppBar widget designed specifically for the dashboard layout.
@@ -47,10 +49,9 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
             titleText ?? 'today_overview'.tr(),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.3,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800, letterSpacing: -0.3),
           ),
           if (subtitleText != null) ...[
             const SizedBox(height: 2),
@@ -67,10 +68,19 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
 
       actions: [
+        _buildSettingsButton(context),
         if (showNotifications) _buildNotificationIcon(context),
         if (showUserMenu) _buildUserMenu(context),
         const SizedBox(width: 8),
       ],
+    );
+  }
+
+  Widget _buildSettingsButton(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.settings_outlined),
+      onPressed: () => context.push(AppRouter.settings),
+      tooltip: 'settings'.tr(),
     );
   }
 
@@ -93,10 +103,7 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
               decoration: BoxDecoration(
                 color: Colors.red,
                 borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.surface,
-                  width: 1.5,
-                ),
+                border: Border.all(color: Theme.of(context).colorScheme.surface, width: 1.5),
               ),
               constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
               child: Text(
@@ -123,16 +130,11 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 1,
-          ),
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
         ),
         child: const CircleAvatar(
           radius: 17,
-          backgroundImage: NetworkImage(
-            'https://i.pravatar.cc/150?u=reception',
-          ),
+          backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=reception'),
           backgroundColor: Colors.grey,
         ),
       ),

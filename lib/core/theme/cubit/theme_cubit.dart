@@ -9,35 +9,29 @@ class ThemeCubit extends Cubit<ThemeState> {
 
   ThemeCubit({required SettingsService settingsService})
     : _settingsService = settingsService,
-      super(const ThemeState(themeMode: ThemeMode.system)) {
+      super(const ThemeState(themeMode: ThemeMode.light)) {
     _loadSavedThemeMode();
   }
 
-  /// تحميل الـ theme mode المحفوظ من التخزين
   void _loadSavedThemeMode() {
     final savedMode = _settingsService.getThemeMode();
     if (savedMode != null) {
       final themeMode = _stringToThemeMode(savedMode);
-      emit(ThemeState(themeMode: themeMode));
+      if (state.themeMode != themeMode) {
+        emit(ThemeState(themeMode: themeMode));
+      }
     }
   }
 
-  /// تحديث الـ theme mode وحفظه
   Future<void> setThemeMode(ThemeMode themeMode) async {
+    if (state.themeMode == themeMode) {
+      return;
+    }
+
     emit(ThemeState(themeMode: themeMode));
     await _settingsService.saveThemeMode(_themeModeToString(themeMode));
   }
 
-  /// تبديل بين الوضع الفاتح والغامق
-  Future<void> toggleTheme() async {
-    final currentMode = state.themeMode;
-    final newMode = currentMode == ThemeMode.light
-        ? ThemeMode.dark
-        : ThemeMode.light;
-    await setThemeMode(newMode);
-  }
-
-  /// تحويل الـ string إلى ThemeMode
   ThemeMode _stringToThemeMode(String value) {
     switch (value) {
       case 'light':
@@ -50,7 +44,6 @@ class ThemeCubit extends Cubit<ThemeState> {
     }
   }
 
-  /// تحويل ThemeMode إلى string
   String _themeModeToString(ThemeMode themeMode) {
     switch (themeMode) {
       case ThemeMode.light:

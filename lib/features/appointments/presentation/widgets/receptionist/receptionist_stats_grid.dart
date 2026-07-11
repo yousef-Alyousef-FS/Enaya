@@ -8,7 +8,7 @@ import '../../../../../core/widgets/cards/stat_card.dart';
 import '../../../../../core/widgets/common/responsive_stats_grid.dart';
 import '../../../domain/entities/appointment_stats.dart';
 import '../../../domain/entities/appointment_status.dart';
-import '../../cubit/appointments_overview_cubit.dart';
+import '../../cubit/list/receptionist_appointments_cubit.dart';
 
 class ReceptionistStatsGrid extends StatelessWidget {
   final AppointmentStats data;
@@ -25,7 +25,7 @@ class ReceptionistStatsGrid extends StatelessWidget {
           icon: Icons.calendar_today_rounded,
           color: Theme.of(context).colorScheme.primary,
           onTap: () =>
-              context.read<AppointmentsManagerCubit>().updateStatusFilter(null),
+              context.read<ReceptionistAppointmentsCubit>().updateStatusFilter(null),
         ),
         StatCard(
           title: 'pending'.tr(),
@@ -33,7 +33,7 @@ class ReceptionistStatsGrid extends StatelessWidget {
           icon: Icons.pending_actions_rounded,
           color: AppColors.warning,
           onTap: () => context
-              .read<AppointmentsManagerCubit>()
+              .read<ReceptionistAppointmentsCubit>()
               .updateStatusFilter(AppointmentStatus.scheduled),
         ),
         StatCard(
@@ -42,7 +42,7 @@ class ReceptionistStatsGrid extends StatelessWidget {
           icon: Icons.check_circle_outline_rounded,
           color: AppColors.success,
           onTap: () => context
-              .read<AppointmentsManagerCubit>()
+              .read<ReceptionistAppointmentsCubit>()
               .updateStatusFilter(AppointmentStatus.completed),
         ),
         StatCard(
@@ -51,7 +51,7 @@ class ReceptionistStatsGrid extends StatelessWidget {
           icon: Icons.cancel_outlined,
           color: AppColors.error,
           onTap: () => context
-              .read<AppointmentsManagerCubit>()
+              .read<ReceptionistAppointmentsCubit>()
               .updateStatusFilter(AppointmentStatus.cancelled),
         ),
       ],

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/di/injection.dart';
 import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/loaders/app_loaders.dart';
@@ -34,6 +33,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
   @override
   void initState() {
     super.initState();
+    _emailController.addListener(_clearMessage);
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
@@ -42,6 +42,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       parent: _fadeController,
       curve: Curves.easeOut,
     );
+  }
+
+  void _clearMessage() {
+    if (_message != null && !_isSuccess) {
+      setState(() => _message = null);
+    }
   }
 
   @override
@@ -61,47 +67,44 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
 
   @override
   Widget build(BuildContext context) {
-    return PortraitOnlyScope(
-      child: BlocProvider(
-        create: (_) => getIt<AuthCubit>(),
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text('forgot_password'.tr()),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios),
-              onPressed: () => context.pop(),
-            ),
-          ),
-          body: SafeArea(
-            child: OrientationBuilder(
-              builder: (context, _) {
-                final config = ResponsiveLayout.of(context);
+    final config = ResponsiveLayout.of(context);
 
-                return AuthCardContainer(
-                  config: config,
-                  gradientAlpha: 41,
-                  children: [
-                    Text(
-                      'reset_password'.tr(),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        fontSize: config.titleFontSize,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'enter_email_reset'.tr(),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontSize: config.bodyFontSize,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    _buildForm(config),
-                  ],
-                );
-              },
-            ),
+    return PortraitOnlyScope(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('forgot_password'.tr()),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () {
+              context.read<AuthCubit>().clearStatus();
+              setState(() => _message = null);
+              context.pop();
+            },
+          ),
+        ),
+        body: SafeArea(
+          child: AuthCardContainer(
+            config: config,
+            gradientAlpha: 41,
+            children: [
+              Text(
+                'reset_password'.tr(),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                  fontSize: config.titleFontSize,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'enter_email_reset'.tr(),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontSize: config.bodyFontSize,
+                ),
+              ),
+              const SizedBox(height: 32),
+              _buildForm(config),
+            ],
           ),
         ),
       ),
@@ -134,6 +137,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
           BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {
               final cubit = context.read<AuthCubit>();
+
+              // Only handle errors if this screen is the current active screen
+              if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+
               if (state.isError) {
                 _triggerMessage(
                   state.errorMessage ?? 'error_occurred'.tr(),
@@ -157,6 +164,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   ElevatedButton(
+                    key: const ValueKey('forgot_password_submit_btn'),
                     onPressed: isButtonDisabled
                         ? null
                         : () {
@@ -178,16 +186,43 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                     FadeTransition(
                       opacity: _fadeAnimation,
                       child: Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Text(
-                          _message!,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: _isSuccess
-                                ? Colors.green
-                                : Theme.of(context).colorScheme.error,
-                            fontSize: config.bodyFontSize,
-                            fontWeight: FontWeight.w600,
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.error.withAlpha(
+                              Theme.of(context).brightness == Brightness.dark
+                                  ? 30
+                                  : 20,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.error
+                                  .withAlpha(50),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: Theme.of(context).colorScheme.error,
+                                size: 20,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _message!,
+                                  style: TextStyle(
+                                    color: Theme.of(context).colorScheme.error,
+                                    fontSize: config.bodyFontSize - 1,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

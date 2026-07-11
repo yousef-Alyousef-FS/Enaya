@@ -34,6 +34,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
   @override
   void initState() {
     super.initState();
+    _currentPasswordController.addListener(_clearMessage);
+    _newPasswordController.addListener(_clearMessage);
+    _confirmPasswordController.addListener(_clearMessage);
+
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
@@ -42,6 +46,12 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
       parent: _fadeController,
       curve: Curves.easeOut,
     );
+  }
+
+  void _clearMessage() {
+    if (_message != null && !_isSuccess) {
+      setState(() => _message = null);
+    }
   }
 
   @override
@@ -63,6 +73,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
 
   @override
   Widget build(BuildContext context) {
+    final config = ResponsiveLayout.of(context);
+
     return BlocProvider(
       create: (_) => getIt<AuthCubit>(),
       child: Scaffold(
@@ -74,34 +86,28 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
           ),
         ),
         body: SafeArea(
-          child: OrientationBuilder(
-            builder: (context, _) {
-              final config = ResponsiveLayout.of(context);
-
-              return AuthCardContainer(
-                config: config,
-                gradientAlpha: 41,
-                children: [
-                  Text(
-                    'change_password'.tr(),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      fontSize: config.titleFontSize,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'change_password_description'.tr(),
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontSize: config.bodyFontSize,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  _buildForm(config),
-                ],
-              );
-            },
+          child: AuthCardContainer(
+            config: config,
+            gradientAlpha: 41,
+            children: [
+              Text(
+                'change_password'.tr(),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                  fontSize: config.titleFontSize,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'change_password_description'.tr(),
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  fontSize: config.bodyFontSize,
+                ),
+              ),
+              const SizedBox(height: 32),
+              _buildForm(config),
+            ],
           ),
         ),
       ),
@@ -158,6 +164,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
           BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {
               final cubit = context.read<AuthCubit>();
+
+              // Only handle errors if this screen is the current active screen
+              if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+
               if (state.isError) {
                 _triggerMessage(
                   state.errorMessage ?? 'error_occurred'.tr(),

@@ -41,6 +41,9 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
 
     emit(state.copyWith(isDoctorsLoading: true, clearErrorMessage: true));
 
+    // [DEMO_MODE]: Artificial delay to showcase shimmer loading
+    await Future.delayed(const Duration(seconds: 4));
+
     final result = await _getAvailableDoctorsUseCase(NoParams());
 
     result.fold(
@@ -75,6 +78,9 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
         clearEndDate: true,
       ),
     );
+
+    // [DEMO_MODE]: Artificial delay to showcase slots shimmer loading
+    await Future.delayed(const Duration(seconds: 4));
 
     final result = await _generateTimeSlotsUseCase(
       GenerateTimeSlotsParams(doctorId: doctorId, date: date),
@@ -171,14 +177,27 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
   }
 
   void updateSelectedDoctor(String id, String name, {bool autoLoadSlots = true}) {
-    emit(state.copyWith(selectedDoctorId: id, selectedDoctorName: name, clearErrorMessage: true));
+    // [DEEP_FIX]: Integrity first. Clear all slots when doctor changes.
+    emit(state.copyWith(
+      selectedDoctorId: id, 
+      selectedDoctorName: name, 
+      clearErrorMessage: true,
+      availableSlots: [], 
+      clearSelectedTimeSlot: true,
+      rangeSlots: {},
+    ));
     if (autoLoadSlots) {
       _tryLoadSlotsIfReady();
     }
   }
 
   void updateSelectedDate({required DateTime date, required String doctorId}) {
-    // Only allow date update when patient & doctor are selected
+    // [VALIDATION]: Double check if date is not in the past
+    if (date.isBefore(DateTime.now().subtract(const Duration(minutes: 5)))) {
+      emit(state.copyWith(errorMessage: 'date_in_past'.tr()));
+      return;
+    }
+
     if (state.selectedPatient == null) {
       emit(
         state.copyWith(
@@ -262,6 +281,38 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
     emit(state.copyWith(selectedTimeSlot: slot, clearErrorMessage: true, isSuccess: false));
   }
 
+  void nextStep(bool isPatientMode) {
+    if (state.canGoNext(isPatientMode)) {
+      if (state.currentStep < state.totalSteps(isPatientMode) - 1) {
+        emit(state.copyWith(currentStep: state.currentStep + 1));
+      }
+    }
+  }
+
+  void previousStep() {
+    if (state.currentStep > 0) {
+      emit(state.copyWith(currentStep: state.currentStep - 1));
+    }
+  }
+
+  void goToStep(int step, bool isPatientMode) {
+    // [SECURITY]: Ensure user cannot skip steps they haven't validated yet
+    if (step < state.currentStep) {
+      emit(state.copyWith(currentStep: step));
+      return;
+    }
+
+    // If trying to go forward, check if intermediate steps are valid
+    // This is a simplified check: just check if can go next from current
+    if (step == state.currentStep + 1 && state.canGoNext(isPatientMode)) {
+      emit(state.copyWith(currentStep: step));
+    }
+  }
+
+  void setInitialStep(int step) {
+    emit(state.copyWith(currentStep: step));
+  }
+
   void toggleRangeMode(bool isRange) {
     if (!isRange) {
       emit(state.copyWith(isRangeMode: false, clearEndDate: true, clearSelectedTimeSlot: true));
@@ -280,7 +331,13 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
     }
   }
 
+  void reset() {
+    emit(AppointmentScheduleState.initial());
+  }
+
   Future<void> createAppointment({String? reason, String? notes}) async {
+    if (state.isLoading) return; // [FIX]: Prevent multiple submissions
+
     final slot = state.selectedTimeSlot;
     final patient = state.selectedPatient;
     final doctorId = state.selectedDoctorId;

@@ -7,6 +7,8 @@ import 'package:enaya/features/dashboard/shared/presentation/widgets/dashboard_o
 import '../../../../../core/widgets/cards/stat_card.dart';
 import '../../../../../core/widgets/common/responsive_stats_grid.dart';
 import '../../../../../core/widgets/feature_coming_soon_state.dart';
+import '../../../../appointments/presentation/cubit/list/patient_appointments_cubit.dart';
+import '../../../../appointments/presentation/cubit/list/patient_appointments_state.dart';
 import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,10 +17,8 @@ import '../../../../../core/di/injection.dart';
 import '../../../../../core/services/patient_session.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../appointments/presentation/appointments_page.dart';
-import '../../../../appointments/presentation/cubit/patient_appointments_cubit.dart';
-import '../../../../appointments/presentation/cubit/patient_appointments_state.dart';
-import '../../../../appointments/presentation/widgets/patient/patient_next_appointment_card.dart';
-
+import '../../../../appointments/presentation/widgets/shared/appointment_card.dart';
+import 'package:shimmer/shimmer.dart';
 
 class PatientDashboardPage extends StatefulWidget {
   const PatientDashboardPage({super.key});
@@ -59,6 +59,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
         return AppointmentsPage(
           mode: AppointmentsOverviewMode.patient,
           specificPatientId: _activePatientId,
+          isEmbedded: true,
         );
       case 2:
         return FeatureComingSoonState(
@@ -87,7 +88,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
     return BlocBuilder<PatientAppointmentsCubit, PatientAppointmentsState>(
       builder: (context, state) {
         if (state.status == PatientAppointmentsStatus.loading) {
-          return const Center(child: CircularProgressIndicator());
+          return _buildShimmerOverview();
         }
 
         if (state.status == PatientAppointmentsStatus.failure) {
@@ -110,10 +111,12 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
               _buildSectionHeader('next_appointment'),
               const SizedBox(height: 12),
               if (nextApp != null)
-                PatientNextAppointmentCard(
+                AppointmentCard(
                   appointment: nextApp,
-                  onReschedule: () => _onNavigationSelected(1),
-                  onCancel: () => _onNavigationSelected(1),
+                  mode: AppointmentsOverviewMode.patient,
+                  layout: AppointmentCardLayout.featured,
+                  onSecondaryAction: () => _onNavigationSelected(1),
+                  onAction: () => _onNavigationSelected(1),
                 )
               else
                 _buildEmptyAppointmentState(),
@@ -328,5 +331,27 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
         _activePatientId.toString(),
       );
     }
+  }
+
+  Widget _buildShimmerOverview() {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    return Shimmer.fromColors(
+      baseColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+      highlightColor: isDark ? Colors.grey.shade700 : Colors.grey.shade100,
+      child: DashboardOverviewBuilder(
+        header: Container(height: 100, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+        stats: Row(
+          children: [
+            Expanded(child: Container(height: 120, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)))),
+            const SizedBox(width: 16),
+            Expanded(child: Container(height: 120, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)))),
+          ],
+        ),
+        actions: Container(height: 50, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16))),
+        body: Container(height: 200, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(32))),
+      ),
+    );
   }
 }

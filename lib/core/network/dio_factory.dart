@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:dio/dio.dart';
 import 'package:enaya/core/constants/api_constants.dart';
+import 'package:enaya/core/services/settings_service.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../di/injection.dart';
 import '../services/token_manager.dart';
@@ -11,8 +12,6 @@ const String contentType = "content-type";
 const String accept = "accept";
 const String authorization = "authorization";
 const String defaultLanguage = "language";
-
-String platformLocale = PlatformDispatcher.instance.locale.languageCode;
 
 /// Creates and configures Dio clients used by repositories and remote data sources.
 class DioFactory {
@@ -28,7 +27,6 @@ class DioFactory {
       headers: {
         contentType: applicationJson,
         accept: applicationJson,
-        defaultLanguage: "ar",
       },
     );
 
@@ -40,11 +38,15 @@ class DioFactory {
   /// Adds authentication, localization, refresh-token recovery, and logging interceptors.
   static void addDioInterceptor(Dio dio) {
     final tokenManager = getIt<TokenManager>();
+    final settingsService = getIt<SettingsService>();
 
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          options.headers[defaultLanguage] = platformLocale;
+          // [API_REFINE]: Dynamically resolve language from settings or system on every request.
+          final languageCode = settingsService.getLanguage() ?? 
+                              PlatformDispatcher.instance.locale.languageCode;
+          options.headers[defaultLanguage] = languageCode;
 
           // Attach the latest access token when available.
           final token = await tokenManager.getToken();

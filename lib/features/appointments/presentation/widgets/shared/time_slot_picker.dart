@@ -1,177 +1,164 @@
-/*
-  Time slot list / picker used by the appointment scheduler.
-
-  Displays available/occupied/break/off slots and highlights the selected
-  slot using the brand accent (AppColors.accentMint). Text color for the
-  selected slot is computed for contrast to keep readability in light/dark
-  themes. Hover effects apply accentMint to border for visual feedback.
-*/
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/app_colors.dart';
 import '../../../data/models/time_slot_model.dart';
 
-/// Widget that displays a list of time slots with selection support.
-///
-/// Each slot's appearance reflects its availability status (available,
-/// occupied, break, off-day). The selected slot is highlighted with
-/// [AppColors.accentMint] background and a contrasted text color.
 class TimeSlotPicker extends StatelessWidget {
   final List<TimeSlot> slots;
   final TimeSlot? selectedSlot;
   final Function(TimeSlot) onSlotSelected;
-  final bool showStatusLabels;
 
   const TimeSlotPicker({
     super.key,
     required this.slots,
     this.selectedSlot,
     required this.onSlotSelected,
-    this.showStatusLabels = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (slots.isEmpty) {
-      return _buildEmptyState(context);
-    }
+    if (slots.isEmpty) return _buildEmptyState(context);
 
-    return Wrap(
-      spacing: 10,
-      runSpacing: 12,
-      children: slots.map((slot) => _buildSlotItem(context, slot)).toList(),
+    // [UX_REFINE]: Group slots by Morning, Afternoon, Evening
+    final morning = slots.where((s) => s.dateTime.hour < 12).toList();
+    final afternoon = slots
+        .where((s) => s.dateTime.hour >= 12 && s.dateTime.hour < 17)
+        .toList();
+    final evening = slots.where((s) => s.dateTime.hour >= 17).toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (morning.isNotEmpty)
+          _buildGroup(
+            context,
+            'morning'.tr(),
+            Icons.wb_twilight_rounded,
+            morning,
+          ),
+        if (afternoon.isNotEmpty)
+          _buildGroup(
+            context,
+            'afternoon'.tr(),
+            Icons.wb_sunny_rounded,
+            afternoon,
+          ),
+        if (evening.isNotEmpty)
+          _buildGroup(
+            context,
+            'evening'.tr(),
+            Icons.dark_mode_rounded,
+            evening,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildGroup(
+    BuildContext context,
+    String title,
+    IconData icon,
+    List<TimeSlot> groupSlots,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.7),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: groupSlots
+              .map((slot) => _buildSlotItem(context, slot))
+              .toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSlotItem(BuildContext context, TimeSlot slot) {
+    final theme = Theme.of(context);
+    final isSelected = selectedSlot?.dateTime == slot.dateTime;
+    final isAvailable = slot.isAvailable;
+
+    return InkWell(
+      onTap: isAvailable ? () => onSlotSelected(slot) : null,
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutCubic,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? theme.colorScheme.primary
+              : (isAvailable
+                    ? theme.colorScheme.surface
+                    : theme.colorScheme.surfaceContainerHighest.withValues(
+                        alpha: 0.3,
+                      )),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? theme.colorScheme.primary
+                : theme.colorScheme.outlineVariant,
+            width: 1.5,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          DateFormat.jm(context.locale.toString()).format(slot.dateTime),
+          style: TextStyle(
+            color: isSelected
+                ? Colors.white
+                : (isAvailable
+                      ? theme.colorScheme.onSurface
+                      : theme.colorScheme.onSurfaceVariant.withValues(
+                          alpha: 0.5,
+                        )),
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+            fontSize: 13,
+            letterSpacing: 0.2,
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    final theme = Theme.of(context);
     return Center(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: Text(
-          'no_slots_available'.tr(),
-          style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontStyle: FontStyle.italic),
-        ),
+      child: Text(
+        'no_slots_available'.tr(),
+        style: const TextStyle(color: Colors.grey, fontStyle: FontStyle.italic),
       ),
     );
-  }
-
-  /// Builds a single time slot card.
-  ///
-  /// The card's background, border, and text color change based on:
-  /// - [isSelected]: uses [AppColors.accentMint] with contrasted text
-  /// - [slot.status]: determines color scheme (available, occupied, break, off)
-  ///
-  /// Returns an [InkWell] wrapped [AnimatedContainer] that scales and
-  /// animates color transitions smoothly.
-  Widget _buildSlotItem(BuildContext context, TimeSlot slot) {
-    final bool isSelected = selectedSlot?.dateTime == slot.dateTime;
-    final bool isSelectable = slot.isAvailable;
-    final String timeStr = DateFormat('hh:mm a', 'en_US').format(slot.dateTime);
-    final theme = Theme.of(context);
-
-    return InkWell(
-      onTap: isSelectable ? () => onSlotSelected(slot) : null,
-      borderRadius: BorderRadius.circular(12),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: _getSlotColor(slot, isSelected, theme),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: _getBorderColor(slot, isSelected, theme),
-            width: isSelected ? 1.6 : 1,
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              timeStr,
-              style: TextStyle(
-                color: _getTextColor(slot, isSelected, theme),
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                fontSize: 14,
-                decoration: isSelectable ? null : TextDecoration.lineThrough,
-              ),
-            ),
-            if (showStatusLabels && !isSelectable)
-              Padding(
-                padding: const EdgeInsets.only(top: 3),
-                child: Text(
-                  _getStatusKey(slot.status).tr(),
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: _getTextColor(slot, isSelected, theme).withAlpha(180),
-                  ),
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // --- Helpers ---
-
-  /// Returns the localization key for the given slot status.
-  ///
-  /// Maps [TimeSlotStatus] enum values to string keys for
-  /// multi-language support (e.g., 'slot_occupied', 'slot_break').
-  String _getStatusKey(TimeSlotStatus status) {
-    return switch (status) {
-      TimeSlotStatus.occupied => 'slot_occupied',
-      TimeSlotStatus.breakTime => 'slot_break',
-      TimeSlotStatus.offDay => 'slot_off',
-      _ => '',
-    };
-  }
-
-  /// Computes the background color for a time slot.
-  ///
-  /// Selected slots use the theme's primary color; other slots use colors
-  /// derived from the theme's container roles based on their [slot.status].
-  Color _getSlotColor(TimeSlot slot, bool isSelected, ThemeData theme) {
-    if (isSelected) return theme.colorScheme.primary;
-
-    return switch (slot.status) {
-      TimeSlotStatus.available => theme.colorScheme.surfaceContainerLow,
-      TimeSlotStatus.occupied => theme.colorScheme.errorContainer.withAlpha(110),
-      TimeSlotStatus.breakTime => theme.colorScheme.tertiaryContainer.withAlpha(120),
-      TimeSlotStatus.offDay => theme.colorScheme.surfaceContainerHighest,
-    };
-  }
-
-  /// Computes the border color for a time slot.
-  ///
-  /// Selected slots use the theme's primary color; hovered/unselected slots
-  /// default to outline or status-specific colors (error for occupied,
-  /// tertiary for break, etc.).
-  Color _getBorderColor(TimeSlot slot, bool isSelected, ThemeData theme) {
-    if (isSelected) return theme.colorScheme.primary;
-
-    return switch (slot.status) {
-      TimeSlotStatus.available => theme.colorScheme.outlineVariant,
-      TimeSlotStatus.occupied => theme.colorScheme.error.withAlpha(70),
-      TimeSlotStatus.breakTime => theme.colorScheme.tertiary.withAlpha(70),
-      TimeSlotStatus.offDay => theme.colorScheme.outlineVariant,
-    };
-  }
-
-  /// Computes the text color for a time slot.
-  ///
-  /// For selected slots, the text color is the theme's onPrimary.
-  /// For other slots, the color is derived from the theme's text contrast roles.
-  Color _getTextColor(TimeSlot slot, bool isSelected, ThemeData theme) {
-    if (isSelected) return theme.colorScheme.onPrimary;
-
-    return switch (slot.status) {
-      TimeSlotStatus.available => theme.colorScheme.onSurface,
-      TimeSlotStatus.occupied => theme.colorScheme.onErrorContainer,
-      TimeSlotStatus.breakTime => theme.colorScheme.onTertiaryContainer,
-      TimeSlotStatus.offDay => theme.colorScheme.onSurfaceVariant,
-    };
   }
 }

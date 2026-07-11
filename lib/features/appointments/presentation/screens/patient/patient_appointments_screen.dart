@@ -1,208 +1,238 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:enaya/core/di/injection.dart';
-import 'package:enaya/core/routing/app_router.dart';
-import 'package:enaya/features/appointments/presentation/screens/schedule_appointment_screen.dart';
-import 'package:enaya/features/patients/domain/entities/patient_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../../../core/routing/app_router.dart';
 import '../../../../../core/services/patient_session.dart';
-import '../../../../../core/widgets/section_header.dart';
 import '../../../data/models/appointments_overview_view_mode.dart';
 import '../../../domain/entities/appointment_entity.dart';
-import '../../cubit/patient_appointments_cubit.dart';
-import '../../cubit/patient_appointments_state.dart';
+import '../../cubit/list/patient_appointments_cubit.dart';
+import '../../cubit/list/patient_appointments_state.dart';
 import '../../widgets/shared/appointment_card.dart';
-import '../../widgets/shared/appointments_feedback_state.dart';
+import '../../widgets/patient/patient_booking_cta_card.dart';
+import '../form/schedule_appointment_screen.dart';
 
-import '../../widgets/patient/book_appointment_card.dart';
-import '../../widgets/patient/patient_next_appointment_card.dart';
-
-/// Patient-facing appointment timeline with the next visit and history list.
 class PatientAppointmentsScreen extends StatelessWidget {
   final bool isEmbedded;
-
   const PatientAppointmentsScreen({super.key, this.isEmbedded = true});
 
   @override
   Widget build(BuildContext context) {
-    final session = PatientSession();
-    final patientId = session.patientId ?? 'p1';
-    final patientEntity = session.patientEntity ?? _createDefaultPatient();
+    final patientId = PatientSession().patientId ?? 'p1';
 
-    return BlocProvider(
-      create: (context) =>
-          getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
-      child: BlocBuilder<PatientAppointmentsCubit, PatientAppointmentsState>(
-        builder: (context, state) {
-          final isLoading = state.status == PatientAppointmentsStatus.loading;
-          final isFailure = state.status == PatientAppointmentsStatus.failure;
-          final nextApp = state.upcomingAppointments.isNotEmpty
-              ? state.upcomingAppointments.first
-              : null;
-          final history = state.pastAppointments;
+    return BlocBuilder<PatientAppointmentsCubit, PatientAppointmentsState>(
+      builder: (context, state) {
+        return RefreshIndicator(
+          onRefresh: () => context.read<PatientAppointmentsCubit>().loadAppointments(patientId),
+          child: _buildBody(context, state, patientId),
+        );
+      },
+    );
+  }
 
-          final content = RefreshIndicator(
-            onRefresh: () => context
-                .read<PatientAppointmentsCubit>()
-                .loadAppointments(patientId),
-            child: ListView(
-              padding: isEmbedded ? EdgeInsets.zero : const EdgeInsets.all(24),
-              shrinkWrap: isEmbedded,
-              physics: isEmbedded
-                  ? const NeverScrollableScrollPhysics()
-                  : const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics(),
-                    ),
+  Widget _buildBody(BuildContext context, PatientAppointmentsState state, String patientId) {
+    final upcoming = state.upcomingAppointments;
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+      shrinkWrap: isEmbedded,
+      physics: isEmbedded 
+          ? const NeverScrollableScrollPhysics() 
+          : const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+      children: [
+        _buildTopNavigation(context, state),
+        const SizedBox(height: 24),
+        
+        PatientBookingCtaCard(onBookTap: () => _openBookingFlow(context, patientId)),
+        const SizedBox(height: 32),
+
+        if (upcoming.isEmpty)
+          _buildEmptyState(context)
+        else ...[
+          _buildTimelineHeader(context, upcoming.length),
+          const SizedBox(height: 16),
+          ..._buildUpcomingList(context, upcoming, patientId),
+        ],
+
+        if (state.isPageLoading)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(child: CircularProgressIndicator()),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTopNavigation(BuildContext context, PatientAppointmentsState state) {
+    final now = DateTime.now();
+    final hour = now.hour;
+    String greeting = 'good_morning'.tr();
+    IconData greetingIcon = Icons.wb_sunny_rounded;
+
+    if (hour >= 12 && hour < 17) {
+      greeting = 'good_afternoon'.tr();
+    } else if (hour >= 17) {
+      greeting = 'good_evening'.tr();
+      greetingIcon = Icons.nightlight_round;
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                BookAppointmentCard(
-                  onTap: () async {
-                    final result = await context.push(
-                      AppRouter.scheduleAppointment,
-                      extra: {'patient': patientEntity, 'isPatientMode': true},
-                    );
-                    if (result == true && context.mounted) {
-                      context.read<PatientAppointmentsCubit>().loadAppointments(
-                        patientId,
-                      );
-                    }
-                  },
-                ),
-                const SizedBox(height: 32),
-
-                if (isFailure) ...[
-                  AppointmentsInlineError(
-                    message: state.errorMessage,
-                    onRetry: () => context
-                        .read<PatientAppointmentsCubit>()
-                        .loadAppointments(patientId),
+                Icon(greetingIcon, color: Colors.orangeAccent, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  greeting,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey.shade600, 
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(height: 20),
-                ],
-
-                if (state.upcomingAppointments.isEmpty &&
-                    state.pastAppointments.isEmpty &&
-                    !isLoading)
-                  _buildEmptyState(context)
-                else ...[
-                  if (nextApp != null) ...[
-                    AppSectionHeader(title: 'next_appointment'.tr()),
-                    const SizedBox(height: 16),
-                    PatientNextAppointmentCard(
-                      appointment: nextApp,
-                      onCancel: () => _openDetails(context, nextApp, patientId),
-                      onReschedule: () =>
-                          _rescheduleAppointment(context, nextApp),
-                    ),
-                    const SizedBox(height: 32),
-                  ],
-                  if (history.isNotEmpty) ...[
-                    AppSectionHeader(title: 'previous_appointments'.tr()),
-                    const SizedBox(height: 16),
-                    ...history.map(
-                      (app) => Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: AppointmentCard(
-                          appointment: app,
-                          mode: AppointmentsOverviewMode.patient,
-                          onTap: () => _openDetails(context, app, patientId),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
+                ),
               ],
             ),
-          );
+            const SizedBox(height: 4),
+            _buildStatsHeader(context, state),
+          ],
+        ),
+        if (state.pastAppointments.isNotEmpty)
+          IconButton.filledTonal(
+            onPressed: () => context.push('/appointments/history'),
+            icon: const Icon(Icons.history_rounded, size: 22),
+            style: IconButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+              foregroundColor: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+      ],
+    );
+  }
 
-          if (isEmbedded) {
-            return content;
-          }
+  Widget _buildStatsHeader(BuildContext context, PatientAppointmentsState state) {
+    final count = state.upcomingAppointments.length;
+    return Text(
+      count == 0 ? 'no_visits_today'.tr() : 'you_have_visits'.tr(args: [count.toString()]),
+      style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900, letterSpacing: -0.5),
+    );
+  }
 
-          return Scaffold(body: SafeArea(child: content));
-        },
+  Widget _buildTimelineHeader(BuildContext context, int count) {
+    return Row(
+      children: [
+        Container(
+          width: 32, height: 32,
+          decoration: BoxDecoration(color: Theme.of(context).colorScheme.primary, shape: BoxShape.circle),
+          child: const Icon(Icons.calendar_today_rounded, color: Colors.white, size: 14),
+        ),
+        const SizedBox(width: 12),
+        Text('upcoming_schedule'.tr(), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        const Spacer(),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+          child: Text('$count', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+        ),
+      ],
+    );
+  }
+
+  List<Widget> _buildUpcomingList(BuildContext context, List<AppointmentEntity> upcoming, String patientId) {
+    return upcoming.asMap().entries.map((entry) {
+      final index = entry.key;
+      final app = entry.value;
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: AppointmentCard(
+          appointment: app,
+          mode: AppointmentsOverviewMode.patient,
+          layout: index == 0 ? AppointmentCardLayout.featured : AppointmentCardLayout.simple,
+          onSecondaryAction: () => _rescheduleAppointment(context, app, patientId),
+          onAction: () => _openDetails(context, app, patientId),
+          onTap: () => _openDetails(context, app, patientId),
+        ),
+      );
+    }).toList();
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 40),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: 120, height: 120,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              Icon(Icons.calendar_today_rounded, size: 60, color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+              Positioned(
+                right: 20, bottom: 20,
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(color: theme.colorScheme.surface, shape: BoxShape.circle, border: Border.all(color: theme.colorScheme.outlineVariant)),
+                  child: Icon(Icons.search_rounded, size: 16, color: theme.colorScheme.primary),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'no_upcoming_appointments'.tr(),
+            style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold, letterSpacing: -0.5),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'find_your_doctor_hint'.tr(),
+            style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey.shade500),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 40),
+          ElevatedButton.icon(
+            onPressed: () => context.push('/doctors'),
+            icon: const Icon(Icons.add_rounded, size: 20),
+            label: Text('book_now'.tr()),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
-    return AppointmentsInlineEmpty(
-      title: 'no_appointments_found'.tr(),
-      subtitle: 'find_your_doctor_hint'.tr(),
-      actionLabel: 'new_appointment'.tr(),
-      onAction: () => _openBookingFlow(context),
-    );
+  void _openBookingFlow(BuildContext context, String patientId) {
+    context.push(AppRouter.scheduleAppointment, extra: {
+      'patient': PatientSession().patientEntity, 
+      'isPatientMode': true
+    }).then((_) => context.read<PatientAppointmentsCubit>().loadAppointments(patientId));
   }
 
-  void _openBookingFlow(BuildContext context) {
-    final session = PatientSession();
-    final patientEntity = session.patientEntity ?? _createDefaultPatient();
-    final patientId = session.patientId ?? 'p1';
-    context
-        .push(
-          AppRouter.scheduleAppointment,
-          extra: {'patient': patientEntity, 'isPatientMode': true},
-        )
-        .then((_) {
-          if (context.mounted) {
-            context.read<PatientAppointmentsCubit>().loadAppointments(
-              patientId,
-            );
-          }
-        });
+  void _rescheduleAppointment(BuildContext context, AppointmentEntity app, String patientId) {
+    context.push(AppRouter.scheduleAppointment, extra: {
+      'appointment': app,
+      'mode': AppointmentScreenMode.reschedule,
+    }).then((_) => context.read<PatientAppointmentsCubit>().loadAppointments(patientId));
   }
 
-  Future<void> _rescheduleAppointment(
-    BuildContext context,
-    AppointmentEntity appointment,
-  ) async {
-    final result = await context.push(
-      AppRouter.scheduleAppointment,
-      extra: {
-        'appointment': appointment,
-        'mode': AppointmentScreenMode.reschedule,
-      },
-    );
-
-    if (result == true && context.mounted) {
-      final session = PatientSession();
-      final patientId = session.patientId ?? 'p1';
-      context.read<PatientAppointmentsCubit>().loadAppointments(patientId);
-    }
-  }
-
-  void _openDetails(
-    BuildContext context,
-    AppointmentEntity appointment,
-    String patientId,
-  ) {
-    context.push(
-      AppRouter.appointmentDetails,
-      extra: {
-        'appointment': appointment,
-        'role': AppointmentsOverviewMode.patient,
-        'onDataChanged': () {
-          if (context.mounted) {
-            context.read<PatientAppointmentsCubit>().loadAppointments(
-              patientId,
-            );
-          }
-        },
-      },
-    );
-  }
-
-  /// Returns a default patient entity when no session exists.
-  /// Uses 'p1' (Ahmed Ali) from mock data to ensure appointments load correctly.
-  PatientEntity _createDefaultPatient() {
-    return PatientEntity(
-      id: 'p1',
-      name: 'Ahmed Ali',
-      email: 'ahmed@example.com',
-      phone: '0123456789',
-      dateOfBirth: DateTime(1990, 1, 1),
-      medicalHistory: 'None',
-      address: 'Cairo, Egypt',
-    );
+  void _openDetails(BuildContext context, AppointmentEntity app, String patientId) {
+    context.push(AppRouter.appointmentDetails, extra: {
+      'appointment': app,
+      'role': AppointmentsOverviewMode.patient,
+      'onDataChanged': () => context.read<PatientAppointmentsCubit>().loadAppointments(patientId),
+    });
   }
 }

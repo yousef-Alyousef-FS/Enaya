@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/badges/status_badge.dart';
 import '../../../domain/entities/appointment_entity.dart';
 import '../../../domain/entities/appointment_status.dart';
@@ -42,7 +43,7 @@ class AppointmentTableConfig {
         sortable: true,
         sortValue: (a) => a.dateTime,
         cell: (a) => Text(
-          DateFormat('HH:mm', 'en_US').format(a.dateTime),
+          DateFormat('HH:mm', context.locale.toString()).format(a.dateTime),
           style: const TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
@@ -59,20 +60,29 @@ class AppointmentTableConfig {
       ),
       TableColumn(
         label: 'actions'.tr(),
-        width: 120,
+        width: 160,
         cell: (a) => Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            IconButton(
-              icon: Icon(Icons.visibility_outlined, color: theme.colorScheme.primary, size: 20),
-              onPressed: () => onView(a),
-              tooltip: 'view'.tr(),
-            ),
+            // 1. Primary Action (Context-Aware)
+            if (a.status == AppointmentStatus.arrived)
+              IconButton(
+                icon: Icon(Icons.play_circle_outline_rounded, color: AppColors.success, size: 24),
+                onPressed: () => onStatusChange(a, AppointmentStatus.inProgress, null),
+                tooltip: 'start_visit'.tr(),
+              )
+            else if (a.status == AppointmentStatus.inProgress)
+              IconButton(
+                icon: Icon(Icons.medical_services_outlined, color: AppColors.accent, size: 24),
+                onPressed: () => onView(a), // This would route to Visit Module
+                tooltip: 'view_visit'.tr(),
+              ),
+
+            // 2. More Options (State Transitions)
             if (!a.status.isReadOnly)
               PopupMenuButton<AppointmentStatus>(
                 icon: Icon(Icons.more_vert, color: theme.colorScheme.onSurfaceVariant, size: 20),
                 onSelected: (newStatus) {
-                  // Show confirmation dialog for status change
                   showDialog(
                     context: context,
                     builder: (_) => AppointmentStatusChangeDialog(
@@ -83,7 +93,10 @@ class AppointmentTableConfig {
                   );
                 },
                 itemBuilder: (context) {
-                  final allowedStatuses = a.status.allowedTransitions;
+                  // Filter transitions: exclude inProgress from popup as it has a dedicated button
+                  final allowedStatuses = a.status.allowedTransitions
+                      .where((s) => s != AppointmentStatus.inProgress)
+                      .toList();
 
                   return allowedStatuses.map((status) {
                     return PopupMenuItem(value: status, child: _buildStatusMenuItem(status, theme));

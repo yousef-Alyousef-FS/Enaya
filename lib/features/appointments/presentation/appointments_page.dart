@@ -74,45 +74,55 @@ class AppointmentsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final session = PatientSession();
-    final currentUserId = session.patientId;
+    final currentUserId = PatientSession().patientId;
 
     switch (mode) {
       case AppointmentsOverviewMode.receptionist:
-        return provideCubit
-            ? BlocProvider(
-                create: (_) => getIt<AppointmentsManagerCubit>()..loadInitialData(),
-                child: ReceptionistAppointmentsScreen(
-                  isEmbedded: isEmbedded,
-                  showFiltersWhenEmbedded: showFiltersWhenEmbedded,
-                ),
-              )
-            : ReceptionistAppointmentsScreen(
-                isEmbedded: isEmbedded,
-                showFiltersWhenEmbedded: showFiltersWhenEmbedded,
-              );
-
+        return _buildReceptionistView();
       case AppointmentsOverviewMode.doctor:
-        final doctorId = specificDoctorId ?? currentUserId ?? 'd1'; // Fallback to default doctor
-        return provideCubit
-            ? BlocProvider(
-                create: (_) => getIt<DoctorAppointmentsCubit>()..loadAppointments(doctorId),
-                child: DoctorAppointmentsScreen(doctorId: doctorId, isEmbedded: isEmbedded),
-              )
-            : DoctorAppointmentsScreen(doctorId: doctorId, isEmbedded: isEmbedded);
-
+        return _buildDoctorView(currentUserId);
       case AppointmentsOverviewMode.patient:
-        // Prefer explicitly passed patientId, then session, then fallback to 'p1'
-        final patientId = specificPatientId ?? currentUserId ?? 'p1';
-        return provideCubit
-            ? BlocProvider(
-                create: (_) => getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
-                child: PatientAppointmentsScreen(isEmbedded: isEmbedded),
-              )
-            : PatientAppointmentsScreen(isEmbedded: isEmbedded);
-
+        return _buildPatientView(currentUserId);
       default:
         return Center(child: Text('invalid_view_mode'.tr()));
     }
+  }
+
+  /// Builds the view for the Receptionist role.
+  Widget _buildReceptionistView() {
+    final screen = ReceptionistAppointmentsScreen(
+      isEmbedded: isEmbedded,
+      showFiltersWhenEmbedded: showFiltersWhenEmbedded,
+    );
+
+    if (!provideCubit) return screen;
+
+    return BlocProvider(
+      create: (_) => getIt<ReceptionistAppointmentsCubit>()..loadInitialData(),
+      child: screen,
+    );
+  }
+
+  /// Builds the view for the Doctor role.
+  Widget _buildDoctorView(String? currentUserId) {
+    final doctorId = specificDoctorId ?? currentUserId ?? 'd1';
+    final screen = DoctorAppointmentsScreen(doctorId: doctorId, isEmbedded: isEmbedded);
+
+    if (!provideCubit) return screen;
+
+    return BlocProvider(create: (_) => getIt<DoctorAppointmentsCubit>(), child: screen);
+  }
+
+  /// Builds the view for the Patient role.
+  Widget _buildPatientView(String? currentUserId) {
+    final patientId = specificPatientId ?? currentUserId ?? 'p1';
+    final screen = PatientAppointmentsScreen(isEmbedded: isEmbedded);
+
+    if (!provideCubit) return screen;
+
+    return BlocProvider(
+      create: (_) => getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
+      child: screen,
+    );
   }
 }

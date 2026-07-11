@@ -1,107 +1,87 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../domain/entities/appointment_entity.dart';
 import '../../../domain/entities/appointment_status.dart';
 import '../../../domain/services/appointment_policy.dart';
-import '../../../domain/usecases/get_appointments_usecase.dart';
-import '../../../domain/usecases/update_appointment_status_usecase.dart';
 import '../../../domain/usecases/cancel_appointment_usecase.dart';
+import '../../../domain/usecases/get_appointments_usecase.dart';
 import '../../../domain/usecases/reschedule_appointment_usecase.dart';
+import '../../../domain/usecases/update_appointment_status_usecase.dart';
+import 'base_appointments_cubit.dart';
 import 'doctor_appointments_state.dart';
 
-class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
+// [ARCH_FLAG]: Manages appointment lists for a specific doctor.
+// [DOMAIN_LINK]: Uses AppointmentPolicy to enforce business rules for status changes.
+
+class DoctorAppointmentsCubit extends BaseAppointmentsCubit<DoctorAppointmentsState> {
   static const AppointmentPolicy _policy = AppointmentPolicy();
 
-  final GetAppointmentsUseCase getAppointmentsUseCase;
   final UpdateAppointmentStatusUseCase updateStatusUseCase;
   final CancelAppointmentUseCase cancelAppointmentUseCase;
   final RescheduleAppointmentUseCase rescheduleAppointmentUseCase;
 
   DoctorAppointmentsCubit({
-    required this.getAppointmentsUseCase,
+    required super.getAppointmentsUseCase,
     required this.updateStatusUseCase,
     required this.cancelAppointmentUseCase,
     required this.rescheduleAppointmentUseCase,
-  }) : super(DoctorAppointmentsState.initial());
+  }) : super(initialState: DoctorAppointmentsState.initial());
 
-  Future<void> loadAppointments(String doctorId, {DateTime? date, bool silent = false}) async {
+  Future<void> loadAppointments(
+    String doctorId, {
+    DateTime? date,
+    DateTime? endDate,
+    bool silent = false,
+  }) async {
     final anchorDate = date ?? DateTime.now();
     final startOfDay = DateTime(anchorDate.year, anchorDate.month, anchorDate.day);
-    final futureRangeEnd = startOfDay.add(const Duration(days: 365));
+    final futureRangeEnd =
+        endDate ??
+        (date == null
+            ? startOfDay.add(const Duration(days: 365))
+            : DateTime(startOfDay.year, startOfDay.month, startOfDay.day, 23, 59, 59, 999));
 
     if (!silent) {
-      emit(state.copyWith(status: DoctorAppointmentsStatus.loading, selectedDate: startOfDay));
-    }
-
-    // Fetch in pages to avoid truncation for busy doctors. We cap pages to avoid runaway loops.
-    const int pageSize = 100;
-    int page = 1;
-    final List<AppointmentEntity> accumulated = [];
-    String? failureMessage;
-
-    while (true) {
-      final result = await getAppointmentsUseCase(
-        GetAppointmentsParams(
-          doctorId: doctorId,
-          date: startOfDay,
-          endDate: futureRangeEnd,
-          page: page,
-          limit: pageSize,
+      emit(
+        state.copyWith(
+          status: DoctorAppointmentsStatus.loading,
+          selectedDate: startOfDay,
+          selectedEndDate: futureRangeEnd,
+          currentPage: 1,
+          appointments: [],
+          filteredAppointments: [],
         ),
       );
-
-      var didBreak = false;
-      result.fold(
-        (failure) {
-          failureMessage = failure.message;
-          didBreak = true;
-        },
-        (appointments) {
-          accumulated.addAll(appointments);
-          // stop when page returned less than pageSize or we've retrieved 10 pages (~1000 items)
-          if (appointments.length < pageSize || page >= 10) {
-            didBreak = true;
-          }
-        },
-      );
-
-      if (didBreak) break;
-      page++;
     }
 
-    if (failureMessage != null) {
-      emit(state.copyWith(status: DoctorAppointmentsStatus.failure, errorMessage: failureMessage));
-      return;
-    }
-
-    final futureAppointments = accumulated.where((appointment) {
-      return !appointment.dateTime.isBefore(DateTime.now());
-    }).toList();
-
-    emit(
-      state.copyWith(status: DoctorAppointmentsStatus.success, appointments: futureAppointments),
+    await fetchPage(
+      params: GetAppointmentsParams(
+        doctorId: doctorId,
+        date: startOfDay,
+        endDate: futureRangeEnd,
+        page: 1,
+        limit: state.pageSize,
+        query: state.searchQuery,
+      ),
     );
-    _applyFilters();
+
+    // Synch status with base loading state
+    if (state.errorMessage != null) {
+      emit(state.copyWith(status: DoctorAppointmentsStatus.failure));
+    } else {
+      emit(state.copyWith(status: DoctorAppointmentsStatus.success));
+    }
   }
 
-  void updateSearchQuery(String query) {
-    emit(state.copyWith(searchQuery: query));
-    _applyFilters();
+  Future<void> updateDateRange(String doctorId, DateTime start, DateTime end) async {
+    await loadAppointments(doctorId, date: start, endDate: end);
   }
 
   void updateStatusFilter(AppointmentStatus? status) {
     emit(state.copyWith(statusFilter: status, clearStatusFilter: status == null));
-    _applyFilters();
+    applyFilters();
   }
 
-  AppointmentEntity? _findAppointment(String appointmentId) {
-    try {
-      return state.appointments.firstWhere((appointment) => appointment.id == appointmentId);
-    } catch (_) {
-      return null;
-    }
-  }
-
-  void _applyFilters() {
+  @override
+  void applyFilters() {
     var filtered = List<AppointmentEntity>.from(state.appointments);
 
     if (state.searchQuery.isNotEmpty) {
@@ -116,7 +96,6 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
 
     if (state.statusFilter != null) {
       filtered = filtered.where((a) {
-        // Logical Fix: If filtering by "Waiting" (Arrived), ALWAYS keep the active patient (inProgress) visible
         if (state.statusFilter == AppointmentStatus.arrived) {
           return a.status == AppointmentStatus.arrived || a.status == AppointmentStatus.inProgress;
         }
@@ -125,16 +104,39 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
     }
 
     filtered.sort((a, b) {
-      if (a.status == AppointmentStatus.inProgress && b.status != AppointmentStatus.inProgress) {
-        return -1;
-      }
-      if (b.status == AppointmentStatus.inProgress && a.status != AppointmentStatus.inProgress) {
-        return 1;
-      }
+      // 1. In Progress first
+      if (a.status == AppointmentStatus.inProgress && b.status != AppointmentStatus.inProgress) return -1;
+      if (b.status == AppointmentStatus.inProgress && a.status != AppointmentStatus.inProgress) return 1;
+      
+      // 2. Arrived (Waiting in clinic) second
+      if (a.status == AppointmentStatus.arrived && b.status != AppointmentStatus.arrived) return -1;
+      if (b.status == AppointmentStatus.arrived && a.status != AppointmentStatus.arrived) return 1;
+
+      // 3. Chronological for the rest
       return a.dateTime.compareTo(b.dateTime);
     });
 
     emit(state.copyWith(filteredAppointments: filtered));
+  }
+
+  Future<void> loadNextPage(String doctorId) async {
+    if (!state.hasMore || state.isPageLoading) return;
+
+    final anchorDate = state.selectedDate;
+    final startOfDay = DateTime(anchorDate.year, anchorDate.month, anchorDate.day);
+    final futureRangeEnd = state.selectedEndDate;
+
+    await fetchPage(
+      params: GetAppointmentsParams(
+        doctorId: doctorId,
+        date: startOfDay,
+        endDate: futureRangeEnd,
+        page: state.currentPage + 1,
+        limit: state.pageSize,
+        query: state.searchQuery,
+      ),
+      appendResults: true,
+    );
   }
 
   Future<void> updateAppointmentStatus(
@@ -157,11 +159,17 @@ class DoctorAppointmentsCubit extends Cubit<DoctorAppointmentsState> {
     final result = await updateStatusUseCase(
       UpdateAppointmentStatusParams(appointmentId: appointmentId, status: status),
     );
-
     result.fold(
       (failure) => emit(state.copyWith(errorMessage: failure.message)),
       (_) => loadAppointments(doctorId, silent: true),
     );
+  }
+
+  AppointmentEntity? _findAppointment(String id) {
+    for (final a in state.appointments) {
+      if (a.id == id) return a;
+    }
+    return null;
   }
 
   Future<void> confirmAppointment(String doctorId, String appointmentId) async {

@@ -16,9 +16,10 @@ class AppointmentScheduleState extends Equatable {
   final bool isLoading;
   final bool isDoctorsLoading;
   final String? errorMessage;
+  final Map<String, String>? fieldErrors; // [API_READY]: Store validation errors
   final bool isSuccess;
-
   final bool isRangeMode;
+  final int currentStep;
 
   const AppointmentScheduleState({
     required this.selectedDate,
@@ -33,8 +34,10 @@ class AppointmentScheduleState extends Equatable {
     required this.isLoading,
     this.isDoctorsLoading = false,
     this.errorMessage,
+    this.fieldErrors,
     required this.isSuccess,
     this.isRangeMode = false,
+    this.currentStep = 0,
   });
 
   factory AppointmentScheduleState.initial() {
@@ -44,10 +47,42 @@ class AppointmentScheduleState extends Equatable {
       isLoading: false,
       isDoctorsLoading: false,
       isSuccess: false,
+      currentStep: 0,
     );
   }
 
   bool get isError => errorMessage != null;
+
+  bool canGoNext(bool isPatientMode) {
+    if (isLoading) return false; // Prevent navigation while loading
+
+    if (isPatientMode) {
+      switch (currentStep) {
+        case 0: // Schedule Step
+          return selectedDoctorId != null && selectedTimeSlot != null;
+        case 1: // Details Step
+          // Require either a quick reason or manual input
+          return true; // Details are technically optional in logic but we can enforce
+        case 2: // Review Step
+          return !isLoading && selectedTimeSlot != null;
+        default: return false;
+      }
+    } else {
+      switch (currentStep) {
+        case 0: // Participants Step (Receptionist)
+          return selectedPatient != null && selectedDoctorId != null;
+        case 1: // Schedule Step
+          return selectedTimeSlot != null;
+        case 2: // Details Step
+          return true;
+        case 3: // Review Step
+          return !isLoading && selectedTimeSlot != null && selectedPatient != null;
+        default: return false;
+      }
+    }
+  }
+
+  int totalSteps(bool isPatientMode) => isPatientMode ? 3 : 4;
 
   AppointmentScheduleState copyWith({
     DateTime? selectedDate,
@@ -67,8 +102,11 @@ class AppointmentScheduleState extends Equatable {
     bool? isDoctorsLoading,
     String? errorMessage,
     bool clearErrorMessage = false,
+    Map<String, String>? fieldErrors,
+    bool clearFieldErrors = false,
     bool? isSuccess,
     bool? isRangeMode,
+    int? currentStep,
   }) {
     return AppointmentScheduleState(
       selectedDate: selectedDate ?? this.selectedDate,
@@ -93,8 +131,10 @@ class AppointmentScheduleState extends Equatable {
       errorMessage: clearErrorMessage
           ? null
           : errorMessage ?? this.errorMessage,
+      fieldErrors: clearFieldErrors ? null : fieldErrors ?? this.fieldErrors,
       isSuccess: isSuccess ?? this.isSuccess,
       isRangeMode: isRangeMode ?? this.isRangeMode,
+      currentStep: currentStep ?? this.currentStep,
     );
   }
 
@@ -112,7 +152,9 @@ class AppointmentScheduleState extends Equatable {
     isLoading,
     isDoctorsLoading,
     errorMessage,
+    fieldErrors,
     isSuccess,
     isRangeMode,
+    currentStep,
   ];
 }

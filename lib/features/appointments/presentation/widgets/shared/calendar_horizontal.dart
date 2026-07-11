@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/app_colors.dart';
 
 class CalendarHorizontal extends StatefulWidget {
   final DateTime selectedDate;
@@ -32,73 +31,103 @@ class _CalendarHorizontalState extends State<CalendarHorizontal> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
-    return SizedBox(
-      height: 90,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemCount: widget.daysCount,
-        itemBuilder: (context, index) {
-          final date = _baseDate.add(Duration(days: index));
-          final isSelected = DateUtils.isSameDay(date, widget.selectedDate);
-          final dayName = DateFormat('EEE', 'en_US').format(date);
-          final dayNum = DateFormat('dd', 'en_US').format(date);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 100,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            itemCount: widget.daysCount,
+            itemBuilder: (context, index) {
+              final date = _baseDate.add(Duration(days: index));
+              final isSelected = DateUtils.isSameDay(date, widget.selectedDate);
+              final isToday = DateUtils.isSameDay(date, DateTime.now());
+              
+              final dayName = DateFormat('EEE', context.locale.toString()).format(date);
+              final dayNum = DateFormat('dd').format(date);
+              final monthName = DateFormat('MMM').format(date);
 
-          return GestureDetector(
-            onTap: () => widget.onDateSelected(date),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: 60,
-              margin: const EdgeInsets.only(right: 12),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? theme.colorScheme.primary
-                    : (isDark ? AppColors.darkSurfaceSoft : Colors.white),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outlineVariant,
-                  width: 1.5,
-                ),
-                boxShadow: isSelected
-                    ? [
-                        BoxShadow(
-                          color: theme.colorScheme.primary.withAlpha(75),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
+              // Show month label if it's the first day of the month or the first day in the list
+              final bool showMonth = index == 0 || date.day == 1;
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Column(
+                  children: [
+                    if (showMonth)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 4, left: 4),
+                        child: Text(
+                          monthName,
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: theme.colorScheme.primary.withValues(alpha: 0.7),
+                          ),
                         ),
-                      ]
-                    : null,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    dayName,
-                    style: TextStyle(
-                      color: isSelected
-                          ? Colors.white.withAlpha(200)
-                          : theme.colorScheme.onSurfaceVariant,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
+                      )
+                    else
+                      const SizedBox(height: 14),
+                    InkWell(
+                      onTap: () => widget.onDateSelected(date),
+                      borderRadius: BorderRadius.circular(20),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        width: 65,
+                        height: 75,
+                        decoration: BoxDecoration(
+                          color: isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.outlineVariant.withValues(alpha: 0.5),
+                            width: 2,
+                          ),
+                          boxShadow: isSelected ? [
+                            BoxShadow(color: theme.colorScheme.primary.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4))
+                          ] : [],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (isToday)
+                              Container(
+                                width: 4, height: 4,
+                                margin: const EdgeInsets.only(bottom: 2),
+                                decoration: BoxDecoration(color: isSelected ? Colors.white : theme.colorScheme.primary, shape: BoxShape.circle),
+                              ),
+                            Text(
+                              dayName.toUpperCase(),
+                              style: TextStyle(
+                                color: isSelected ? Colors.white.withValues(alpha: 0.8) : theme.colorScheme.onSurfaceVariant,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              dayNum,
+                              style: TextStyle(
+                                color: isSelected ? Colors.white : theme.colorScheme.onSurface,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    dayNum,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : theme.colorScheme.onSurface,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

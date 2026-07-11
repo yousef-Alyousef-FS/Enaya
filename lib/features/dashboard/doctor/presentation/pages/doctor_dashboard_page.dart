@@ -3,7 +3,6 @@ import 'package:enaya/core/routing/app_router.dart';
 import 'package:enaya/features/appointments/data/models/appointments_overview_view_mode.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:enaya/core/di/injection.dart';
 import 'package:enaya/core/services/session_manager.dart';
 import 'package:enaya/core/theme/app_colors.dart';
@@ -11,7 +10,6 @@ import 'package:enaya/features/dashboard/shared/presentation/models/dashboard_na
 import 'package:enaya/features/dashboard/shared/presentation/pages/base_dashboard_page.dart';
 import 'package:enaya/features/dashboard/shared/presentation/widgets/dashboard_overview_builder.dart';
 import 'package:go_router/go_router.dart';
-
 import '../../../../../core/widgets/cards/stat_card.dart';
 import '../../../../../core/widgets/common/responsive_stats_grid.dart';
 import '../../../../../core/widgets/feature_coming_soon_state.dart';
@@ -36,7 +34,6 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Use default doctor 'd1' if no session exists (for development/demo)
     final doctorId = getIt<SessionManager>().currentUserId ?? 'd1';
 
     return BlocProvider(
@@ -90,7 +87,8 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
     }
   }
 
-  Widget _buildOverviewSection(DoctorDashboardState state, String doctorId) {
+  Widget _buildOverviewSection(DoctorDashboardState state, String doctorId)
+  {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }

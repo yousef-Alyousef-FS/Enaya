@@ -1,6 +1,6 @@
 class ApiConstants {
   static const String baseUrl =
-      "https://enaya-backend-production.up.railway.app/api/";
+      "https://congenial-reexamine-regretful.ngrok-free.dev/api/";
   static const String login = "auth/login";
   static const String logout = "auth/logout";
   static const String signup = "auth/signup";

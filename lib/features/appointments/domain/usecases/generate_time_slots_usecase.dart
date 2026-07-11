@@ -4,6 +4,7 @@ import '../../../../core/usecases/usecase.dart';
 import '../../data/models/time_slot_model.dart';
 import '../repositories/appointment_repository.dart';
 import '../repositories/doctor_availability_repository.dart';
+import '../services/appointment_policy.dart';
 import '../services/time_slot_generator.dart';
 import '../usecases/get_appointments_usecase.dart';
 
@@ -12,11 +13,13 @@ class GenerateTimeSlotsUseCase
   final IAppointmentRepository appointmentRepository;
   final DoctorAvailabilityRepository availabilityRepository;
   final TimeSlotGenerator generator;
+  final AppointmentPolicy policy; // [DEEP_ANALYSIS]: Use policy at generation level
 
   GenerateTimeSlotsUseCase({
     required this.appointmentRepository,
     required this.availabilityRepository,
     required this.generator,
+    this.policy = const AppointmentPolicy(),
   });
 
   @override
@@ -38,6 +41,7 @@ class GenerateTimeSlotsUseCase
           date: params.date,
           availability: availability,
           occupiedAppointments: appointments,
+          policy: policy, // Pass policy to generator
         );
         return Right(slots);
       });
