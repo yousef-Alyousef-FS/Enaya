@@ -11,6 +11,7 @@ class GetAppointmentsParams {
   final String? doctorId;
   final String? patientId;
   final AppointmentStatus? status;
+  final String? query;
   final int page;
   final int limit;
 
@@ -20,6 +21,7 @@ class GetAppointmentsParams {
     this.doctorId,
     this.patientId,
     this.status,
+    this.query,
     this.page = 1,
     this.limit = 50,
   });

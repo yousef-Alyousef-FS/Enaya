@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:enaya/core/di/injection.dart';
+import 'package:enaya/core/language/language_manager.dart';
+import 'package:enaya/core/services/settings_service.dart';
 import 'package:enaya/core/theme/app_theme.dart';
 import 'package:enaya/core/routing/app_router.dart';
 import 'package:enaya/core/theme/cubit/theme_cubit.dart';
@@ -15,12 +17,20 @@ void main() async {
   // Initialize Dependency Injection
   await initGetIt();
 
+  final settingsService = getIt<SettingsService>();
+  final savedLanguage = settingsService.getLanguage();
+  final initialLocale = savedLanguage == 'en'
+      ? englishLocale
+      : savedLanguage == 'ar'
+      ? arabicLocale
+      : const Locale('ar', 'SA');
+
   runApp(
     EasyLocalization(
-      supportedLocales: const [Locale('en', 'US'), Locale('ar', 'SA')],
+      supportedLocales: const [englishLocale, arabicLocale],
       path: 'assets/translations',
-      fallbackLocale: const Locale('en', 'US'),
-      startLocale: const Locale('ar', 'SA'),
+      fallbackLocale: englishLocale,
+      startLocale: initialLocale,
       child: const EnayaApp(),
     ),
   );

@@ -10,8 +10,7 @@ abstract class DoctorDashboardRemoteDataSource {
   Future<DoctorScheduleModel> getSchedule(String doctorId);
 }
 
-class DoctorDashboardRemoteDataSourceImpl
-    implements DoctorDashboardRemoteDataSource {
+class DoctorDashboardRemoteDataSourceImpl implements DoctorDashboardRemoteDataSource {
   final AppointmentRemoteDataSource appointmentDataSource;
 
   DoctorDashboardRemoteDataSourceImpl(this.appointmentDataSource);
@@ -26,7 +25,7 @@ class DoctorDashboardRemoteDataSourceImpl
 
     return DoctorDashboardStatsModel(
       todayPatients: stats['total_appointments'] ?? 0,
-      totalConsultations: 1240, // General mock
+      totalConsultations: 1240,
       pendingReports: stats['arrived'] ?? 0,
     );
   }
@@ -36,24 +35,14 @@ class DoctorDashboardRemoteDataSourceImpl
     await Future.delayed(const Duration(milliseconds: 300));
 
     final now = DateTime.now();
-    final appointments = await appointmentDataSource.getAppointments(
-      doctorId: doctorId,
-      date: now,
-    );
+    final appointments = await appointmentDataSource.getAppointments(doctorId: doctorId, date: now);
     if (appointments.isEmpty) {
-      return DoctorScheduleModel(
-        currentAppointment: null,
-        upcomingAppointments: [],
-      );
+      return DoctorScheduleModel(currentAppointment: null, upcomingAppointments: []);
     }
 
     // Prefer an in-progress appointment as current, otherwise the first arrived.
-    final inProgress = appointments.where(
-      (a) => a.status == AppointmentStatus.inProgress,
-    );
-    final arrived = appointments.where(
-      (a) => a.status == AppointmentStatus.arrived,
-    );
+    final inProgress = appointments.where((a) => a.status == AppointmentStatus.inProgress);
+    final arrived = appointments.where((a) => a.status == AppointmentStatus.arrived);
 
     final currentModel = inProgress.isNotEmpty
         ? inProgress.first
@@ -71,9 +60,6 @@ class DoctorDashboardRemoteDataSourceImpl
         .map((e) => e.toEntity())
         .toList();
 
-    return DoctorScheduleModel(
-      currentAppointment: currentEntity,
-      upcomingAppointments: upcoming,
-    );
+    return DoctorScheduleModel(currentAppointment: currentEntity, upcomingAppointments: upcoming);
   }
 }

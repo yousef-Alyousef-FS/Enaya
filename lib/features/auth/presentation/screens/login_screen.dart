@@ -1,37 +1,18 @@
-import 'package:flutter/foundation.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/di/injection.dart';
 import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/loaders/app_loaders.dart';
-import '../widgets/auth_card_container.dart';
-import '../widgets/logo.dart';
-import '../widgets/portrait_only_scope.dart';
-
+import '../../domain/entities/user_role.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 import '../mixins/auth_form_mixin.dart';
+import '../widgets/auth_card_container.dart';
 import '../widgets/auth_text_field.dart';
-
-enum UserRole {
-  receptionist(1),
-  doctor(2),
-  patient(3);
-
-  final int id;
-  const UserRole(this.id);
-
-  static UserRole fromId(int id) {
-    return UserRole.values.firstWhere(
-      (e) => e.id == id,
-      orElse: () => UserRole.patient,
-    );
-  }
-}
+import '../widgets/portrait_only_scope.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -57,6 +38,9 @@ class _LoginScreenState extends State<LoginScreen>
     _emailController = TextEditingController();
     _passwordController = TextEditingController();
 
+    _emailController.addListener(_clearError);
+    _passwordController.addListener(_clearError);
+
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
@@ -65,6 +49,12 @@ class _LoginScreenState extends State<LoginScreen>
       parent: _fadeController,
       curve: Curves.easeOut,
     );
+  }
+
+  void _clearError() {
+    if (errorMessage != null) {
+      setState(() => errorMessage = null);
+    }
   }
 
   @override
@@ -120,44 +110,38 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    return PortraitOnlyScope(
-      child: BlocProvider(
-        create: (_) => getIt<AuthCubit>(),
-        child: Scaffold(
-          body: SafeArea(
-            child: OrientationBuilder(
-              builder: (context, _) {
-                final config = ResponsiveLayout.of(context);
+    final config = ResponsiveLayout.of(context);
 
-                return AuthCardContainer(
-                  config: config,
-                  children: [
-                    _buildLogo(config),
-                    const SizedBox(height: 24),
-                    _buildHeader(context, config),
-                    const SizedBox(height: 32),
-                    _buildForm(config),
-                  ],
-                );
-              },
-            ),
+    return PortraitOnlyScope(
+      child: Scaffold(
+        body: SafeArea(
+          child: AuthCardContainer(
+            config: config,
+            children: [
+              //_buildLogo(config),
+              //const SizedBox(height: 24),
+              _buildHeader(context, config),
+              const SizedBox(height: 60),
+              _buildForm(config),
+            ],
           ),
         ),
       ),
     );
   }
+  // a methon to build the logo using the asset enaya.svg
 
-  Widget _buildLogo(ResponsiveLayoutConfig config) {
-    return Container(
-      width: config.logoSize,
-      height: config.logoSize,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary.withAlpha(35),
-        shape: BoxShape.circle,
-      ),
-      child: LogoIcon(width: config.iconSize, height: config.iconSize),
-    );
-  }
+  // Widget _buildLogo(ResponsiveLayoutConfig config) {
+  //   return Container(
+  //     width: config.logoSize,
+  //     height: config.logoSize,
+  //     decoration: BoxDecoration(
+  //       color: Theme.of(context).colorScheme.primary.withAlpha(35),
+  //       shape: BoxShape.circle,
+  //     ),
+  //     child: LogoIcon(width: config.iconSize, height: config.iconSize),
+  //   );
+  // }
 
   Widget _buildHeader(BuildContext context, ResponsiveLayoutConfig config) {
     return Column(
@@ -210,8 +194,6 @@ class _LoginScreenState extends State<LoginScreen>
           const SizedBox(height: 16),
           _buildLoginSection(config),
           const SizedBox(height: 16),
-          _buildBiometricOption(),
-          const SizedBox(height: 24),
           _buildSignupSection(config),
         ],
       ),
@@ -222,10 +204,16 @@ class _LoginScreenState extends State<LoginScreen>
     return Align(
       alignment: Alignment.centerRight,
       child: TextButton(
-        onPressed: () => context.push(AppRouter.forgotPassword),
+        key: const ValueKey('forgot_password_btn'),
+        onPressed: () {
+          context.read<AuthCubit>().clearStatus();
+          setState(() => errorMessage = null);
+          context.push(AppRouter.forgotPassword);
+        },
         child: Text(
           'forgot_password'.tr(),
           style: TextStyle(
+            inherit: false,
             color: Theme.of(context).colorScheme.primary,
             fontSize: config.buttonFontSize,
             fontWeight: FontWeight.w600,
@@ -239,6 +227,10 @@ class _LoginScreenState extends State<LoginScreen>
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         final cubit = context.read<AuthCubit>();
+
+        // Only handle errors if this screen is the current active screen
+        if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+
         if (state.isError) {
           setState(
             () => errorMessage = state.errorMessage ?? 'error_occurred'.tr(),
@@ -254,10 +246,14 @@ class _LoginScreenState extends State<LoginScreen>
       },
       builder: (context, state) {
         final cubit = context.read<AuthCubit>();
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ElevatedButton(
+              key: const ValueKey('login_btn'),
               onPressed: (state.isLoading)
                   ? null
                   : () => _onLoginPressed(cubit),
@@ -267,14 +263,40 @@ class _LoginScreenState extends State<LoginScreen>
               FadeTransition(
                 opacity: _fadeAnimation,
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Text(
-                    errorMessage!,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                      fontSize: config.bodyFontSize,
-                      fontWeight: FontWeight.w600,
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.error.withAlpha(
+                        isDark ? 30 : 20,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: theme.colorScheme.error.withAlpha(50),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          color: theme.colorScheme.error,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            errorMessage!,
+                            style: TextStyle(
+                              color: theme.colorScheme.error,
+                              fontSize: config.bodyFontSize - 1,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
@@ -295,10 +317,16 @@ class _LoginScreenState extends State<LoginScreen>
           style: TextStyle(fontSize: config.buttonFontSize),
         ),
         TextButton(
-          onPressed: () => context.push(AppRouter.signup),
+          key: const ValueKey('signup_btn'),
+          onPressed: () {
+            context.read<AuthCubit>().clearStatus();
+            setState(() => errorMessage = null);
+            context.push(AppRouter.signup);
+          },
           child: Text(
             'sign_up'.tr(),
             style: TextStyle(
+              inherit: false,
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.bold,
               fontSize: config.buttonFontSize,
@@ -306,39 +334,6 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildBiometricOption() {
-    final isBiometricSupported =
-        !kIsWeb &&
-        (defaultTargetPlatform == TargetPlatform.android ||
-            defaultTargetPlatform == TargetPlatform.iOS);
-
-    return Center(
-      child: AnimatedOpacity(
-        opacity: isBiometricSupported ? 1.0 : 0.45,
-        duration: const Duration(milliseconds: 250),
-        child: IconButton(
-          icon: Icon(
-            Icons.fingerprint,
-            size: 40,
-            color: isBiometricSupported
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          onPressed: isBiometricSupported
-              ? () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('biometric_login_not_implemented'.tr()),
-                    ),
-                  );
-                }
-              : null,
-          tooltip: 'biometric_login'.tr(),
-        ),
-      ),
     );
   }
 }

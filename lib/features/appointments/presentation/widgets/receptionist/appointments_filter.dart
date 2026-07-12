@@ -1,12 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:enaya/features/appointments/domain/entities/appointment_status.dart';
-import 'package:enaya/features/appointments/presentation/cubit/list/appointments_overview_cubit.dart';
+import 'package:enaya/features/appointments/presentation/cubit/list/receptionist_appointments_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../appointments/presentation/widgets/receptionist/doctor_selector_button.dart';
 import '../../../../appointments/presentation/widgets/receptionist/appointment_search_bar.dart';
 import '../../../../appointments/presentation/widgets/shared/app_filter_date_range_picker.dart';
+import '../../../../appointments/presentation/widgets/shared/appointment_status_card.dart';
 import '../../../domain/entities/appointment_entity.dart';
 
 /// Clean, responsive filters using Wrap and card-based status toggles.
@@ -38,7 +39,7 @@ class AppointmentsFilterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<AppointmentsManagerCubit>(); // 👈 fixed cubit name
+    final cubit = context.read<ReceptionistAppointmentsCubit>(); // 👈 fixed cubit name
     final state = cubit.state;
 
     // derive doctors from appointments when not provided
@@ -67,7 +68,6 @@ class AppointmentsFilterWidget extends StatelessWidget {
             height: _kSearchHeight,
             onSearch: cubit.updateSearchQuery,
             onClear: cubit.clearSearch,
-
           ),
         );
 
@@ -154,7 +154,8 @@ class AppointmentsFilterWidget extends StatelessWidget {
               ],
             );
           }
-        } else if (showSearch && showDoctorSelector && !showDateRange) {
+        }
+        else if (showSearch && showDoctorSelector && !showDateRange) {
           if (width >= minSearch + minDoctor + spacing) {
             layout = Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -177,7 +178,8 @@ class AppointmentsFilterWidget extends StatelessWidget {
               ],
             );
           }
-        } else {
+        }
+        else {
           layout = Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -194,14 +196,13 @@ class AppointmentsFilterWidget extends StatelessWidget {
           children: [
             layout,
             if (showStatusChips) ...[
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 physics: const BouncingScrollPhysics(),
                 child: Row(
                   children: [
-                    _buildStatusCard(
-                      context,
+                    AppointmentStatusCard(
                       status: null,
                       label: 'all'.tr(),
                       count: state.appointments.length,
@@ -213,8 +214,7 @@ class AppointmentsFilterWidget extends StatelessWidget {
                       final count = state.appointments.where((a) => a.status == status).length;
 
                       return [
-                        _buildStatusCard(
-                          context,
+                        AppointmentStatusCard(
                           status: status,
                           label: status.displayName,
                           count: count,
@@ -233,99 +233,6 @@ class AppointmentsFilterWidget extends StatelessWidget {
           ],
         );
       },
-    );
-  }
-
-  Widget _buildStatusCard(
-    BuildContext context, {
-    required AppointmentStatus? status,
-    required String label,
-    required int count,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    final theme = Theme.of(context);
-    final accentColor = status?.color ?? theme.colorScheme.primary;
-    final isNeutral = status == null;
-
-    final backgroundColor = isSelected
-        ? accentColor.withAlpha(45) // More vibrant when selected
-        : isNeutral
-        ? theme.colorScheme.surfaceContainerLow
-        : accentColor.withAlpha(18); // Subtle tint when unselected
-
-    final borderColor = isSelected
-        ? accentColor.withAlpha(220)
-        : accentColor.withAlpha(isNeutral ? 60 : 120);
-
-    final labelColor = isSelected ? accentColor : theme.colorScheme.onSurface.withAlpha(220);
-
-    final countBackground = isSelected ? accentColor.withAlpha(50) : accentColor.withAlpha(30);
-
-    final countColor = isSelected ? accentColor : accentColor.withAlpha(240);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: borderColor, width: isSelected ? 2.2 : 1.2),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: accentColor.withAlpha(40),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ]
-                : null,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (!isNeutral)
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: accentColor,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(color: accentColor.withAlpha(120), blurRadius: 5, spreadRadius: 1),
-                    ],
-                  ),
-                ),
-              if (!isNeutral) const SizedBox(width: 10),
-              Text(
-                label,
-                style: TextStyle(
-                  color: labelColor,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w700,
-                  fontSize: 13.5,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: countBackground,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '$count',
-                  style: TextStyle(color: countColor, fontSize: 11, fontWeight: FontWeight.w900),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

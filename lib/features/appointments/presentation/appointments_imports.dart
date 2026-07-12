@@ -19,7 +19,6 @@ export '../data/repositories/doctor_availability_repository_impl.dart';
 
 // Data Sources
 export '../data/datasources/appointment_remote_data_source.dart';
-export '../data/datasources/appointment_mock_data_source.dart';
 
 // Use Cases
 export '../domain/usecases/get_appointments_usecase.dart';
@@ -30,8 +29,6 @@ export '../domain/usecases/cancel_appointment_usecase.dart';
 export '../domain/usecases/reschedule_appointment_usecase.dart';
 export '../domain/usecases/get_appointment_by_id_usecase.dart';
 export '../domain/usecases/delete_appointment_usecase.dart';
-export '../domain/usecases/get_doctor_schedule_usecase.dart';
-export '../domain/usecases/save_doctor_schedule_usecase.dart';
 export '../domain/usecases/generate_time_slots_usecase.dart';
 export '../domain/usecases/search_available_slots_usecase.dart';
 
@@ -46,7 +43,7 @@ export 'cubit/appointments_cubit_imports.dart';
 export 'appointments_page.dart';
 
 // Screens
-export 'screens/schedule_appointment_screen.dart';
-export 'screens/appointment_details_screen.dart';
+export 'screens/form/schedule_appointment_screen.dart';
+export 'screens/details/appointment_details_screen.dart';
 export 'screens/receptionist/receptionist_appointments_screen.dart';
 export 'screens/patient/patient_appointments_screen.dart';

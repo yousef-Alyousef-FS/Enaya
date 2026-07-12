@@ -77,22 +77,23 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/images/icon.png"
-  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_background: "#162335"
   min_sdk_android: 21
 
 flutter_native_splash:
-  color: "#242442"
-  image: assets/images/logo.png
+  color: "#162335"
+  image: assets/images/enaya_icon.png
   android: true
   ios: true
+  fullscreen: true
 
   android_12:
-    color: "#242442"
-    image: assets/images/logo.png
+    color: "#162335"
+    image: assets/images/enaya_icon.png
+    fullscreen: true
 
 flutter:
   uses-material-design: true
   assets:
     - assets/translations/
     - assets/images/
-    - assets/mock_data/

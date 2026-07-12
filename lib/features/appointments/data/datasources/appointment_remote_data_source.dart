@@ -12,8 +12,9 @@ abstract class AppointmentRemoteDataSource {
     String? doctorId,
     String? patientId,
     String? status,
+    String? query,
     int page = 1,
-    int limit = 20,
+    int limit = 50,
   });
 
   Future<AppointmentModel> getAppointmentById(String appointmentId);
@@ -125,8 +126,9 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
     String? doctorId,
     String? patientId,
     String? status,
+    String? query,
     int page = 1,
-    int limit = 20,
+    int limit = 50,
   }) async {
     final queryParameters = <String, dynamic>{'page': page, 'limit': limit};
 
@@ -139,6 +141,7 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
     if (doctorId != null) queryParameters['doctor_id'] = doctorId;
     if (patientId != null) queryParameters['patient_id'] = patientId;
     if (status != null) queryParameters['status'] = status;
+    if (query != null && query.isNotEmpty) queryParameters['query'] = query;
 
     final response = await dio.get(
       '/appointments',

@@ -6,8 +6,7 @@ import 'doctor_availability_data_source.dart';
 // ============================================================================
 // ?? Remote Implementation
 // ============================================================================
-class DoctorAvailabilityRemoteDataSource
-    implements DoctorAvailabilityDataSource {
+class DoctorAvailabilityRemoteDataSource implements DoctorAvailabilityDataSource {
   final Dio dio;
 
   DoctorAvailabilityRemoteDataSource(this.dio);
@@ -65,9 +64,7 @@ class DoctorAvailabilityRemoteDataSource
       rethrow;
     } catch (e) {
       throw DioException(
-        requestOptions: RequestOptions(
-          path: '/doctors/${availability.doctorId}/availability',
-        ),
+        requestOptions: RequestOptions(path: '/doctors/${availability.doctorId}/availability'),
         message: 'Unexpected error while saving doctor availability: $e',
       );
     }
@@ -76,24 +73,17 @@ class DoctorAvailabilityRemoteDataSource
   /// Parse doctor availability from API response
   DoctorAvailability _parseAvailability(dynamic responseData, String doctorId) {
     try {
-      // Handle direct response
-      if (responseData is Map<String, dynamic>) {
-        return DoctorAvailability.fromJson({
-          ...responseData,
-          'doctor_id': doctorId,
-        });
-      }
-
-      // Handle wrapped response
-      if (responseData is Map<String, dynamic> &&
-          responseData.containsKey('data')) {
+      if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
         final data = responseData['data'] as Map<String, dynamic>;
         return DoctorAvailability.fromJson({...data, 'doctor_id': doctorId});
       }
 
-      throw const FormatException(
-        'Invalid response format for doctor availability',
-      );
+      // Handle direct response
+      if (responseData is Map<String, dynamic>) {
+        return DoctorAvailability.fromJson({...responseData, 'doctor_id': doctorId});
+      }
+
+      throw const FormatException('Invalid response format for doctor availability');
     } catch (e) {
       throw FormatException('Failed to parse doctor availability: $e');
     }
@@ -103,23 +93,18 @@ class DoctorAvailabilityRemoteDataSource
   Map<String, dynamic> _availabilityToJson(DoctorAvailability availability) {
     return {
       'doctor_id': availability.doctorId,
-      'working_days': availability.workingDays
+      'weekly_hours': availability.weeklyHours
           .map(
-            (wd) => {
-              'day_of_week': wd.dayOfWeek,
-              'start_time': _timeOfDayToString(wd.startTime),
-              'end_time': _timeOfDayToString(wd.endTime),
-              'breaks': wd.breaks
-                  .map(
-                    (b) => {
-                      'start_time': _timeOfDayToString(b.startTime),
-                      'end_time': _timeOfDayToString(b.endTime),
-                    },
-                  )
-                  .toList(),
+            (entry) => {
+              'day': entry.day.name,
+              'enabled': entry.enabled,
+              'start_time': _timeOfDayToString(entry.startTime),
+              'end_time': _timeOfDayToString(entry.endTime),
             },
           )
           .toList(),
+      'working_days': availability.workingDays.map((wd) => wd.toJson()).toList(),
+      'exceptions': availability.exceptions.map((e) => e.toJson()).toList(),
       'off_days': availability.offDays.map((d) => d.toIso8601String()).toList(),
       'appointment_duration_minutes': availability.appointmentDurationMinutes,
     };

@@ -103,12 +103,13 @@ class AppointmentMockDataSourceImpl implements AppointmentRemoteDataSource {
     String? doctorId,
     String? patientId,
     String? status,
+    String? query,
     int page = 1,
     int limit = 50,
   }) async {
     await Future.delayed(const Duration(milliseconds: 300));
 
-    return _mockAppointments.where((a) {
+    final filtered = _mockAppointments.where((a) {
       bool matches = true;
 
       if (date != null && endDate != null) {
@@ -143,8 +144,22 @@ class AppointmentMockDataSourceImpl implements AppointmentRemoteDataSource {
         matches &= a.status.name == status;
       }
 
+      if (query != null && query.isNotEmpty) {
+        final q = query.toLowerCase();
+        matches &= a.patientName.toLowerCase().contains(q) ||
+            a.doctorName.toLowerCase().contains(q) ||
+            a.id.toLowerCase().contains(q);
+      }
+
       return matches;
     }).toList();
+
+    // Basic pagination
+    final startIndex = (page - 1) * limit;
+    if (startIndex >= filtered.length) return [];
+    final endIndex = (startIndex + limit) > filtered.length ? filtered.length : (startIndex + limit);
+
+    return filtered.sublist(startIndex, endIndex);
   }
 
   @override

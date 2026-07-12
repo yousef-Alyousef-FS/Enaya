@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum TimeSlotStatus { available, occupied, breakTime, offDay }
+enum TimeSlotStatus { available, occupied, breakTime, offDay, past }
 
 class TimeSlot extends Equatable {
   final DateTime dateTime;
@@ -14,6 +14,8 @@ class TimeSlot extends Equatable {
   });
 
   bool get isAvailable => status == TimeSlotStatus.available;
+  bool get isPast => status == TimeSlotStatus.past;
+  bool get isOccupied => status == TimeSlotStatus.occupied;
 
   @override
   List<Object?> get props => [dateTime, status, appointmentId];

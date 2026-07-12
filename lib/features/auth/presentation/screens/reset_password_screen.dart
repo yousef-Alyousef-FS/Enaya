@@ -44,6 +44,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
     super.initState();
 
     _emailController = TextEditingController(text: widget.initialEmail ?? '');
+    _emailController.addListener(_clearMessage);
+    _verificationCodeController.addListener(_clearMessage);
+    _newPasswordController.addListener(_clearMessage);
+    _confirmPasswordController.addListener(_clearMessage);
+
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
@@ -52,6 +57,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
       parent: _fadeController,
       curve: Curves.easeOut,
     );
+  }
+
+  void _clearMessage() {
+    if (_message != null && !_isSuccess) {
+      setState(() => _message = null);
+    }
   }
 
   @override
@@ -74,6 +85,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
 
   @override
   Widget build(BuildContext context) {
+    final config = ResponsiveLayout.of(context);
+
     return PortraitOnlyScope(
       child: BlocProvider(
         create: (_) => getIt<AuthCubit>(),
@@ -86,34 +99,28 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
             ),
           ),
           body: SafeArea(
-            child: OrientationBuilder(
-              builder: (context, _) {
-                final config = ResponsiveLayout.of(context);
-
-                return AuthCardContainer(
-                  config: config,
-                  gradientAlpha: 41,
-                  children: [
-                    Text(
-                      'reset_password'.tr(),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        fontSize: config.titleFontSize,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'enter_code_new_password'.tr(),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontSize: config.bodyFontSize,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    _buildForm(config),
-                  ],
-                );
-              },
+            child: AuthCardContainer(
+              config: config,
+              gradientAlpha: 41,
+              children: [
+                Text(
+                  'reset_password'.tr(),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                    fontSize: config.titleFontSize,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'enter_code_new_password'.tr(),
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    fontSize: config.bodyFontSize,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _buildForm(config),
+              ],
             ),
           ),
         ),
@@ -198,6 +205,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
           BlocConsumer<AuthCubit, AuthState>(
             listener: (context, state) {
               final cubit = context.read<AuthCubit>();
+
+              // Only handle errors if this screen is the current active screen
+              if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+
               if (state.isError) {
                 _triggerMessage(
                   state.errorMessage ?? 'error_occurred'.tr(),

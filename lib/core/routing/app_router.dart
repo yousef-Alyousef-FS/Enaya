@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:enaya/features/appointments/data/models/appointments_overview_view_mode.dart';
 import 'package:go_router/go_router.dart';
 import 'package:enaya/features/auth/presentation/screens/signup_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../features/appointments/presentation/cubit/appointments_cubit_imports.dart';
 import '../../features/appointments/domain/entities/appointment_entity.dart';
 import '../../features/appointments/presentation/appointments_page.dart';
-import '../../features/appointments/presentation/screens/appointment_details_screen.dart';
-import '../../features/appointments/presentation/screens/appointment_success_screen.dart';
-import '../../features/appointments/presentation/screens/edit_appointment_screen.dart';
-import '../../features/appointments/presentation/screens/schedule_appointment_screen.dart';
+import '../../features/appointments/presentation/screens/doctor/doctor_work_schedule_screen.dart';
+import '../../features/appointments/presentation/screens/details/appointment_details_screen.dart';
+import '../../features/appointments/presentation/screens/form/appointment_success_screen.dart';
+import '../../features/appointments/presentation/screens/form/edit_appointment_screen.dart';
+import '../../features/appointments/presentation/screens/form/schedule_appointment_screen.dart';
+import '../../features/appointments/presentation/screens/patient/patient_appointment_history_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/reset_password_screen.dart';
@@ -17,19 +21,22 @@ import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/verify_email_screen.dart';
 import '../../features/patients/presentation/screens/patient_registration_screen.dart';
 import '../di/injection.dart';
+import '../services/patient_session.dart';
 import '../services/session_manager.dart';
 import '../../features/dashboard/doctor/presentation/pages/doctor_dashboard_page.dart';
 import '../../features/dashboard/patient/presentation/pages/patient_dashboard_page.dart';
 import '../../features/dashboard/receptionist/presentation/pages/receptionist_dashboard_page.dart';
-import '../constants/dev_config.dart';
+import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../screens/developer_screen.dart';
 import '../screens/no_internet_screen.dart';
+import '../constants/dev_config.dart';
 
 /// Central router definition for the application.
 ///
 /// This keeps all top-level navigation paths in one place and supports the
 /// developer menu for quick screen inspection.
 class AppRouter {
+  // Commons
   static const String splash = '/';
   static const String devMenu = '/dev-menu';
   static const String noInternet = '/no-internet';
@@ -39,20 +46,23 @@ class AppRouter {
   static const String forgotPassword = '/forgot-password';
   static const String resetPassword = '/reset-password';
   static const String changePassword = '/change-password';
-
+  // Appointments
   static const String appointmentsOverview = '/appointments';
   static const String appointmentDetails = '/appointments/details';
   static const String editAppointment = '/appointments/edit';
   static const String scheduleAppointment = '/appointments/schedule';
   static const String appointmentSuccess = '/appointments/success';
+  static const String appointmentHistory = '/appointments/history';
 
   static const String doctorHome = '/doctor';
+  static const String doctorSchedule = '/doctor/schedule';
   static const String patientHome = '/patient';
   static const String receptionistHome = '/receptionist';
   static const String patientRegistration = '/patients/register';
+  static const String settings = '/settings';
 
   static final router = GoRouter(
-    initialLocation: DevConfig.isDevMode ? devMenu : splash,
+    initialLocation:  DevConfig.isDevMode ? devMenu : splash,
     routes: [
       GoRoute(path: splash, builder: (context, state) => const SplashScreen()),
       GoRoute(path: devMenu, builder: (context, state) => const DeveloperScreen()),
@@ -94,6 +104,17 @@ class AppRouter {
         },
       ),
       GoRoute(path: doctorHome, builder: (context, state) => const DoctorDashboardPage()),
+      GoRoute(
+        path: doctorSchedule,
+        builder: (context, state) {
+          final doctorId =
+              state.uri.queryParameters['doctorId'] ?? getIt<SessionManager>().currentRoleId;
+          return BlocProvider(
+            create: (context) => getIt<DoctorAvailabilityCubit>(),
+            child: DoctorWorkScheduleScreen(doctorId: doctorId.toString()),
+          );
+        },
+      ),
       GoRoute(path: patientHome, builder: (context, state) => const PatientDashboardPage()),
       GoRoute(
         path: receptionistHome,
@@ -103,6 +124,7 @@ class AppRouter {
         path: patientRegistration,
         builder: (context, state) => const PatientRegistrationScreen(),
       ),
+      GoRoute(path: settings, builder: (context, state) => const SettingsScreen()),
       GoRoute(
         path: appointmentDetails,
         builder: (context, state) {
@@ -158,7 +180,23 @@ class AppRouter {
       ),
       GoRoute(
         path: appointmentSuccess,
-        builder: (context, state) => const AppointmentSuccessScreen(),
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return AppointmentSuccessScreen(
+            dateTime: extra?['dateTime'],
+            doctorName: extra?['doctorName'],
+          );
+        },
+      ),
+      GoRoute(
+        path: appointmentHistory,
+        builder: (context, state) {
+          final patientId = PatientSession().patientId ?? 'p1';
+          return BlocProvider(
+            create: (context) => getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
+            child: const PatientAppointmentHistoryScreen(),
+          );
+        },
       ),
     ],
   );

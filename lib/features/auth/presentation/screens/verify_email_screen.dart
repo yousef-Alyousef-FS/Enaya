@@ -35,6 +35,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen>
   void initState() {
     super.initState();
     _codeController = TextEditingController();
+    _codeController.addListener(_clearError);
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 350),
@@ -43,6 +44,12 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen>
       parent: _fadeController,
       curve: Curves.easeOut,
     );
+  }
+
+  void _clearError() {
+    if (errorMessage != null) {
+      setState(() => errorMessage = null);
+    }
   }
 
   @override
@@ -63,26 +70,22 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen>
 
   @override
   Widget build(BuildContext context) {
+    final config = ResponsiveLayout.of(context);
+
     return PortraitOnlyScope(
       child: BlocProvider(
         create: (_) => getIt<AuthCubit>(),
         child: Scaffold(
           body: SafeArea(
-            child: OrientationBuilder(
-              builder: (context, _) {
-                final config = ResponsiveLayout.of(context);
-
-                return AuthCardContainer(
-                  config: config,
-                  children: [
-                    _buildLogo(config),
-                    const SizedBox(height: 24),
-                    _buildHeader(context, config),
-                    const SizedBox(height: 32),
-                    _buildForm(config),
-                  ],
-                );
-              },
+            child: AuthCardContainer(
+              config: config,
+              children: [
+                _buildLogo(config),
+                const SizedBox(height: 24),
+                _buildHeader(context, config),
+                const SizedBox(height: 32),
+                _buildForm(config),
+              ],
             ),
           ),
         ),
@@ -165,12 +168,17 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen>
   Widget _buildVerifySection(ResponsiveLayoutConfig config) {
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
+        final cubit = context.read<AuthCubit>();
+
+        // Only handle errors if this screen is the current active screen
+        if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+
         if (state.isError) {
           setState(
             () => errorMessage = state.errorMessage ?? 'error_occurred'.tr(),
           );
           _fadeController.forward(from: 0);
-          context.read<AuthCubit>().clearStatus();
+          cubit.clearStatus();
         } else if (state.isSuccess) {
           context.go(AppRouter.login);
           return;

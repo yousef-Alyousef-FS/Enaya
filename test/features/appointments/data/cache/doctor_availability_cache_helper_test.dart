@@ -30,7 +30,7 @@ void main() {
       test('should save availability data and timestamp when cache succeeds', () async {
         // Arrange
         const doctorId = 'doc123';
-        final availability = DoctorAvailability(
+        final availability = DoctorAvailability.create(
           doctorId: doctorId,
           workingDays: [
             WorkingDay(
@@ -65,7 +65,7 @@ void main() {
       test('should return false when cache save fails', () async {
         // Arrange
         const doctorId = 'doc123';
-        final availability = DoctorAvailability(
+        final availability = DoctorAvailability.create(
           doctorId: doctorId,
           workingDays: [
             WorkingDay(

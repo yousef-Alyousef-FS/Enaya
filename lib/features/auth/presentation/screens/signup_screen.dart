@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/di/injection.dart';
 import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
 
@@ -22,8 +21,7 @@ class SignupScreen extends StatefulWidget {
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen>
-    with TickerProviderStateMixin, AuthFormMixin {
+class _SignupScreenState extends State<SignupScreen> with TickerProviderStateMixin, AuthFormMixin {
   final _formKey = GlobalKey<FormState>();
 
   final _userNameController = TextEditingController();
@@ -33,23 +31,28 @@ class _SignupScreenState extends State<SignupScreen>
   final _confirmPasswordController = TextEditingController();
 
   late final AnimationController _fadeController;
-  late final Animation<double> _fadeAnimation;
 
+  late final Animation<double> _fadeAnimation;
   bool _agreeToTerms = false;
 
   @override
   void initState() {
     super.initState();
 
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 350),
-    );
+    _userNameController.addListener(_clearError);
+    _emailController.addListener(_clearError);
+    _phoneController.addListener(_clearError);
+    _passwordController.addListener(_clearError);
+    _confirmPasswordController.addListener(_clearError);
 
-    _fadeAnimation = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeOut,
-    );
+    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 350));
+    _fadeAnimation = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+  }
+
+  void _clearError() {
+    if (errorMessage != null) {
+      setState(() => errorMessage = null);
+    }
   }
 
   @override
@@ -121,46 +124,43 @@ class _SignupScreenState extends State<SignupScreen>
 
   @override
   Widget build(BuildContext context) {
-    return PortraitOnlyScope(
-      child: BlocProvider(
-        create: (_) => getIt<AuthCubit>(),
-        child: Scaffold(
-          appBar: AppBar(
-            title: Text('create_account'.tr()),
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios),
-              onPressed: () => context.pop(),
-            ),
-          ),
-          body: SafeArea(
-            child: OrientationBuilder(
-              builder: (context, _) {
-                final config = ResponsiveLayout.of(context);
+    final config = ResponsiveLayout.of(context);
 
-                return AuthCardContainer(
-                  config: config,
-                  children: [
-                    Text(
-                      'join_enaya'.tr(),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                        fontSize: config.titleFontSize,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'signup_description'.tr(),
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        fontSize: config.bodyFontSize,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    _buildForm(config),
-                  ],
-                );
-              },
-            ),
+    return PortraitOnlyScope(
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('create_account'.tr()),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios),
+            onPressed: () {
+              context.read<AuthCubit>().clearStatus();
+              setState(() => errorMessage = null);
+              context.pop();
+            },
+          ),
+        ),
+        body: SafeArea(
+          child: AuthCardContainer(
+            config: config,
+            children: [
+              Text(
+                'join_enaya'.tr(),
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.displayLarge?.copyWith(fontSize: config.titleFontSize),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'signup_description'.tr(),
+                textAlign: TextAlign.center,
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
+              ),
+              const SizedBox(height: 32),
+              _buildForm(config),
+            ],
           ),
         ),
       ),
@@ -178,8 +178,7 @@ class _SignupScreenState extends State<SignupScreen>
             hintText: 'full_name'.tr(),
             controller: _userNameController,
             prefixIcon: Icons.person_outline,
-            validator: (value) =>
-                value!.isEmpty ? 'enter_your_name'.tr() : null,
+            validator: (value) => value!.isEmpty ? 'enter_your_name'.tr() : null,
           ),
           const SizedBox(height: 16),
           AuthTextField(
@@ -232,42 +231,70 @@ class _SignupScreenState extends State<SignupScreen>
     return BlocConsumer<AuthCubit, AuthState>(
       listener: (context, state) {
         final cubit = context.read<AuthCubit>();
+
+        // Only handle errors if this screen is the current active screen
+        if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+
         if (state.isError) {
-          setState(
-            () => errorMessage = state.errorMessage ?? 'error_occurred'.tr(),
-          );
+          if (!mounted) return;
+          setState(() => errorMessage = state.errorMessage ?? 'error_occurred'.tr());
+          if (_fadeController.isAnimating) {
+            _fadeController.stop();
+          }
           _fadeController.forward(from: 0);
           cubit.clearStatus();
           return;
         }
         if (state.isSuccess) {
+          if (!mounted) return;
           context.go(AppRouter.patientHome);
           return;
         }
       },
       builder: (context, state) {
         final cubit = context.read<AuthCubit>();
+        final theme = Theme.of(context);
+        final isDark = theme.brightness == Brightness.dark;
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             ElevatedButton(
-              onPressed: (state.isLoading)
-                  ? null
-                  : () => _onSignupPressed(cubit),
-              child: state.isLoading
-                  ? AppLoaders.inline()
-                  : Text('sign_up'.tr()),
+              key: const ValueKey('signup_btn'),
+              onPressed: (state.isLoading) ? null : () => _onSignupPressed(cubit),
+              child: state.isLoading ? AppLoaders.inline() : Text('sign_up'.tr()),
             ),
-            if (errorMessage != null && !state.isSuccess) ...[
-              const SizedBox(height: 16),
-              Text(
-                errorMessage!,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                  fontSize: config.bodyFontSize,
+            if (errorMessage != null && !state.isSuccess)
+              FadeTransition(
+                opacity: _fadeAnimation,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.error.withAlpha(isDark ? 30 : 20),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: theme.colorScheme.error.withAlpha(50)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline, color: theme.colorScheme.error, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            errorMessage!,
+                            style: TextStyle(
+                              color: theme.colorScheme.error,
+                              fontSize: config.bodyFontSize - 1,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ],
           ],
         );
       },
@@ -280,12 +307,14 @@ class _SignupScreenState extends State<SignupScreen>
         alignment: WrapAlignment.center,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Text(
-            'already_have_account'.tr(),
-            style: TextStyle(fontSize: config.bodyFontSize),
-          ),
+          Text('already_have_account'.tr(), style: TextStyle(fontSize: config.bodyFontSize)),
           TextButton(
-            onPressed: () => context.pop(),
+            key: const ValueKey('signup_login_redirect_btn'),
+            onPressed: () {
+              context.read<AuthCubit>().clearStatus();
+              setState(() => errorMessage = null);
+              context.pop();
+            },
             child: Text(
               'login'.tr(),
               style: TextStyle(
@@ -305,16 +334,23 @@ class _SignupScreenState extends State<SignupScreen>
       children: [
         Checkbox(
           value: _agreeToTerms,
-          onChanged: (value) => setState(() => _agreeToTerms = value ?? false),
+          onChanged: (value) {
+            setState(() {
+              _agreeToTerms = value ?? false;
+              if (errorMessage != null) errorMessage = null;
+            });
+          },
           activeColor: Theme.of(context).colorScheme.primary,
         ),
         Expanded(
           child: GestureDetector(
-            onTap: () => setState(() => _agreeToTerms = !_agreeToTerms),
-            child: Text(
-              'i_agree_to_terms'.tr(),
-              style: const TextStyle(fontSize: 13),
-            ),
+            onTap: () {
+              setState(() {
+                _agreeToTerms = !_agreeToTerms;
+                if (errorMessage != null) errorMessage = null;
+              });
+            },
+            child: Text('i_agree_to_terms'.tr(), style: const TextStyle(fontSize: 13)),
           ),
         ),
       ],

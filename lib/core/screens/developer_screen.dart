@@ -42,7 +42,9 @@ class DeveloperScreen extends StatelessWidget {
           _buildSection('developer_system_misc'.tr(), [
             _buildItem(context, 'developer_splash_screen'.tr(), AppRouter.splash),
             _buildItem(context, 'developer_no_internet_screen'.tr(), AppRouter.noInternet),
+            _buildItem(context, 'developer_settings'.tr(), AppRouter.settings),
           ]),
+
           const SizedBox(height: 40),
           Center(
             child: Text(

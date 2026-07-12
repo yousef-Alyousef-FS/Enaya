@@ -44,7 +44,7 @@ class AppSearchField extends StatelessWidget {
             )
           : null,
       suffixIconConstraints: const BoxConstraints(minWidth: 40, minHeight: 40),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       isDense: false,
       filled: true,
       fillColor: cs.surface,
