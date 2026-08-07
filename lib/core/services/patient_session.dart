@@ -4,9 +4,6 @@ import '../di/injection.dart';
 import 'session_manager.dart';
 
 /// Resolves the active patient profile for patient-facing screens.
-///
-/// When no authenticated user exists, it returns a stable demo patient so the
-/// patient experience still works without forcing an explicit patient picker.
 class PatientSession {
   final SessionManager _sessionManager;
 
@@ -36,7 +33,7 @@ class PatientSession {
       email: patientEmail ?? '',
       phone: patientPhone ?? '',
       dateOfBirth: DateTime(1990, 1, 1),
-      medicalHistory: '',
+      job: '',
       address: '',
     );
   }

@@ -3,13 +3,14 @@ import 'package:enaya/features/appointments/data/models/appointments_overview_vi
 import 'package:enaya/features/dashboard/shared/presentation/models/dashboard_nav_item.dart';
 import 'package:enaya/features/dashboard/shared/presentation/pages/base_dashboard_page.dart';
 import 'package:enaya/features/dashboard/shared/presentation/widgets/dashboard_overview_builder.dart';
-import '../../../../../core/widgets/feature_coming_soon_state.dart';
-import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/di/injection.dart';
+import '../../../../../core/widgets/feature_coming_soon_state.dart';
 import '../../../../appointments/presentation/appointments_page.dart';
+import '../../../../settings/presentation/screens/settings_screen.dart';
+import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
 import '../cubit/receptionist_dashboard_cubit.dart';
 import '../cubit/receptionist_dashboard_state.dart';
 import '../widgets/greeting_section.dart';
@@ -79,10 +80,12 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
         );
       case 6:
         return FeatureComingSoonState(
-          titleKey: 'nav_settings',
-          icon: Icons.settings_outlined,
+          titleKey: 'nav_profile',
+          icon: Icons.person_outline,
           onBack: () => _onNavigationSelected(0),
         );
+      case 7:
+        return const SettingsScreen();
       default:
         return _buildOverviewSection(state);
     }

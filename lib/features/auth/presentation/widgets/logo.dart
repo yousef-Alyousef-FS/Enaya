@@ -1,7 +1,6 @@
+import 'package:enaya/core/widgets/loaders/app_loaders.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-
-import 'package:enaya/core/widgets/loaders/app_loaders.dart';
 
 class LogoIcon extends StatelessWidget {
   final Color? color;
@@ -12,13 +11,9 @@ class LogoIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SvgPicture.asset(
-      'assets/images/enaya.svg',
+      'assets/images/logo.svg',
       width: width ?? 200,
       height: height ?? 200,
-      colorFilter: ColorFilter.mode(
-        color ?? Theme.of(context).colorScheme.primary,
-        BlendMode.srcIn,
-      ),
       placeholderBuilder: (context) => AppLoaders.splash(),
     );
   }

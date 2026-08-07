@@ -12,6 +12,7 @@ import '../cubit/auth_state.dart';
 import '../mixins/auth_form_mixin.dart';
 import '../widgets/auth_card_container.dart';
 import '../widgets/auth_text_field.dart';
+import '../widgets/logo.dart';
 import '../widgets/portrait_only_scope.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -74,7 +75,10 @@ class _LoginScreenState extends State<LoginScreen>
     final route = switch (role) {
       UserRole.receptionist => AppRouter.receptionistHome,
       UserRole.doctor => AppRouter.doctorHome,
-      UserRole.patient => AppRouter.patientHome,
+      UserRole.patient =>
+        user.profileCompleted == false
+            ? AppRouter.completeProfile
+            : AppRouter.patientHome,
     };
 
     context.go(route);
@@ -118,8 +122,8 @@ class _LoginScreenState extends State<LoginScreen>
           child: AuthCardContainer(
             config: config,
             children: [
-              //_buildLogo(config),
-              //const SizedBox(height: 24),
+              LogoIcon(width: config.logoSize, height: config.logoSize),
+              const SizedBox(height: 24),
               _buildHeader(context, config),
               const SizedBox(height: 60),
               _buildForm(config),
@@ -130,18 +134,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
   // a methon to build the logo using the asset enaya.svg
-
-  // Widget _buildLogo(ResponsiveLayoutConfig config) {
-  //   return Container(
-  //     width: config.logoSize,
-  //     height: config.logoSize,
-  //     decoration: BoxDecoration(
-  //       color: Theme.of(context).colorScheme.primary.withAlpha(35),
-  //       shape: BoxShape.circle,
-  //     ),
-  //     child: LogoIcon(width: config.iconSize, height: config.iconSize),
-  //   );
-  // }
 
   Widget _buildHeader(BuildContext context, ResponsiveLayoutConfig config) {
     return Column(

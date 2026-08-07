@@ -1,12 +1,14 @@
 import 'package:equatable/equatable.dart';
-import '../../../data/models/time_slot_model.dart';
+
 import '../../../../patients/domain/entities/patient_entity.dart';
+import '../../../data/models/time_slot_model.dart';
 import '../../../domain/entities/doctor_summary.dart';
 
 class AppointmentScheduleState extends Equatable {
   final DateTime selectedDate;
   final DateTime? endDate;
   final List<TimeSlot> availableSlots;
+  final List<String> availableDays; // Stage 2: Available dates strings
   final Map<DateTime, List<TimeSlot>> rangeSlots;
   final List<DoctorSummary> availableDoctors;
   final TimeSlot? selectedTimeSlot;
@@ -16,7 +18,7 @@ class AppointmentScheduleState extends Equatable {
   final bool isLoading;
   final bool isDoctorsLoading;
   final String? errorMessage;
-  final Map<String, String>? fieldErrors; // [API_READY]: Store validation errors
+  final Map<String, String>? fieldErrors;
   final bool isSuccess;
   final bool isRangeMode;
   final int currentStep;
@@ -25,6 +27,7 @@ class AppointmentScheduleState extends Equatable {
     required this.selectedDate,
     this.endDate,
     required this.availableSlots,
+    this.availableDays = const [],
     this.rangeSlots = const {},
     this.availableDoctors = const [],
     this.selectedTimeSlot,
@@ -44,6 +47,7 @@ class AppointmentScheduleState extends Equatable {
     return AppointmentScheduleState(
       selectedDate: DateTime.now().add(const Duration(days: 1)),
       availableSlots: const [],
+      availableDays: const [],
       isLoading: false,
       isDoctorsLoading: false,
       isSuccess: false,
@@ -54,18 +58,20 @@ class AppointmentScheduleState extends Equatable {
   bool get isError => errorMessage != null;
 
   bool canGoNext(bool isPatientMode) {
-    if (isLoading) return false; // Prevent navigation while loading
+    if (isLoading) return false;
 
     if (isPatientMode) {
       switch (currentStep) {
-        case 0: // Schedule Step
-          return selectedDoctorId != null && selectedTimeSlot != null;
-        case 1: // Details Step
-          // Require either a quick reason or manual input
-          return true; // Details are technically optional in logic but we can enforce
-        case 2: // Review Step
+        case 0: // Select Doctor
+          return selectedDoctorId != null;
+        case 1: // Schedule Step
+          return selectedTimeSlot != null;
+        case 2: // Details Step
+          return true;
+        case 3: // Review Step
           return !isLoading && selectedTimeSlot != null;
-        default: return false;
+        default:
+          return false;
       }
     } else {
       switch (currentStep) {
@@ -76,19 +82,23 @@ class AppointmentScheduleState extends Equatable {
         case 2: // Details Step
           return true;
         case 3: // Review Step
-          return !isLoading && selectedTimeSlot != null && selectedPatient != null;
-        default: return false;
+          return !isLoading &&
+              selectedTimeSlot != null &&
+              selectedPatient != null;
+        default:
+          return false;
       }
     }
   }
 
-  int totalSteps(bool isPatientMode) => isPatientMode ? 3 : 4;
+  int totalSteps(bool isPatientMode) => 4;
 
   AppointmentScheduleState copyWith({
     DateTime? selectedDate,
     DateTime? endDate,
     bool clearEndDate = false,
     List<TimeSlot>? availableSlots,
+    List<String>? availableDays,
     Map<DateTime, List<TimeSlot>>? rangeSlots,
     TimeSlot? selectedTimeSlot,
     bool clearSelectedTimeSlot = false,
@@ -112,6 +122,7 @@ class AppointmentScheduleState extends Equatable {
       selectedDate: selectedDate ?? this.selectedDate,
       endDate: clearEndDate ? null : endDate ?? this.endDate,
       availableSlots: availableSlots ?? this.availableSlots,
+      availableDays: availableDays ?? this.availableDays,
       rangeSlots: rangeSlots ?? this.rangeSlots,
       availableDoctors: availableDoctors ?? this.availableDoctors,
       selectedTimeSlot: clearSelectedTimeSlot
@@ -143,6 +154,7 @@ class AppointmentScheduleState extends Equatable {
     selectedDate,
     endDate,
     availableSlots,
+    availableDays,
     rangeSlots,
     availableDoctors,
     selectedTimeSlot,

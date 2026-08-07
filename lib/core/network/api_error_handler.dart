@@ -42,12 +42,9 @@ class ApiErrorHandler {
 
     // 1. إذا في رسالة من الباك
     if (data is Map) {
-      if (data['error'] != null) {
-        return ServerFailure(data['error'].toString(), code: statusCode);
-      }
-
-      if (data['message'] != null) {
-        return ServerFailure(data['message'].toString(), code: statusCode);
+      final backendError = data['error'] ?? data['message'];
+      if (backendError != null) {
+        return ServerFailure(backendError.toString(), code: statusCode);
       }
 
       if (data['errors'] is Map) {

@@ -1,5 +1,6 @@
 import 'package:enaya/features/patients/domain/entities/patient_entity.dart';
 import 'package:flutter/material.dart';
+
 import '../../../domain/entities/appointment_entity.dart';
 import 'schedule_appointment_screen.dart';
 
@@ -27,7 +28,7 @@ class EditAppointmentScreen extends StatelessWidget {
       email: '',
       phone: '',
       dateOfBirth: DateTime(1970),
-      medicalHistory: '',
+      job: '',
       address: '',
     );
   }

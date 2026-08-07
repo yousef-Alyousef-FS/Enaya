@@ -1,22 +1,24 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:enaya/core/routing/app_router.dart';
-import 'package:enaya/features/appointments/data/models/appointments_overview_view_mode.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:enaya/core/di/injection.dart';
+import 'package:enaya/core/routing/app_router.dart';
 import 'package:enaya/core/services/session_manager.dart';
 import 'package:enaya/core/theme/app_colors.dart';
+import 'package:enaya/features/appointments/data/models/appointments_overview_view_mode.dart';
 import 'package:enaya/features/dashboard/shared/presentation/models/dashboard_nav_item.dart';
 import 'package:enaya/features/dashboard/shared/presentation/pages/base_dashboard_page.dart';
 import 'package:enaya/features/dashboard/shared/presentation/widgets/dashboard_overview_builder.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../../core/widgets/cards/stat_card.dart';
 import '../../../../../core/widgets/common/responsive_stats_grid.dart';
 import '../../../../../core/widgets/feature_coming_soon_state.dart';
-import '../../../../appointments/presentation/appointments_page.dart';
 import '../../../../appointments/domain/entities/appointment_status.dart';
-import '../../../../appointments/presentation/widgets/shared/appointment_card.dart';
+import '../../../../appointments/presentation/appointments_page.dart';
 import '../../../../appointments/presentation/widgets/doctor/current_appointment_card.dart';
+import '../../../../appointments/presentation/widgets/shared/appointment_card.dart';
+import '../../../../settings/presentation/screens/settings_screen.dart';
 import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
 import '../cubit/doctor_dashboard_cubit.dart';
 import '../cubit/doctor_dashboard_state.dart';
@@ -52,12 +54,19 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
     );
   }
 
-  Widget _getSectionBody(int index, DoctorDashboardState state, String doctorId) {
+  Widget _getSectionBody(
+    int index,
+    DoctorDashboardState state,
+    String doctorId,
+  ) {
     switch (index) {
       case 0:
         return _buildOverviewSection(state, doctorId);
       case 1:
-        return AppointmentsPage(mode: AppointmentsOverviewMode.doctor, specificDoctorId: doctorId);
+        return AppointmentsPage(
+          mode: AppointmentsOverviewMode.doctor,
+          specificDoctorId: doctorId,
+        );
       case 2:
         return FeatureComingSoonState(
           titleKey: 'nav_patients',
@@ -78,17 +87,18 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
         );
       case 5:
         return FeatureComingSoonState(
-          titleKey: 'nav_settings',
-          icon: Icons.settings_outlined,
+          titleKey: 'nav_profile',
+          icon: Icons.person_outline,
           onBack: () => _onNavigationSelected(0),
         );
+      case 6:
+        return const SettingsScreen();
       default:
         return _buildOverviewSection(state, doctorId);
     }
   }
 
-  Widget _buildOverviewSection(DoctorDashboardState state, String doctorId)
-  {
+  Widget _buildOverviewSection(DoctorDashboardState state, String doctorId) {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -169,10 +179,17 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
   }
 
   Widget _buildSectionHeader(String key) {
-    return Text(key.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
+    return Text(
+      key.tr(),
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    );
   }
 
-  Widget _buildUpcomingList(BuildContext context, DoctorDashboardState state, String doctorId) {
+  Widget _buildUpcomingList(
+    BuildContext context,
+    DoctorDashboardState state,
+    String doctorId,
+  ) {
     if (state.upcomingAppointments.isEmpty) {
       return Center(child: Text('no_upcoming_appointments'.tr()));
     }
@@ -189,7 +206,8 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
                 extra: {
                   'appointment': appointment,
                   'role': AppointmentsOverviewMode.doctor,
-                  'onDataChanged': () => context.read<DoctorDashboardCubit>().load(doctorId),
+                  'onDataChanged': () =>
+                      context.read<DoctorDashboardCubit>().load(doctorId),
                 },
               );
             },

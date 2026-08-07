@@ -1,95 +1,46 @@
 import 'package:dio/dio.dart';
 
+import '../../../../core/constants/api_constants.dart';
+import '../../../../core/services/session_manager.dart';
 import '../models/doctor_model.dart';
 import 'doctor_directory_data_source.dart';
 
-// ============================================================================
-// ?? Remote Implementation
-// ============================================================================
 class DoctorDirectoryRemoteDataSource implements DoctorDirectoryDataSource {
   final Dio dio;
+  final SessionManager sessionManager;
 
-  DoctorDirectoryRemoteDataSource(this.dio);
+  DoctorDirectoryRemoteDataSource(this.dio, this.sessionManager);
 
   @override
   Future<List<DoctorModel>> getDoctors() async {
-    try {
-      final response = await dio.get(
-        '/doctors',
-        options: Options(headers: {'Content-Type': 'application/json'}),
-      );
+    // Determine route based on user role as per API V1.2
+    final roleId = sessionManager.currentRoleId;
+    final path = (roleId == 1)
+        ? ApiConstants.adminDoctors
+        : ApiConstants.doctorsDirectory;
 
-      if (response.statusCode != 200) {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          response: response,
-          message: 'Failed to fetch doctors',
-        );
+    final response = await dio.get(path);
+    final data = response.data;
+
+    if (data is Map<String, dynamic> && data['success'] == true) {
+      final dynamic rawData = data['data'];
+      List items = [];
+
+      if (rawData is List) {
+        items = rawData;
+      } else if (rawData is Map && rawData['data'] is List) {
+        items = rawData['data'];
       }
 
-      final data = response.data;
-
-      // Handle API response structure
-      final doctorsList = _parseResponse(data);
-
-      return doctorsList;
-    } on DioException catch (_) {
-      // Re-throw DIO exceptions as-is
-      rethrow;
-    } catch (e) {
-      // Wrap unexpected errors
-      throw DioException(
-        requestOptions: RequestOptions(path: '/doctors'),
-        message: 'Unexpected error while fetching doctors: $e',
-      );
-    }
-  }
-
-  /// Parse the API response to extract doctors list
-  List<DoctorModel> _parseResponse(dynamic responseData) {
-    try {
-      // If response is already a list
-      if (responseData is List) {
-        return responseData.map((item) => _parseDoctorItem(item)).toList();
-      }
-
-      // If response is a map with data field
-      if (responseData is Map<String, dynamic>) {
-        // Try to extract data field (common pattern)
-        if (responseData.containsKey('data')) {
-          final data = responseData['data'];
-          if (data is List) {
-            return data.map((item) => _parseDoctorItem(item)).toList();
-          }
-        }
-
-        // If no data field, try treating response as a single doctor (unlikely but handle it)
-        return [_parseDoctorItem(responseData)];
-      }
-
-      throw const FormatException('Unexpected response format for doctors API');
-    } catch (e) {
-      throw FormatException('Failed to parse doctors response: $e');
-    }
-  }
-
-  /// Parse a single doctor item from API response
-  DoctorModel _parseDoctorItem(dynamic item) {
-    if (item is! Map<String, dynamic>) {
-      throw FormatException(
-        'Doctor item must be a map, got ${item.runtimeType}',
-      );
+      return items
+          .map((json) => DoctorModel.fromJson(Map<String, dynamic>.from(json)))
+          .toList();
     }
 
-    final id = item['id'] ?? item['_id'];
-    final name = item['name'] ?? item['fullName'] ?? item['firstName'];
-
-    if (id == null || name == null) {
-      throw FormatException(
-        'Doctor item missing required fields: id=$id, name=$name',
-      );
+    if (data is Map<String, dynamic>) {
+      throw Exception(data['error'] ?? 'Failed to fetch doctors');
     }
 
-    return DoctorModel(id: id.toString(), name: name.toString());
+    throw Exception('Invalid response format from doctors API');
   }
 }

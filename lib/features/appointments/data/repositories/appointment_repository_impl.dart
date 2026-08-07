@@ -1,4 +1,6 @@
 import 'package:dartz/dartz.dart';
+import 'package:intl/intl.dart';
+
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/api_error_handler.dart';
 import '../../../../core/network/network_info.dart';
@@ -10,7 +12,6 @@ import '../../domain/usecases/get_appointments_usecase.dart';
 import '../cache/appointment_cache_helper.dart';
 import '../datasources/appointment_remote_data_source.dart';
 import '../models/appointment_model/appointment_model.dart';
-import '../models/appointment_stats_model.dart';
 
 class AppointmentRepositoryImpl implements IAppointmentRepository {
   final AppointmentRemoteDataSource remote;
@@ -23,20 +24,20 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
     required this.cacheHelper,
   });
 
+  String _formatDateTime(DateTime dt) =>
+      DateFormat('yyyy-MM-dd HH:mm:ss').format(dt);
+
   @override
   Future<Either<Failure, List<AppointmentEntity>>> getAppointments(
     GetAppointmentsParams params,
   ) async {
     try {
       final models = await remote.getAppointments(
-        date: params.date,
-        endDate: params.endDate,
-        doctorId: params.doctorId,
-        patientId: params.patientId,
         status: params.status?.name,
-        query: params.query,
-        page: params.page,
-        limit: params.limit,
+        date: params.date?.toIso8601String().split('T')[0],
+        doctorId: params.doctorId != null
+            ? int.tryParse(params.doctorId!)
+            : null,
       );
       return Right(models.map((m) => m.toEntity()).toList());
     } catch (e) {
@@ -45,7 +46,9 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
   }
 
   @override
-  Future<Either<Failure, AppointmentEntity>> getAppointmentById(String id) async {
+  Future<Either<Failure, AppointmentEntity>> getAppointmentById(
+    String id,
+  ) async {
     try {
       final model = await remote.getAppointmentById(id);
       return Right(model.toEntity());
@@ -59,8 +62,12 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
     AppointmentEntity appointment,
   ) async {
     try {
-      final model = AppointmentModelMapper.fromEntity(appointment);
-      final result = await remote.createAppointment(model);
+      final result = await remote.createAppointment(
+        doctorId: int.parse(appointment.doctorId),
+        scheduledAt: _formatDateTime(appointment.dateTime),
+        visitReason: appointment.reason,
+        notes: appointment.notes,
+      );
       return Right(result.toEntity());
     } catch (e) {
       return Left(ApiErrorHandler.handle(e));
@@ -74,8 +81,14 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
     String? reason,
   }) async {
     try {
-      final result = await remote.updateAppointmentStatus(id, status.name, reason: reason);
-      return Right(result.toEntity());
+      if (status == AppointmentStatus.cancelled) {
+        await remote.cancelAppointment(id, reason ?? 'Cancelled');
+      } else {
+        return Left(
+          ServerFailure('Please use specific action for this status'),
+        );
+      }
+      return getAppointmentById(id);
     } catch (e) {
       return Left(ApiErrorHandler.handle(e));
     }
@@ -88,8 +101,8 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
     String? reason,
   ) async {
     try {
-      final result = await remote.cancelAppointment(id, cancelledBy, reason);
-      return Right(result.toEntity());
+      await remote.cancelAppointment(id, reason ?? 'Cancelled');
+      return getAppointmentById(id);
     } catch (e) {
       return Left(ApiErrorHandler.handle(e));
     }
@@ -101,8 +114,8 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
     DateTime newDateTime,
   ) async {
     try {
-      final result = await remote.rescheduleAppointment(id, newDateTime);
-      return Right(result.toEntity());
+      await remote.rescheduleAppointment(id, _formatDateTime(newDateTime));
+      return getAppointmentById(id);
     } catch (e) {
       return Left(ApiErrorHandler.handle(e));
     }
@@ -110,12 +123,7 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
 
   @override
   Future<Either<Failure, void>> deleteAppointment(String id) async {
-    try {
-      await remote.deleteAppointment(id);
-      return const Right(null);
-    } catch (e) {
-      return Left(ApiErrorHandler.handle(e));
-    }
+    return Left(ServerFailure('Delete not supported. Use cancel instead.'));
   }
 
   @override
@@ -123,19 +131,43 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
     DateTime? date,
     String? doctorId,
   }) async {
+    return Right(
+      const AppointmentStats(
+        totalAppointments: 0,
+        scheduled: 0,
+        confirmed: 0,
+        completed: 0,
+        cancelled: 0,
+        noShow: 0,
+        utilizationRate: 0,
+        completionRate: 0,
+        byDoctor: [],
+      ),
+    );
+  }
+
+  @override
+  Future<Either<Failure, List<String>>> getAvailableSlots(
+    String doctorId,
+    DateTime date,
+  ) async {
     try {
-      final data = await remote.getAppointmentsStats(date: date, doctorId: doctorId);
-      final model = AppointmentStatsModel.fromJson(data);
-      return Right(model.toEntity());
+      final result = await remote.getAvailableSlots(
+        int.parse(doctorId),
+        date.toIso8601String().split('T')[0],
+      );
+      return Right(result);
     } catch (e) {
       return Left(ApiErrorHandler.handle(e));
     }
   }
 
   @override
-  Future<Either<Failure, List<String>>> getAvailableSlots(String doctorId, DateTime date) async {
+  Future<Either<Failure, List<String>>> getAvailableDays(
+    String doctorId,
+  ) async {
     try {
-      final result = await remote.getAvailableSlots(doctorId, date);
+      final result = await remote.getAvailableDays(int.parse(doctorId));
       return Right(result);
     } catch (e) {
       return Left(ApiErrorHandler.handle(e));

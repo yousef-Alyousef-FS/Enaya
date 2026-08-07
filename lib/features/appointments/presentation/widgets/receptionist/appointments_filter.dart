@@ -4,8 +4,8 @@ import 'package:enaya/features/appointments/presentation/cubit/list/receptionist
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../appointments/presentation/widgets/receptionist/doctor_selector_button.dart';
 import '../../../../appointments/presentation/widgets/receptionist/appointment_search_bar.dart';
+import '../../../../appointments/presentation/widgets/receptionist/doctor_selector_button.dart';
 import '../../../../appointments/presentation/widgets/shared/app_filter_date_range_picker.dart';
 import '../../../../appointments/presentation/widgets/shared/appointment_status_card.dart';
 import '../../../domain/entities/appointment_entity.dart';
@@ -21,7 +21,8 @@ class AppointmentsFilterWidget extends StatelessWidget {
   static const double _kControlHeight = 52.0;
 
   final List<AppointmentEntity> appointments;
-  final List<DoctorOption>? doctors; // optional: if not provided we derive from appointments
+  final List<DoctorOption>?
+  doctors; // optional: if not provided we derive from appointments
   final bool showSearch;
   final bool showDoctorSelector;
   final bool showDateRange;
@@ -39,7 +40,8 @@ class AppointmentsFilterWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<ReceptionistAppointmentsCubit>(); // 👈 fixed cubit name
+    final cubit = context
+        .read<ReceptionistAppointmentsCubit>(); // 👈 fixed cubit name
     final state = cubit.state;
 
     // derive doctors from appointments when not provided
@@ -48,10 +50,13 @@ class AppointmentsFilterWidget extends StatelessWidget {
       map.putIfAbsent(a.doctorId, () => a.doctorName);
     }
 
-    final derivedDoctors = map.entries.map((e) => DoctorOption(id: e.key, name: e.value)).toList()
-      ..sort((a, b) => a.name.compareTo(b.name));
+    final derivedDoctors =
+        map.entries.map((e) => DoctorOption(id: e.key, name: e.value)).toList()
+          ..sort((a, b) => a.name.compareTo(b.name));
 
-    final doctorOptions = (doctors != null && doctors!.isNotEmpty) ? doctors! : derivedDoctors;
+    final doctorOptions = (doctors != null && doctors!.isNotEmpty)
+        ? doctors!
+        : derivedDoctors;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -76,8 +81,10 @@ class AppointmentsFilterWidget extends StatelessWidget {
           child: DoctorSelectorButton(
             doctors: doctorOptions,
             selectedDoctorName: state.filter.doctorName,
+            showAllOption: true,
             onClearSelection: cubit.clearDoctorSelection,
-            onSelected: (d) => cubit.selectDoctor(doctorId: d.id, doctorName: d.name),
+            onSelected: (d) =>
+                cubit.selectDoctor(doctorId: d.id, doctorName: d.name),
           ),
         );
 
@@ -86,7 +93,8 @@ class AppointmentsFilterWidget extends StatelessWidget {
           child: AppFilterDateRangePicker(
             startDate: state.filter.startDate,
             endDate: state.filter.endDate,
-            onRangeSelected: (range) => cubit.updateDateRange(range.start, range.end),
+            onRangeSelected: (range) =>
+                cubit.updateDateRange(range.start, range.end),
           ),
         );
 
@@ -105,12 +113,18 @@ class AppointmentsFilterWidget extends StatelessWidget {
                 Expanded(flex: 3, child: buildSearch()),
                 const SizedBox(width: spacing),
                 ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: minDoctor, maxWidth: 210),
+                  constraints: const BoxConstraints(
+                    minWidth: minDoctor,
+                    maxWidth: 210,
+                  ),
                   child: buildDoctor(),
                 ),
                 const SizedBox(width: spacing),
                 ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: minDate, maxWidth: 280),
+                  constraints: const BoxConstraints(
+                    minWidth: minDate,
+                    maxWidth: 280,
+                  ),
                   child: buildDateRange(),
                 ),
               ],
@@ -154,8 +168,7 @@ class AppointmentsFilterWidget extends StatelessWidget {
               ],
             );
           }
-        }
-        else if (showSearch && showDoctorSelector && !showDateRange) {
+        } else if (showSearch && showDoctorSelector && !showDateRange) {
           if (width >= minSearch + minDoctor + spacing) {
             layout = Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -163,7 +176,10 @@ class AppointmentsFilterWidget extends StatelessWidget {
                 Expanded(flex: 3, child: buildSearch()),
                 const SizedBox(width: spacing),
                 ConstrainedBox(
-                  constraints: const BoxConstraints(minWidth: minDoctor, maxWidth: 180),
+                  constraints: const BoxConstraints(
+                    minWidth: minDoctor,
+                    maxWidth: 180,
+                  ),
                   child: buildDoctor(),
                 ),
               ],
@@ -178,8 +194,7 @@ class AppointmentsFilterWidget extends StatelessWidget {
               ],
             );
           }
-        }
-        else {
+        } else {
           layout = Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -211,7 +226,9 @@ class AppointmentsFilterWidget extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     ...AppointmentStatus.values.expand((status) {
-                      final count = state.appointments.where((a) => a.status == status).length;
+                      final count = state.appointments
+                          .where((a) => a.status == status)
+                          .length;
 
                       return [
                         AppointmentStatusCard(

@@ -1,8 +1,9 @@
 import 'package:dartz/dartz.dart';
+
 import '../../../../core/error/failures.dart';
 import '../entities/appointment_entity.dart';
-import '../entities/appointment_status.dart';
 import '../entities/appointment_stats.dart';
+import '../entities/appointment_status.dart';
 import '../usecases/get_appointments_usecase.dart';
 
 /// Unified Repository for all Appointment-related data operations.
@@ -52,4 +53,7 @@ abstract class IAppointmentRepository {
     String doctorId,
     DateTime date,
   );
+
+  /// Available days for a specific doctor.
+  Future<Either<Failure, List<String>>> getAvailableDays(String doctorId);
 }

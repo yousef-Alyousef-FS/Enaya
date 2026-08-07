@@ -1,12 +1,18 @@
 import 'package:get_it/get_it.dart';
+
 import '../../../features/auth/auth_imports.dart';
+import '../../../features/patients/domain/usecases/get_patient_profile_usecase.dart';
 
 final getIt = GetIt.instance;
 
 Future<void> initAuthInjection() async {
   // Data Sources
   getIt.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(tokenManager: getIt(), sessionManager: getIt(), dio: getIt()),
+    () => AuthRemoteDataSourceImpl(
+      tokenManager: getIt(),
+      sessionManager: getIt(),
+      dio: getIt(),
+    ),
   );
 
   // Repository
@@ -35,6 +41,7 @@ Future<void> initAuthInjection() async {
       sendEmailVerificationUseCase: getIt(),
       verifyEmailUseCase: getIt(),
       logoutUseCase: getIt(),
+      getPatientProfileUseCase: getIt<GetPatientProfileUseCase>(),
     ),
   );
 }

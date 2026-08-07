@@ -21,19 +21,24 @@ AppointmentModel _$AppointmentModelFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$AppointmentModel {
-  String get id => throw _privateConstructorUsedError;
-  String get patientId => throw _privateConstructorUsedError;
-  String get patientName => throw _privateConstructorUsedError;
-  String? get patientPhone => throw _privateConstructorUsedError;
-  String get doctorId => throw _privateConstructorUsedError;
-  String get doctorName => throw _privateConstructorUsedError;
-  DateTime get dateTime => throw _privateConstructorUsedError;
+  @JsonKey(name: 'id')
+  dynamic get id => throw _privateConstructorUsedError;
+  @JsonKey(name: 'patient_id')
+  dynamic get patientId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'doctor_id')
+  dynamic get doctorId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'scheduled_at')
+  DateTime get scheduledAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'status')
   AppointmentStatus get status => throw _privateConstructorUsedError;
-  String? get reason => throw _privateConstructorUsedError;
+  @JsonKey(name: 'visit_reason')
+  String? get visitReason => throw _privateConstructorUsedError;
+  @JsonKey(name: 'notes')
   String? get notes => throw _privateConstructorUsedError;
+  String? get patientName => throw _privateConstructorUsedError;
+  String? get doctorName => throw _privateConstructorUsedError;
+  String? get patientPhone => throw _privateConstructorUsedError;
   int? get queueNumber => throw _privateConstructorUsedError;
-  String? get cancelledBy => throw _privateConstructorUsedError;
-  String? get cancellationReason => throw _privateConstructorUsedError;
 
   /// Serializes this AppointmentModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -53,19 +58,17 @@ abstract class $AppointmentModelCopyWith<$Res> {
   ) = _$AppointmentModelCopyWithImpl<$Res, AppointmentModel>;
   @useResult
   $Res call({
-    String id,
-    String patientId,
-    String patientName,
+    @JsonKey(name: 'id') dynamic id,
+    @JsonKey(name: 'patient_id') dynamic patientId,
+    @JsonKey(name: 'doctor_id') dynamic doctorId,
+    @JsonKey(name: 'scheduled_at') DateTime scheduledAt,
+    @JsonKey(name: 'status') AppointmentStatus status,
+    @JsonKey(name: 'visit_reason') String? visitReason,
+    @JsonKey(name: 'notes') String? notes,
+    String? patientName,
+    String? doctorName,
     String? patientPhone,
-    String doctorId,
-    String doctorName,
-    DateTime dateTime,
-    AppointmentStatus status,
-    String? reason,
-    String? notes,
     int? queueNumber,
-    String? cancelledBy,
-    String? cancellationReason,
   });
 }
 
@@ -84,74 +87,64 @@ class _$AppointmentModelCopyWithImpl<$Res, $Val extends AppointmentModel>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? patientId = null,
-    Object? patientName = null,
-    Object? patientPhone = freezed,
-    Object? doctorId = null,
-    Object? doctorName = null,
-    Object? dateTime = null,
+    Object? id = freezed,
+    Object? patientId = freezed,
+    Object? doctorId = freezed,
+    Object? scheduledAt = null,
     Object? status = null,
-    Object? reason = freezed,
+    Object? visitReason = freezed,
     Object? notes = freezed,
+    Object? patientName = freezed,
+    Object? doctorName = freezed,
+    Object? patientPhone = freezed,
     Object? queueNumber = freezed,
-    Object? cancelledBy = freezed,
-    Object? cancellationReason = freezed,
   }) {
     return _then(
       _value.copyWith(
-            id: null == id
+            id: freezed == id
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
-                      as String,
-            patientId: null == patientId
+                      as dynamic,
+            patientId: freezed == patientId
                 ? _value.patientId
                 : patientId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            patientName: null == patientName
-                ? _value.patientName
-                : patientName // ignore: cast_nullable_to_non_nullable
-                      as String,
-            patientPhone: freezed == patientPhone
-                ? _value.patientPhone
-                : patientPhone // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            doctorId: null == doctorId
+                      as dynamic,
+            doctorId: freezed == doctorId
                 ? _value.doctorId
                 : doctorId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            doctorName: null == doctorName
-                ? _value.doctorName
-                : doctorName // ignore: cast_nullable_to_non_nullable
-                      as String,
-            dateTime: null == dateTime
-                ? _value.dateTime
-                : dateTime // ignore: cast_nullable_to_non_nullable
+                      as dynamic,
+            scheduledAt: null == scheduledAt
+                ? _value.scheduledAt
+                : scheduledAt // ignore: cast_nullable_to_non_nullable
                       as DateTime,
             status: null == status
                 ? _value.status
                 : status // ignore: cast_nullable_to_non_nullable
                       as AppointmentStatus,
-            reason: freezed == reason
-                ? _value.reason
-                : reason // ignore: cast_nullable_to_non_nullable
+            visitReason: freezed == visitReason
+                ? _value.visitReason
+                : visitReason // ignore: cast_nullable_to_non_nullable
                       as String?,
             notes: freezed == notes
                 ? _value.notes
                 : notes // ignore: cast_nullable_to_non_nullable
                       as String?,
+            patientName: freezed == patientName
+                ? _value.patientName
+                : patientName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            doctorName: freezed == doctorName
+                ? _value.doctorName
+                : doctorName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            patientPhone: freezed == patientPhone
+                ? _value.patientPhone
+                : patientPhone // ignore: cast_nullable_to_non_nullable
+                      as String?,
             queueNumber: freezed == queueNumber
                 ? _value.queueNumber
                 : queueNumber // ignore: cast_nullable_to_non_nullable
                       as int?,
-            cancelledBy: freezed == cancelledBy
-                ? _value.cancelledBy
-                : cancelledBy // ignore: cast_nullable_to_non_nullable
-                      as String?,
-            cancellationReason: freezed == cancellationReason
-                ? _value.cancellationReason
-                : cancellationReason // ignore: cast_nullable_to_non_nullable
-                      as String?,
           )
           as $Val,
     );
@@ -168,19 +161,17 @@ abstract class _$$AppointmentModelImplCopyWith<$Res>
   @override
   @useResult
   $Res call({
-    String id,
-    String patientId,
-    String patientName,
+    @JsonKey(name: 'id') dynamic id,
+    @JsonKey(name: 'patient_id') dynamic patientId,
+    @JsonKey(name: 'doctor_id') dynamic doctorId,
+    @JsonKey(name: 'scheduled_at') DateTime scheduledAt,
+    @JsonKey(name: 'status') AppointmentStatus status,
+    @JsonKey(name: 'visit_reason') String? visitReason,
+    @JsonKey(name: 'notes') String? notes,
+    String? patientName,
+    String? doctorName,
     String? patientPhone,
-    String doctorId,
-    String doctorName,
-    DateTime dateTime,
-    AppointmentStatus status,
-    String? reason,
-    String? notes,
     int? queueNumber,
-    String? cancelledBy,
-    String? cancellationReason,
   });
 }
 
@@ -198,74 +189,64 @@ class __$$AppointmentModelImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? patientId = null,
-    Object? patientName = null,
-    Object? patientPhone = freezed,
-    Object? doctorId = null,
-    Object? doctorName = null,
-    Object? dateTime = null,
+    Object? id = freezed,
+    Object? patientId = freezed,
+    Object? doctorId = freezed,
+    Object? scheduledAt = null,
     Object? status = null,
-    Object? reason = freezed,
+    Object? visitReason = freezed,
     Object? notes = freezed,
+    Object? patientName = freezed,
+    Object? doctorName = freezed,
+    Object? patientPhone = freezed,
     Object? queueNumber = freezed,
-    Object? cancelledBy = freezed,
-    Object? cancellationReason = freezed,
   }) {
     return _then(
       _$AppointmentModelImpl(
-        id: null == id
+        id: freezed == id
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
-                  as String,
-        patientId: null == patientId
+                  as dynamic,
+        patientId: freezed == patientId
             ? _value.patientId
             : patientId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        patientName: null == patientName
-            ? _value.patientName
-            : patientName // ignore: cast_nullable_to_non_nullable
-                  as String,
-        patientPhone: freezed == patientPhone
-            ? _value.patientPhone
-            : patientPhone // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        doctorId: null == doctorId
+                  as dynamic,
+        doctorId: freezed == doctorId
             ? _value.doctorId
             : doctorId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        doctorName: null == doctorName
-            ? _value.doctorName
-            : doctorName // ignore: cast_nullable_to_non_nullable
-                  as String,
-        dateTime: null == dateTime
-            ? _value.dateTime
-            : dateTime // ignore: cast_nullable_to_non_nullable
+                  as dynamic,
+        scheduledAt: null == scheduledAt
+            ? _value.scheduledAt
+            : scheduledAt // ignore: cast_nullable_to_non_nullable
                   as DateTime,
         status: null == status
             ? _value.status
             : status // ignore: cast_nullable_to_non_nullable
                   as AppointmentStatus,
-        reason: freezed == reason
-            ? _value.reason
-            : reason // ignore: cast_nullable_to_non_nullable
+        visitReason: freezed == visitReason
+            ? _value.visitReason
+            : visitReason // ignore: cast_nullable_to_non_nullable
                   as String?,
         notes: freezed == notes
             ? _value.notes
             : notes // ignore: cast_nullable_to_non_nullable
                   as String?,
+        patientName: freezed == patientName
+            ? _value.patientName
+            : patientName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        doctorName: freezed == doctorName
+            ? _value.doctorName
+            : doctorName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        patientPhone: freezed == patientPhone
+            ? _value.patientPhone
+            : patientPhone // ignore: cast_nullable_to_non_nullable
+                  as String?,
         queueNumber: freezed == queueNumber
             ? _value.queueNumber
             : queueNumber // ignore: cast_nullable_to_non_nullable
                   as int?,
-        cancelledBy: freezed == cancelledBy
-            ? _value.cancelledBy
-            : cancelledBy // ignore: cast_nullable_to_non_nullable
-                  as String?,
-        cancellationReason: freezed == cancellationReason
-            ? _value.cancellationReason
-            : cancellationReason // ignore: cast_nullable_to_non_nullable
-                  as String?,
       ),
     );
   }
@@ -275,54 +256,55 @@ class __$$AppointmentModelImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$AppointmentModelImpl implements _AppointmentModel {
   const _$AppointmentModelImpl({
-    required this.id,
-    required this.patientId,
-    required this.patientName,
+    @JsonKey(name: 'id') required this.id,
+    @JsonKey(name: 'patient_id') required this.patientId,
+    @JsonKey(name: 'doctor_id') required this.doctorId,
+    @JsonKey(name: 'scheduled_at') required this.scheduledAt,
+    @JsonKey(name: 'status') required this.status,
+    @JsonKey(name: 'visit_reason') this.visitReason,
+    @JsonKey(name: 'notes') this.notes,
+    this.patientName,
+    this.doctorName,
     this.patientPhone,
-    required this.doctorId,
-    required this.doctorName,
-    required this.dateTime,
-    required this.status,
-    this.reason,
-    this.notes,
     this.queueNumber,
-    this.cancelledBy,
-    this.cancellationReason,
   });
 
   factory _$AppointmentModelImpl.fromJson(Map<String, dynamic> json) =>
       _$$AppointmentModelImplFromJson(json);
 
   @override
-  final String id;
+  @JsonKey(name: 'id')
+  final dynamic id;
   @override
-  final String patientId;
+  @JsonKey(name: 'patient_id')
+  final dynamic patientId;
   @override
-  final String patientName;
+  @JsonKey(name: 'doctor_id')
+  final dynamic doctorId;
+  @override
+  @JsonKey(name: 'scheduled_at')
+  final DateTime scheduledAt;
+  @override
+  @JsonKey(name: 'status')
+  final AppointmentStatus status;
+  @override
+  @JsonKey(name: 'visit_reason')
+  final String? visitReason;
+  @override
+  @JsonKey(name: 'notes')
+  final String? notes;
+  @override
+  final String? patientName;
+  @override
+  final String? doctorName;
   @override
   final String? patientPhone;
   @override
-  final String doctorId;
-  @override
-  final String doctorName;
-  @override
-  final DateTime dateTime;
-  @override
-  final AppointmentStatus status;
-  @override
-  final String? reason;
-  @override
-  final String? notes;
-  @override
   final int? queueNumber;
-  @override
-  final String? cancelledBy;
-  @override
-  final String? cancellationReason;
 
   @override
   String toString() {
-    return 'AppointmentModel(id: $id, patientId: $patientId, patientName: $patientName, patientPhone: $patientPhone, doctorId: $doctorId, doctorName: $doctorName, dateTime: $dateTime, status: $status, reason: $reason, notes: $notes, queueNumber: $queueNumber, cancelledBy: $cancelledBy, cancellationReason: $cancellationReason)';
+    return 'AppointmentModel(id: $id, patientId: $patientId, doctorId: $doctorId, scheduledAt: $scheduledAt, status: $status, visitReason: $visitReason, notes: $notes, patientName: $patientName, doctorName: $doctorName, patientPhone: $patientPhone, queueNumber: $queueNumber)';
   }
 
   @override
@@ -330,47 +312,40 @@ class _$AppointmentModelImpl implements _AppointmentModel {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$AppointmentModelImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.patientId, patientId) ||
-                other.patientId == patientId) &&
+            const DeepCollectionEquality().equals(other.id, id) &&
+            const DeepCollectionEquality().equals(other.patientId, patientId) &&
+            const DeepCollectionEquality().equals(other.doctorId, doctorId) &&
+            (identical(other.scheduledAt, scheduledAt) ||
+                other.scheduledAt == scheduledAt) &&
+            (identical(other.status, status) || other.status == status) &&
+            (identical(other.visitReason, visitReason) ||
+                other.visitReason == visitReason) &&
+            (identical(other.notes, notes) || other.notes == notes) &&
             (identical(other.patientName, patientName) ||
                 other.patientName == patientName) &&
-            (identical(other.patientPhone, patientPhone) ||
-                other.patientPhone == patientPhone) &&
-            (identical(other.doctorId, doctorId) ||
-                other.doctorId == doctorId) &&
             (identical(other.doctorName, doctorName) ||
                 other.doctorName == doctorName) &&
-            (identical(other.dateTime, dateTime) ||
-                other.dateTime == dateTime) &&
-            (identical(other.status, status) || other.status == status) &&
-            (identical(other.reason, reason) || other.reason == reason) &&
-            (identical(other.notes, notes) || other.notes == notes) &&
+            (identical(other.patientPhone, patientPhone) ||
+                other.patientPhone == patientPhone) &&
             (identical(other.queueNumber, queueNumber) ||
-                other.queueNumber == queueNumber) &&
-            (identical(other.cancelledBy, cancelledBy) ||
-                other.cancelledBy == cancelledBy) &&
-            (identical(other.cancellationReason, cancellationReason) ||
-                other.cancellationReason == cancellationReason));
+                other.queueNumber == queueNumber));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
-    id,
-    patientId,
-    patientName,
-    patientPhone,
-    doctorId,
-    doctorName,
-    dateTime,
+    const DeepCollectionEquality().hash(id),
+    const DeepCollectionEquality().hash(patientId),
+    const DeepCollectionEquality().hash(doctorId),
+    scheduledAt,
     status,
-    reason,
+    visitReason,
     notes,
+    patientName,
+    doctorName,
+    patientPhone,
     queueNumber,
-    cancelledBy,
-    cancellationReason,
   );
 
   /// Create a copy of AppointmentModel
@@ -392,50 +367,51 @@ class _$AppointmentModelImpl implements _AppointmentModel {
 
 abstract class _AppointmentModel implements AppointmentModel {
   const factory _AppointmentModel({
-    required final String id,
-    required final String patientId,
-    required final String patientName,
+    @JsonKey(name: 'id') required final dynamic id,
+    @JsonKey(name: 'patient_id') required final dynamic patientId,
+    @JsonKey(name: 'doctor_id') required final dynamic doctorId,
+    @JsonKey(name: 'scheduled_at') required final DateTime scheduledAt,
+    @JsonKey(name: 'status') required final AppointmentStatus status,
+    @JsonKey(name: 'visit_reason') final String? visitReason,
+    @JsonKey(name: 'notes') final String? notes,
+    final String? patientName,
+    final String? doctorName,
     final String? patientPhone,
-    required final String doctorId,
-    required final String doctorName,
-    required final DateTime dateTime,
-    required final AppointmentStatus status,
-    final String? reason,
-    final String? notes,
     final int? queueNumber,
-    final String? cancelledBy,
-    final String? cancellationReason,
   }) = _$AppointmentModelImpl;
 
   factory _AppointmentModel.fromJson(Map<String, dynamic> json) =
       _$AppointmentModelImpl.fromJson;
 
   @override
-  String get id;
+  @JsonKey(name: 'id')
+  dynamic get id;
   @override
-  String get patientId;
+  @JsonKey(name: 'patient_id')
+  dynamic get patientId;
   @override
-  String get patientName;
+  @JsonKey(name: 'doctor_id')
+  dynamic get doctorId;
+  @override
+  @JsonKey(name: 'scheduled_at')
+  DateTime get scheduledAt;
+  @override
+  @JsonKey(name: 'status')
+  AppointmentStatus get status;
+  @override
+  @JsonKey(name: 'visit_reason')
+  String? get visitReason;
+  @override
+  @JsonKey(name: 'notes')
+  String? get notes;
+  @override
+  String? get patientName;
+  @override
+  String? get doctorName;
   @override
   String? get patientPhone;
   @override
-  String get doctorId;
-  @override
-  String get doctorName;
-  @override
-  DateTime get dateTime;
-  @override
-  AppointmentStatus get status;
-  @override
-  String? get reason;
-  @override
-  String? get notes;
-  @override
   int? get queueNumber;
-  @override
-  String? get cancelledBy;
-  @override
-  String? get cancellationReason;
 
   /// Create a copy of AppointmentModel
   /// with the given fields replaced by the non-null parameter values.
