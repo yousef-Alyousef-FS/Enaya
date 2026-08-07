@@ -39,7 +39,8 @@ class _BaseDashboardPageState extends State<BaseDashboardPage> {
   @override
   void didUpdateWidget(covariant BaseDashboardPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialIndex != widget.initialIndex && _selectedIndex != widget.initialIndex) {
+    if (oldWidget.initialIndex != widget.initialIndex &&
+        _selectedIndex != widget.initialIndex) {
       setState(() => _selectedIndex = widget.initialIndex);
     }
   }
@@ -55,6 +56,14 @@ class _BaseDashboardPageState extends State<BaseDashboardPage> {
         widget.appBar ??
         DashboardAppBar(
           titleText: widget.navigationItems[_selectedIndex].labelKey.tr(),
+          onProfileTap: () {
+            final profileIndex = widget.navigationItems.indexWhere(
+              (item) => item.labelKey == 'nav_profile',
+            );
+            if (profileIndex != -1) {
+              _handleSelected(profileIndex);
+            }
+          },
         );
 
     return DashboardShell(

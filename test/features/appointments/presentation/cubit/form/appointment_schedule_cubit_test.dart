@@ -1,7 +1,6 @@
 import 'package:dartz/dartz.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-
+import 'package:enaya/core/usecases/usecase.dart';
+import 'package:enaya/core/usecases/usecase.dart';
 import 'package:enaya/features/appointments/domain/entities/doctor_summary.dart';
 import 'package:enaya/features/appointments/domain/usecases/create_appointment_usecase.dart';
 import 'package:enaya/features/appointments/domain/usecases/generate_time_slots_usecase.dart';
@@ -9,7 +8,8 @@ import 'package:enaya/features/appointments/domain/usecases/get_available_doctor
 import 'package:enaya/features/appointments/domain/usecases/reschedule_appointment_usecase.dart';
 import 'package:enaya/features/appointments/domain/usecases/search_available_slots_usecase.dart';
 import 'package:enaya/features/appointments/presentation/cubit/form/appointment_schedule_cubit.dart';
-import 'package:enaya/core/usecases/usecase.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktailation/cubit/form/appointment_schedule_cubit.dart';
 
 class MockGetAvailableDoctorsUseCase extends Mock
     implements GetAvailableDoctorsUseCase {}
@@ -17,29 +17,34 @@ class MockGetAvailableDoctorsUseCase extends Mock
 class MockCreateAppointmentUseCase extends Mock
     implements CreateAppointmentUseCase {}
 
-class MockGenerateTimeSlotsUseCase extends Mock
-    implements GenerateTimeSlotsUseCase {}
-
 class MockSearchAvailableSlotsUseCase extends Mock
     implements SearchAvailableSlotsUseCase {}
 
 class MockRescheduleAppointmentUseCase extends Mock
     implements RescheduleAppointmentUseCase {}
 
+class MockGetAvailableDaysUseCase extends Mock
+    implements GetAvailableDaysUseCase {}
+
+class MockGetAvailableSlotsUseCase extends Mock
+    implements GetAvailableSlotsUseCase {}
+
 void main() {
   group('AppointmentScheduleCubit', () {
     late MockGetAvailableDoctorsUseCase getAvailableDoctorsUseCase;
     late MockCreateAppointmentUseCase createAppointmentUseCase;
-    late MockGenerateTimeSlotsUseCase generateTimeSlotsUseCase;
     late MockSearchAvailableSlotsUseCase searchAvailableSlotsUseCase;
     late MockRescheduleAppointmentUseCase rescheduleAppointmentUseCase;
+    late MockGetAvailableDaysUseCase getAvailableDaysUseCase;
+    late MockGetAvailableSlotsUseCase getAvailableSlotsUseCase;
 
     setUp(() {
       getAvailableDoctorsUseCase = MockGetAvailableDoctorsUseCase();
       createAppointmentUseCase = MockCreateAppointmentUseCase();
-      generateTimeSlotsUseCase = MockGenerateTimeSlotsUseCase();
       searchAvailableSlotsUseCase = MockSearchAvailableSlotsUseCase();
       rescheduleAppointmentUseCase = MockRescheduleAppointmentUseCase();
+      getAvailableDaysUseCase = MockGetAvailableDaysUseCase();
+      getAvailableSlotsUseCase = MockGetAvailableSlotsUseCase();
     });
 
     setUpAll(() {
@@ -59,9 +64,10 @@ void main() {
       final cubit = AppointmentScheduleCubit(
         getAvailableDoctorsUseCase: getAvailableDoctorsUseCase,
         createAppointmentUseCase: createAppointmentUseCase,
-        generateTimeSlotsUseCase: generateTimeSlotsUseCase,
         searchAvailableSlotsUseCase: searchAvailableSlotsUseCase,
         rescheduleAppointmentUseCase: rescheduleAppointmentUseCase,
+        getAvailableDaysUseCase: getAvailableDaysUseCase,
+        getAvailableSlotsUseCase: getAvailableSlotsUseCase,
       );
 
       await cubit.loadAvailableDoctors();

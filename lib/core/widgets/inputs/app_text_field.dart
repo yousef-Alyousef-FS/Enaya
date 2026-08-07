@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../theme/app_colors.dart';
 
 /// A standardized text field used across the application to ensure visual consistency.
@@ -19,6 +20,7 @@ class AppTextField extends StatelessWidget {
   final int? maxLines;
   final int? minLines;
   final FocusNode? focusNode;
+  final String? Function(String?)? validator;
 
   const AppTextField({
     super.key,
@@ -37,6 +39,7 @@ class AppTextField extends StatelessWidget {
     this.maxLines = 1,
     this.minLines,
     this.focusNode,
+    this.validator,
   });
 
   @override
@@ -57,6 +60,7 @@ class AppTextField extends StatelessWidget {
           maxLines: maxLines,
           minLines: minLines,
           focusNode: focusNode,
+          validator: validator,
           style: TextStyle(
             color: isDark ? AppColors.darkTextPrimary : AppColors.gray900,
             fontSize: 15,
@@ -73,25 +77,35 @@ class AppTextField extends StatelessWidget {
             errorText: errorText,
             filled: true,
             fillColor: isDark ? AppColors.darkSurface : Colors.white,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
             isDense: true,
 
             // Default Border
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: isDark ? AppColors.gray700 : AppColors.gray200),
+              borderSide: BorderSide(
+                color: isDark ? AppColors.gray700 : AppColors.gray200,
+              ),
             ),
 
             // Enabled Border
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: isDark ? AppColors.gray700 : AppColors.gray200),
+              borderSide: BorderSide(
+                color: isDark ? AppColors.gray700 : AppColors.gray200,
+              ),
             ),
 
             // Focused Border
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
             ),
 
             // Error Border
@@ -113,7 +127,9 @@ class AppTextField extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.darkTextPrimary : AppColors.secondary,
+                  color: isDark
+                      ? AppColors.darkTextPrimary
+                      : AppColors.secondary,
                 ),
               ),
               const SizedBox(height: 8),

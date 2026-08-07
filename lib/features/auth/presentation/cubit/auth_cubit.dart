@@ -3,18 +3,18 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/usecases/usecase.dart';
+import '../../../patients/domain/usecases/get_patient_profile_usecase.dart';
 import '../../domain/entities/user_entity.dart';
+import '../../domain/usecases/change_password_usecase.dart';
 import '../../domain/usecases/forgot_password_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
-import '../../domain/usecases/change_password_usecase.dart';
 import '../../domain/usecases/reset_password_usecase.dart';
 import '../../domain/usecases/send_email_verification_usecase.dart';
 import '../../domain/usecases/signup_usecase.dart';
 import '../../domain/usecases/verify_email_usecase.dart';
 import 'auth_state.dart';
 
-/// Auth orchestration cubit that delegates operations to use cases.
 class AuthCubit extends Cubit<AuthState> {
   final LoginUseCase _loginUseCase;
   final SignupUsecase _signupUseCase;
@@ -24,6 +24,7 @@ class AuthCubit extends Cubit<AuthState> {
   final SendEmailVerificationUseCase _sendEmailVerificationUseCase;
   final VerifyEmailUseCase _verifyEmailUseCase;
   final LogoutUseCase _logoutUseCase;
+  final GetPatientProfileUseCase _getPatientProfileUseCase;
 
   AuthCubit({
     required LoginUseCase loginUseCase,
@@ -34,6 +35,7 @@ class AuthCubit extends Cubit<AuthState> {
     required SendEmailVerificationUseCase sendEmailVerificationUseCase,
     required VerifyEmailUseCase verifyEmailUseCase,
     required LogoutUseCase logoutUseCase,
+    required GetPatientProfileUseCase getPatientProfileUseCase,
   }) : _loginUseCase = loginUseCase,
        _signupUseCase = signupUseCase,
        _forgotPasswordUseCase = forgotPasswordUseCase,
@@ -42,26 +44,65 @@ class AuthCubit extends Cubit<AuthState> {
        _sendEmailVerificationUseCase = sendEmailVerificationUseCase,
        _verifyEmailUseCase = verifyEmailUseCase,
        _logoutUseCase = logoutUseCase,
+       _getPatientProfileUseCase = getPatientProfileUseCase,
        super(const AuthState.initial());
 
-  /// Authenticates user with username/email and password.
   Future<void> login(String usernameOrEmail, String password) async {
-    await _handleResult<UserEntity>(
-      _loginUseCase(
-        LoginParams(usernameOrEmail: usernameOrEmail, password: password),
+    emit(
+      state.copyWith(
+        isLoading: true,
+        clearErrorMessage: true,
+        isSuccess: false,
       ),
-      onSuccess: (user) => emit(
-        state.copyWith(
-          isLoading: false,
-          clearErrorMessage: true,
-          isSuccess: true,
-          currentUser: user,
-        ),
-      ),
+    );
+
+    final result = await _loginUseCase(
+      LoginParams(usernameOrEmail: usernameOrEmail, password: password),
+    );
+
+    await result.fold(
+      (failure) async {
+        emit(state.copyWith(isLoading: false, errorMessage: failure.message));
+      },
+      (user) async {
+        if (user.roleId == 3) {
+          final profileResult = await _getPatientProfileUseCase(NoParams());
+          profileResult.fold(
+            (failure) {
+              emit(
+                state.copyWith(
+                  isLoading: false,
+                  isSuccess: true,
+                  currentUser: user,
+                ),
+              );
+            },
+            (profile) {
+              final updatedUser = user.copyWith(
+                profileCompleted: profile.profileCompleted,
+              );
+              emit(
+                state.copyWith(
+                  isLoading: false,
+                  isSuccess: true,
+                  currentUser: updatedUser,
+                ),
+              );
+            },
+          );
+        } else {
+          emit(
+            state.copyWith(
+              isLoading: false,
+              isSuccess: true,
+              currentUser: user,
+            ),
+          );
+        }
+      },
     );
   }
 
-  /// Creates a new user account.
   Future<void> signup(
     String email,
     String password,
@@ -88,7 +129,6 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  /// Initiates forgot-password flow by email.
   Future<void> forgotPassword(String email) async {
     await _handleResult<void>(
       _forgotPasswordUseCase(email),
@@ -102,7 +142,6 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  /// Resets password using verification code and new password.
   Future<void> resetPassword({
     required String email,
     required String verificationCode,
@@ -126,7 +165,6 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  /// Changes password for currently authenticated account.
   Future<void> changePassword({
     required String currentPassword,
     required String newPassword,
@@ -148,7 +186,6 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  /// Requests verification code email.
   Future<void> sendEmailVerification(String email) async {
     await _handleResult<void>(
       _sendEmailVerificationUseCase(email),
@@ -162,7 +199,6 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  /// Verifies email using code sent to the user.
   Future<void> verifyEmail({
     required String email,
     required String verificationCode,
@@ -181,7 +217,6 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  /// Clears local session state via logout use case.
   Future<void> logout() async {
     await _handleResult<void>(
       _logoutUseCase(NoParams()),
@@ -196,12 +231,10 @@ class AuthCubit extends Cubit<AuthState> {
     );
   }
 
-  /// Clears transient success/error flags for next screen action.
   void clearStatus() {
     emit(state.copyWith(clearErrorMessage: true, isSuccess: false));
   }
 
-  /// Shared async operation wrapper used by all auth flows.
   Future<void> _handleResult<T>(
     Future<Either<Failure, T>> call, {
     required void Function(T data) onSuccess,
@@ -226,7 +259,5 @@ class AuthCubit extends Cubit<AuthState> {
       ),
       onSuccess,
     );
-
-    // End auth operation dispatch flow.
   }
 }

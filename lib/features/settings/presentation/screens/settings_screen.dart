@@ -4,8 +4,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/language/language_manager.dart';
+import '../../../../core/routing/app_router.dart';
 import '../../../../core/services/settings_service.dart';
 import '../../../../core/theme/cubit/theme_cubit.dart';
+import '../../../auth/presentation/cubit/auth_cubit.dart';
+import 'package:go_router/go_router.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -56,6 +59,49 @@ class SettingsScreen extends StatelessWidget {
           ),
 
           const Divider(height: 1),
+
+          // ====== Account Section ======
+          _SettingsHeader(title: 'account'.tr()),
+          ListTile(
+            dense: true,
+            leading: const Icon(Icons.logout, color: Colors.red),
+            title: Text(
+              'logout'.tr(),
+              style: const TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            onTap: () => _showLogoutConfirmation(context),
+          ),
+          const Divider(height: 1),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('logout'.tr()),
+        content: Text('logout_confirmation'.tr()),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('cancel'.tr()),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              context.read<AuthCubit>().logout();
+              context.go(AppRouter.login);
+            },
+            child: Text(
+              'logout'.tr(),
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
         ],
       ),
     );

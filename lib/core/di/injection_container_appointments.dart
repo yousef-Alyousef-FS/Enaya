@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+
 import '../../../features/appointments/data/cache/appointment_cache_helper.dart';
 import '../../../features/appointments/data/cache/doctor_availability_cache_helper.dart';
 import '../../../features/appointments/data/datasources/appointment_remote_data_source.dart';
@@ -21,6 +22,7 @@ import '../../../features/appointments/domain/usecases/get_appointment_by_id_use
 import '../../../features/appointments/domain/usecases/get_appointment_details_usecase.dart';
 import '../../../features/appointments/domain/usecases/get_appointments_stats_usecase.dart';
 import '../../../features/appointments/domain/usecases/get_appointments_usecase.dart';
+import '../../../features/appointments/domain/usecases/get_available_days_usecase.dart';
 import '../../../features/appointments/domain/usecases/get_available_doctors_usecase.dart';
 import '../../../features/appointments/domain/usecases/get_available_slots_usecase.dart';
 import '../../../features/appointments/domain/usecases/reschedule_appointment_usecase.dart';
@@ -41,13 +43,13 @@ Future<void> initAppointmentsInjection() async {
 
   // Data Sources
   getIt.registerLazySingleton<AppointmentRemoteDataSource>(
-    () => AppointmentRemoteDataSourceImpl(getIt()),
+    () => AppointmentRemoteDataSourceImpl(getIt(), getIt()),
   );
   getIt.registerLazySingleton<DoctorAvailabilityDataSource>(
     () => DoctorAvailabilityRemoteDataSource(getIt()),
   );
   getIt.registerLazySingleton<DoctorDirectoryDataSource>(
-    () => DoctorDirectoryRemoteDataSource(getIt()),
+    () => DoctorDirectoryRemoteDataSource(getIt(), getIt()),
   );
 
   // Cache Helpers
@@ -60,10 +62,17 @@ Future<void> initAppointmentsInjection() async {
 
   // Repositories
   getIt.registerLazySingleton<IAppointmentRepository>(
-    () => AppointmentRepositoryImpl(remote: getIt(), networkInfo: getIt(), cacheHelper: getIt()),
+    () => AppointmentRepositoryImpl(
+      remote: getIt(),
+      networkInfo: getIt(),
+      cacheHelper: getIt(),
+    ),
   );
   getIt.registerLazySingleton<DoctorAvailabilityRepository>(
-    () => DoctorAvailabilityRepositoryImpl(dataSource: getIt(), cacheHelper: getIt()),
+    () => DoctorAvailabilityRepositoryImpl(
+      dataSource: getIt(),
+      cacheHelper: getIt(),
+    ),
   );
   getIt.registerLazySingleton<DoctorDirectoryRepository>(
     () => DoctorDirectoryRepositoryImpl(dataSource: getIt()),
@@ -77,9 +86,12 @@ Future<void> initAppointmentsInjection() async {
   getIt.registerLazySingleton(() => GetAppointmentByIdUseCase(getIt()));
   getIt.registerLazySingleton(() => UpdateAppointmentStatusUseCase(getIt()));
   getIt.registerLazySingleton(() => RescheduleAppointmentUseCase(getIt()));
-  getIt.registerLazySingleton(() => CancelAppointmentUseCase(repository: getIt()));
+  getIt.registerLazySingleton(
+    () => CancelAppointmentUseCase(repository: getIt()),
+  );
   getIt.registerLazySingleton(() => DeleteAppointmentUseCase(getIt()));
   getIt.registerLazySingleton(() => GetAvailableSlotsUseCase(getIt()));
+  getIt.registerLazySingleton(() => GetAvailableDaysUseCase(getIt()));
   getIt.registerLazySingleton(() => GetAppointmentsStatsUseCase(getIt()));
   getIt.registerLazySingleton(
     () => SearchAvailableSlotsUseCase(
@@ -117,9 +129,10 @@ Future<void> initAppointmentsInjection() async {
     () => AppointmentScheduleCubit(
       getAvailableDoctorsUseCase: getIt(),
       createAppointmentUseCase: getIt(),
-      generateTimeSlotsUseCase: getIt(),
       searchAvailableSlotsUseCase: getIt(),
       rescheduleAppointmentUseCase: getIt(),
+      getAvailableDaysUseCase: getIt(),
+      getAvailableSlotsUseCase: getIt(),
     ),
   );
   getIt.registerFactory(
@@ -132,7 +145,12 @@ Future<void> initAppointmentsInjection() async {
     ),
   );
   getIt.registerFactory(
-    () => DoctorAvailabilityCubit(repository: getIt(), getAppointmentsUseCase: getIt()),
+    () => DoctorAvailabilityCubit(
+      repository: getIt(),
+      getAppointmentsUseCase: getIt(),
+    ),
   );
-  getIt.registerFactory(() => PatientAppointmentsCubit(getAppointmentsUseCase: getIt()));
+  getIt.registerFactory(
+    () => PatientAppointmentsCubit(getAppointmentsUseCase: getIt()),
+  );
 }

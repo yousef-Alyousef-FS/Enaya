@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../models/dashboard_nav_item.dart';
 
 const List<DashboardNavItem> receptionistNavigationItems = [
@@ -35,10 +36,14 @@ const List<DashboardNavItem> receptionistNavigationItems = [
     isEnabled: false,
   ),
   DashboardNavItem(
+    icon: Icons.person_outline,
+    selectedIcon: Icons.person,
+    labelKey: 'nav_profile',
+  ),
+  DashboardNavItem(
     icon: Icons.settings_outlined,
     selectedIcon: Icons.settings,
     labelKey: 'nav_settings',
-    isEnabled: false,
   ),
 ];
 
@@ -72,10 +77,14 @@ const List<DashboardNavItem> doctorNavigationItems = [
     isEnabled: false,
   ),
   DashboardNavItem(
+    icon: Icons.person_outline,
+    selectedIcon: Icons.person,
+    labelKey: 'nav_profile',
+  ),
+  DashboardNavItem(
     icon: Icons.settings_outlined,
     selectedIcon: Icons.settings,
     labelKey: 'nav_settings',
-    isEnabled: false,
   ),
 ];
 
@@ -107,6 +116,10 @@ const List<DashboardNavItem> patientNavigationItems = [
     icon: Icons.person_outline,
     selectedIcon: Icons.person,
     labelKey: 'nav_profile',
-    isEnabled: false,
+  ),
+  DashboardNavItem(
+    icon: Icons.settings_outlined,
+    selectedIcon: Icons.settings,
+    labelKey: 'nav_settings',
   ),
 ];

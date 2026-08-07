@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import '../../../domain/entities/appointment_entity.dart';
+
 import '../../../domain/entities/appointment_status.dart';
+import '../../../domain/entities/appointment_entity.dart';
 
 part 'appointment_model.freezed.dart';
 part 'appointment_model.g.dart';
@@ -8,19 +9,17 @@ part 'appointment_model.g.dart';
 @freezed
 class AppointmentModel with _$AppointmentModel {
   const factory AppointmentModel({
-    required String id,
-    required String patientId,
-    required String patientName,
+    @JsonKey(name: 'id') required dynamic id,
+    @JsonKey(name: 'patient_id') required dynamic patientId,
+    @JsonKey(name: 'doctor_id') required dynamic doctorId,
+    @JsonKey(name: 'scheduled_at') required DateTime scheduledAt,
+    @JsonKey(name: 'status') required AppointmentStatus status,
+    @JsonKey(name: 'visit_reason') String? visitReason,
+    @JsonKey(name: 'notes') String? notes,
+    String? patientName,
+    String? doctorName,
     String? patientPhone,
-    required String doctorId,
-    required String doctorName,
-    required DateTime dateTime,
-    required AppointmentStatus status,
-    String? reason,
-    String? notes,
     int? queueNumber,
-    String? cancelledBy,
-    String? cancellationReason,
   }) = _AppointmentModel;
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) =>
@@ -30,19 +29,17 @@ class AppointmentModel with _$AppointmentModel {
 extension AppointmentModelMapper on AppointmentModel {
   AppointmentEntity toEntity() {
     return AppointmentEntity(
-      id: id,
-      patientId: patientId,
-      patientName: patientName,
+      id: id.toString(),
+      patientId: patientId.toString(),
+      patientName: patientName ?? 'Patient #$patientId',
       patientPhone: patientPhone,
-      doctorId: doctorId,
-      doctorName: doctorName,
-      dateTime: dateTime,
+      doctorId: doctorId.toString(),
+      doctorName: doctorName ?? 'Doctor #$doctorId',
+      dateTime: scheduledAt,
       status: status,
-      reason: reason,
+      reason: visitReason,
       notes: notes,
       queueNumber: queueNumber,
-      cancelledBy: cancelledBy,
-      cancellationReason: cancellationReason,
     );
   }
 
@@ -50,17 +47,15 @@ extension AppointmentModelMapper on AppointmentModel {
     return AppointmentModel(
       id: entity.id,
       patientId: entity.patientId,
-      patientName: entity.patientName,
-      patientPhone: entity.patientPhone,
       doctorId: entity.doctorId,
-      doctorName: entity.doctorName,
-      dateTime: entity.dateTime,
+      scheduledAt: entity.dateTime,
       status: entity.status,
-      reason: entity.reason,
+      visitReason: entity.reason,
       notes: entity.notes,
+      patientName: entity.patientName,
+      doctorName: entity.doctorName,
+      patientPhone: entity.patientPhone,
       queueNumber: entity.queueNumber,
-      cancelledBy: entity.cancelledBy,
-      cancellationReason: entity.cancellationReason,
     );
   }
 }
