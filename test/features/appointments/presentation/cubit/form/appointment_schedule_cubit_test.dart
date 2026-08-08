@@ -1,15 +1,15 @@
 import 'package:dartz/dartz.dart';
 import 'package:enaya/core/usecases/usecase.dart';
-import 'package:enaya/core/usecases/usecase.dart';
 import 'package:enaya/features/appointments/domain/entities/doctor_summary.dart';
 import 'package:enaya/features/appointments/domain/usecases/create_appointment_usecase.dart';
-import 'package:enaya/features/appointments/domain/usecases/generate_time_slots_usecase.dart';
+import 'package:enaya/features/appointments/domain/usecases/get_available_days_usecase.dart';
 import 'package:enaya/features/appointments/domain/usecases/get_available_doctors_usecase.dart';
+import 'package:enaya/features/appointments/domain/usecases/get_available_slots_usecase.dart';
 import 'package:enaya/features/appointments/domain/usecases/reschedule_appointment_usecase.dart';
 import 'package:enaya/features/appointments/domain/usecases/search_available_slots_usecase.dart';
 import 'package:enaya/features/appointments/presentation/cubit/form/appointment_schedule_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktailation/cubit/form/appointment_schedule_cubit.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockGetAvailableDoctorsUseCase extends Mock
     implements GetAvailableDoctorsUseCase {}

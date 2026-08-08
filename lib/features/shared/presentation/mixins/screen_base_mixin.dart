@@ -1,5 +1,6 @@
 import 'package:enaya/core/widgets/dialogs/app_dialogs.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 /// Reusable UI helpers for stateful screens.
 ///
@@ -69,16 +70,15 @@ mixin ScreenBaseMixin<T extends StatefulWidget> on State<T> {
   }
 
   /// Pops current route and returns optional result.
-  void pop<T>([T? result]) => Navigator.of(context).pop<T>(result);
+  void pop<Result>([Result? result]) => context.pop<Result>(result);
 
-  /// Pushes a new screen using MaterialPageRoute.
-  Future<T?> push<T>(Widget screen) =>
-      Navigator.of(context).push<T>(MaterialPageRoute(builder: (_) => screen));
+  /// Pushes a new screen using GoRouter location.
+  Future<Result?> push<Result>(String location, {Object? extra}) =>
+      context.push<Result>(location, extra: extra);
 
-  /// Replaces current screen with a new one.
-  Future<T?> pushReplacement<T>(Widget screen) => Navigator.of(
-    context,
-  ).pushReplacement<T, T>(MaterialPageRoute(builder: (_) => screen));
+  /// Replaces current screen with a new one using GoRouter location.
+  void pushReplacement(String location, {Object? extra}) =>
+      context.pushReplacement(location, extra: extra);
 
   /// Current active theme.
   ThemeData get theme => Theme.of(context);

@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/di/injection.dart';
 import '../../../../core/language/language_manager.dart';
@@ -8,75 +9,80 @@ import '../../../../core/routing/app_router.dart';
 import '../../../../core/services/settings_service.dart';
 import '../../../../core/theme/cubit/theme_cubit.dart';
 import '../../../auth/presentation/cubit/auth_cubit.dart';
-import 'package:go_router/go_router.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  final bool showAppBar;
+
+  const SettingsScreen({super.key, this.showAppBar = true});
 
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.locale;
 
+    final content = ListView(
+      children: [
+        // ====== Appearance Section ======
+        _SettingsHeader(title: 'appearance'.tr()),
+        BlocBuilder<ThemeCubit, ThemeState>(
+          builder: (context, state) {
+            final isDark = state.themeMode == ThemeMode.dark;
+            return SwitchListTile.adaptive(
+              dense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+              value: isDark,
+              onChanged: (_) {
+                context.read<ThemeCubit>().setThemeMode(
+                  isDark ? ThemeMode.light : ThemeMode.dark,
+                );
+              },
+              title: Text('dark_mode'.tr()),
+              subtitle: Text(isDark ? 'enabled'.tr() : 'disabled'.tr()),
+              secondary: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
+            );
+          },
+        ),
+
+        const Divider(height: 1),
+
+        // ====== Language Section ======
+        _SettingsHeader(title: 'language'.tr()),
+        ListTile(
+          dense: true,
+          leading: const Icon(Icons.language),
+          title: Text('change_language'.tr()),
+          subtitle: Text(
+            '${'current_language'.tr()}: '
+            '${currentLocale.languageCode == 'ar' ? 'arabic'.tr() : 'english'.tr()}',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => _showLanguagePicker(context),
+        ),
+
+        const Divider(height: 1),
+
+        // ====== Account Section ======
+        _SettingsHeader(title: 'account'.tr()),
+        ListTile(
+          dense: true,
+          leading: const Icon(Icons.logout, color: Colors.red),
+          title: Text(
+            'logout'.tr(),
+            style: const TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          onTap: () => _showLogoutConfirmation(context),
+        ),
+        const Divider(height: 1),
+      ],
+    );
+
+    if (!showAppBar) return content;
+
     return Scaffold(
       appBar: AppBar(title: Text('settings'.tr()), centerTitle: true),
-      body: ListView(
-        children: [
-          // ====== Appearance Section ======
-          _SettingsHeader(title: 'appearance'.tr()),
-          BlocBuilder<ThemeCubit, ThemeState>(
-            builder: (context, state) {
-              final isDark = state.themeMode == ThemeMode.dark;
-              return SwitchListTile.adaptive(
-                dense: true,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                value: isDark,
-                onChanged: (_) {
-                  context.read<ThemeCubit>().setThemeMode(
-                    isDark ? ThemeMode.light : ThemeMode.dark,
-                  );
-                },
-                title: Text('dark_mode'.tr()),
-                subtitle: Text(isDark ? 'enabled'.tr() : 'disabled'.tr()),
-                secondary: Icon(isDark ? Icons.dark_mode : Icons.light_mode),
-              );
-            },
-          ),
-
-          const Divider(height: 1),
-
-          // ====== Language Section ======
-          _SettingsHeader(title: 'language'.tr()),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.language),
-            title: Text('change_language'.tr()),
-            subtitle: Text(
-              '${'current_language'.tr()}: '
-              '${currentLocale.languageCode == 'ar' ? 'arabic'.tr() : 'english'.tr()}',
-            ),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => _showLanguagePicker(context),
-          ),
-
-          const Divider(height: 1),
-
-          // ====== Account Section ======
-          _SettingsHeader(title: 'account'.tr()),
-          ListTile(
-            dense: true,
-            leading: const Icon(Icons.logout, color: Colors.red),
-            title: Text(
-              'logout'.tr(),
-              style: const TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            onTap: () => _showLogoutConfirmation(context),
-          ),
-          const Divider(height: 1),
-        ],
-      ),
+      body: content,
     );
   }
 

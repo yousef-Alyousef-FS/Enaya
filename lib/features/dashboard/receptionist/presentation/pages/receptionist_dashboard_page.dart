@@ -57,10 +57,13 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
       case 1:
         return BlocProvider(
           create: (context) => getIt<PatientsCubit>(),
-          child: const PatientsListScreen(),
+          child: const PatientsListScreen(embedded: true),
         );
       case 2:
-        return AppointmentsPage(mode: AppointmentsOverviewMode.receptionist);
+        return const AppointmentsPage(
+          mode: AppointmentsOverviewMode.receptionist,
+          isEmbedded: true,
+        );
       case 3:
         return FeatureComingSoonState(
           titleKey: 'nav_queue',
@@ -86,7 +89,7 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
           onBack: () => _onNavigationSelected(0),
         );
       case 7:
-        return const SettingsScreen();
+        return const SettingsScreen(showAppBar: false);
       default:
         return _buildOverviewSection(state);
     }

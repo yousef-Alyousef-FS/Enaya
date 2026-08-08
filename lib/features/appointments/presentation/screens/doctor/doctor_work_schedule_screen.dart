@@ -1,12 +1,13 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../cubit/form/doctor_availability_cubit.dart';
 import '../../cubit/form/doctor_availability_state.dart';
 import '../../widgets/doctor/add_exception_dialog.dart';
-import '../../widgets/doctor/weekly_routine_tab.dart';
 import '../../widgets/doctor/daily_schedule_tab.dart';
+import '../../widgets/doctor/weekly_routine_tab.dart';
 
 class DoctorWorkScheduleScreen extends StatefulWidget {
   final String doctorId;
@@ -14,7 +15,8 @@ class DoctorWorkScheduleScreen extends StatefulWidget {
   const DoctorWorkScheduleScreen({super.key, required this.doctorId});
 
   @override
-  State<DoctorWorkScheduleScreen> createState() => _DoctorWorkScheduleScreenState();
+  State<DoctorWorkScheduleScreen> createState() =>
+      _DoctorWorkScheduleScreenState();
 }
 
 class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
@@ -23,7 +25,9 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        context.read<DoctorAvailabilityCubit>().loadAvailability(widget.doctorId);
+        context.read<DoctorAvailabilityCubit>().loadAvailability(
+          widget.doctorId,
+        );
       }
     });
   }
@@ -46,7 +50,9 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
           cubit.clearMessages();
         }
         if (state.errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
           cubit.clearMessages();
         }
       },
@@ -76,7 +82,7 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
                   ),
                 );
                 if (discard == true && context.mounted) {
-                  Navigator.of(context).pop();
+                  context.pop();
                 }
               },
               child: Scaffold(
@@ -84,8 +90,14 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
                   title: Text('work_schedule'.tr()),
                   bottom: TabBar(
                     tabs: [
-                      Tab(text: 'weekly_schedule'.tr(), icon: const Icon(Icons.repeat)),
-                      Tab(text: 'daily_schedule'.tr(), icon: const Icon(Icons.today)),
+                      Tab(
+                        text: 'weekly_schedule'.tr(),
+                        icon: const Icon(Icons.repeat),
+                      ),
+                      Tab(
+                        text: 'daily_schedule'.tr(),
+                        icon: const Icon(Icons.today),
+                      ),
                     ],
                   ),
                   actions: [
@@ -103,7 +115,9 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
                     else
                       TextButton(
                         onPressed: state.hasUnsavedChanges && !state.isLoading
-                            ? () => context.read<DoctorAvailabilityCubit>().saveAvailability()
+                            ? () => context
+                                  .read<DoctorAvailabilityCubit>()
+                                  .saveAvailability()
                             : null,
                         child: Text(
                           'save'.tr(),
@@ -132,16 +146,25 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
                           // Tab 2: Daily Exceptions & Appointments
                           DailyScheduleTab(
                             selectedDate: state.selectedDate,
-                            isWeekMode: state.viewMode == WorkScheduleViewMode.week,
+                            isWeekMode:
+                                state.viewMode == WorkScheduleViewMode.week,
                             appointments: state.appointments,
                             exceptions: state.exceptions,
                             isAppointmentsLoading: state.isAppointmentsLoading,
-                            conflictChecker: context.read<DoctorAvailabilityCubit>().isDoctorAvailable,
-                            onPrevDate: () => context.read<DoctorAvailabilityCubit>().prevDate(),
-                            onNextDate: () => context.read<DoctorAvailabilityCubit>().nextDate(),
+                            conflictChecker: context
+                                .read<DoctorAvailabilityCubit>()
+                                .isDoctorAvailable,
+                            onPrevDate: () => context
+                                .read<DoctorAvailabilityCubit>()
+                                .prevDate(),
+                            onNextDate: () => context
+                                .read<DoctorAvailabilityCubit>()
+                                .nextDate(),
                             onPickDate: () => _pickDate(context, state),
                             onViewModeChanged: (isWeek) {
-                              context.read<DoctorAvailabilityCubit>().updateViewMode(
+                              context
+                                  .read<DoctorAvailabilityCubit>()
+                                  .updateViewMode(
                                     isWeek
                                         ? WorkScheduleViewMode.week
                                         : WorkScheduleViewMode.day,
@@ -151,8 +174,8 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
                                 .read<DoctorAvailabilityCubit>()
                                 .removeException(date),
                             onAddException: () => showAddExceptionDialog(
-                              context, 
-                              context.read<DoctorAvailabilityCubit>()
+                              context,
+                              context.read<DoctorAvailabilityCubit>(),
                             ),
                           ),
                         ],
@@ -165,7 +188,10 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
     );
   }
 
-  Future<void> _pickDate(BuildContext context, DoctorAvailabilityState state) async {
+  Future<void> _pickDate(
+    BuildContext context,
+    DoctorAvailabilityState state,
+  ) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: state.selectedDate,

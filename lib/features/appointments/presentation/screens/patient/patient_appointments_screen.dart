@@ -61,7 +61,7 @@ class PatientAppointmentsScreen extends StatelessWidget {
         const SizedBox(height: 32),
 
         if (upcoming.isEmpty)
-          _buildEmptyState(context)
+          _buildEmptyState(context, patientId)
         else ...[
           _buildTimelineHeader(context, upcoming.length),
           const SizedBox(height: 16),
@@ -118,7 +118,7 @@ class PatientAppointmentsScreen extends StatelessWidget {
         ),
         if (state.pastAppointments.isNotEmpty)
           IconButton.filledTonal(
-            onPressed: () => context.push('/appointments/history'),
+            onPressed: () => context.push(AppRouter.appointmentHistory),
             icon: const Icon(Icons.history_rounded, size: 22),
             style: IconButton.styleFrom(
               backgroundColor: Theme.of(
@@ -209,7 +209,7 @@ class PatientAppointmentsScreen extends StatelessWidget {
     }).toList();
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, String patientId) {
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 40),
@@ -270,7 +270,7 @@ class PatientAppointmentsScreen extends StatelessWidget {
           ),
           const SizedBox(height: 40),
           ElevatedButton.icon(
-            onPressed: () => context.push('/doctors'),
+            onPressed: () => _openBookingFlow(context, patientId),
             icon: const Icon(Icons.add_rounded, size: 20),
             label: Text('book_now'.tr()),
             style: ElevatedButton.styleFrom(
@@ -309,7 +309,12 @@ class PatientAppointmentsScreen extends StatelessWidget {
     context
         .push(
           AppRouter.scheduleAppointment,
-          extra: {'appointment': app, 'mode': AppointmentScreenMode.reschedule},
+          extra: {
+            'appointment': app,
+            'mode': AppointmentScreenMode.reschedule,
+            'isPatientMode': true,
+            'patient': PatientSession().patientEntity,
+          },
         )
         .then(
           (_) => context.read<PatientAppointmentsCubit>().loadAppointments(

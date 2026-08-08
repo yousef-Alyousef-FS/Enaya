@@ -68,11 +68,16 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
         return AppointmentsPage(
           mode: AppointmentsOverviewMode.doctor,
           specificDoctorId: doctorId,
+          isEmbedded: true,
         );
       case 2:
         return BlocProvider(
           create: (context) => getIt<PatientsCubit>(),
-          child: PatientsListScreen(readOnly: true, doctorId: doctorId),
+          child: PatientsListScreen(
+            readOnly: true,
+            doctorId: doctorId,
+            embedded: true,
+          ),
         );
       case 3:
         return FeatureComingSoonState(
@@ -93,7 +98,7 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
           onBack: () => _onNavigationSelected(0),
         );
       case 6:
-        return const SettingsScreen();
+        return const SettingsScreen(showAppBar: false);
       default:
         return _buildOverviewSection(state, doctorId);
     }

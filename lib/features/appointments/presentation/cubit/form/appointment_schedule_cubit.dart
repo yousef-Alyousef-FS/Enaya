@@ -114,14 +114,22 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
           emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
       (slotsStrings) {
         final slots = slotsStrings.map((time) {
-          final parts = time.split(':');
-          final dt = DateTime(
-            date.year,
-            date.month,
-            date.day,
-            int.parse(parts[0]),
-            int.parse(parts[1]),
-          );
+          // [API_ADAPT]: Support both "HH:mm" and "yyyy-MM-dd HH:mm:ss" formats
+          DateTime dt;
+          if (time.contains('-')) {
+            // Full date-time string
+            dt = DateTime.tryParse(time.replaceFirst(' ', 'T')) ?? date;
+          } else {
+            // Time-only string "HH:mm"
+            final parts = time.split(':');
+            dt = DateTime(
+              date.year,
+              date.month,
+              date.day,
+              int.tryParse(parts[0]) ?? 0,
+              int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0,
+            );
+          }
           return TimeSlot(dateTime: dt, status: TimeSlotStatus.available);
         }).toList();
 

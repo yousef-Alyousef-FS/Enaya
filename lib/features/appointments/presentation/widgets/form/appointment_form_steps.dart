@@ -332,16 +332,16 @@ class _SlotsSkeletonLoading extends StatelessWidget {
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          childAspectRatio: 2.2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+          crossAxisCount: 4,
+          childAspectRatio: 1.0,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
         ),
-        itemCount: 9,
+        itemCount: 8,
         itemBuilder: (context, index) => Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
           ),
         ),
       ),

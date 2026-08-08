@@ -18,6 +18,7 @@ import '../../../../appointments/presentation/appointments_page.dart';
 import '../../../../appointments/presentation/cubit/list/patient_appointments_cubit.dart';
 import '../../../../appointments/presentation/cubit/list/patient_appointments_state.dart';
 import '../../../../appointments/presentation/widgets/shared/appointment_card.dart';
+import '../../../../patients/presentation/screens/patient_profile_screen.dart';
 import '../../../../patients/presentation/state/patient_profile_cubit.dart';
 import '../../../../settings/presentation/screens/settings_screen.dart';
 import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
@@ -89,13 +90,9 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
           onBack: () => _onNavigationSelected(context, 0),
         );
       case 4:
-        return FeatureComingSoonState(
-          titleKey: 'nav_profile',
-          icon: Icons.person_outline,
-          onBack: () => _onNavigationSelected(context, 0),
-        );
+        return const PatientProfileScreen(showAppBar: false);
       case 5:
-        return const SettingsScreen();
+        return const SettingsScreen(showAppBar: false);
       default:
         return _buildOverviewSection(session);
     }
@@ -155,7 +152,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
     const whiteColor = Color(0xFFFFFFFF);
 
     return Container(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [primaryColor.withAlpha(240), primaryColor.withAlpha(120)],
