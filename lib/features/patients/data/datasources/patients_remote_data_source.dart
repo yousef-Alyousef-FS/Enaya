@@ -4,9 +4,9 @@ import '../../../../core/constants/api_constants.dart';
 import '../models/patient_model.dart';
 
 abstract class PatientsRemoteDataSource {
-  Future<List<PatientModel>> getPatients();
-  Future<List<PatientModel>> searchPatients(String query);
-  Future<PatientModel> getPatientById(String id);
+  Future<List<PatientModel>> getPatients({String? doctorId});
+  Future<List<PatientModel>> searchPatients(String query, {String? doctorId});
+  Future<PatientModel> getPatientById(String id, {String? doctorId});
   Future<PatientModel> getProfile();
   Future<PatientModel> completeProfile({
     required String fullName,
@@ -17,6 +17,7 @@ abstract class PatientsRemoteDataSource {
     required String job,
     String? emergencyContact,
   });
+  Future<PatientModel> updateProfile(PatientModel patient);
   Future<PatientModel> createPatient(PatientModel patient);
   Future<PatientModel> updatePatient(PatientModel patient);
   Future<void> deletePatient(String id);
@@ -40,27 +41,36 @@ class PatientsRemoteDataSourceImpl implements PatientsRemoteDataSource {
   }
 
   @override
-  Future<List<PatientModel>> getPatients() async {
-    final response = await dio.get(ApiConstants.receptionPatients);
+  Future<List<PatientModel>> getPatients({String? doctorId}) async {
+    final url = doctorId != null
+        ? ApiConstants.doctorPatients.replaceFirst('{doctor}', doctorId)
+        : ApiConstants.receptionPatients;
+    final response = await dio.get(url);
     final responseData = _validateResponse(response);
     final List data = responseData['data'] ?? [];
     return data.map((json) => PatientModel.fromJson(json)).toList();
   }
 
   @override
-  Future<List<PatientModel>> searchPatients(String query) async {
-    final response = await dio.get(
-      ApiConstants.receptionPatients,
-      queryParameters: {'search': query},
-    );
+  Future<List<PatientModel>> searchPatients(
+    String query, {
+    String? doctorId,
+  }) async {
+    final url = doctorId != null
+        ? ApiConstants.doctorPatients.replaceFirst('{doctor}', doctorId)
+        : ApiConstants.receptionPatients;
+    final response = await dio.get(url, queryParameters: {'search': query});
     final responseData = _validateResponse(response);
     final List data = responseData['data'] ?? [];
     return data.map((json) => PatientModel.fromJson(json)).toList();
   }
 
   @override
-  Future<PatientModel> getPatientById(String id) async {
-    final response = await dio.get('${ApiConstants.receptionPatients}/$id');
+  Future<PatientModel> getPatientById(String id, {String? doctorId}) async {
+    final url = doctorId != null
+        ? '${ApiConstants.doctorPatients.replaceFirst('{doctor}', doctorId)}/$id'
+        : '${ApiConstants.receptionPatients}/$id';
+    final response = await dio.get(url);
     final responseData = _validateResponse(response);
     return PatientModel.fromJson(responseData['data']);
   }
@@ -92,6 +102,25 @@ class PatientsRemoteDataSourceImpl implements PatientsRemoteDataSource {
         'address': address,
         'job': job,
         if (emergencyContact != null) 'emergency_contact': emergencyContact,
+      },
+    );
+    final responseData = _validateResponse(response);
+    return PatientModel.fromJson(responseData['data']);
+  }
+
+  @override
+  Future<PatientModel> updateProfile(PatientModel patient) async {
+    final response = await dio.put(
+      ApiConstants.patientProfile,
+      data: {
+        'name': patient.name,
+        'email': patient.email,
+        'phone': patient.phone,
+        'date_of_birth': patient.dateOfBirth?.toIso8601String().split('T')[0],
+        'gender': patient.gender,
+        'address': patient.address,
+        'job': patient.job,
+        'emergency_contact': patient.emergencyContact,
       },
     );
     final responseData = _validateResponse(response);

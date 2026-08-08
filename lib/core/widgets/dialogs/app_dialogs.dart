@@ -87,15 +87,17 @@ class AppDialogs {
     required VoidCallback onConfirm,
     VoidCallback? onCancel,
     bool dismissible = false,
+    bool isDanger = false,
   }) {
     return _baseDialog(
       context,
-      type: DialogType.question,
+      type: isDanger ? DialogType.warning : DialogType.question,
       title: title,
       message: message,
       showCancel: true,
       onOk: onConfirm,
       onCancel: onCancel,
+      okColor: isDanger ? Colors.red : null,
       dismissible: dismissible,
     ).show();
   }

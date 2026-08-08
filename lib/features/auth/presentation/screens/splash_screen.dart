@@ -1,13 +1,14 @@
-import '../../domain/entities/user_role.dart';
-import '../widgets/logo.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../core/di/injection.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/services/session_manager.dart';
 import '../../../../core/services/token_manager.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../domain/entities/user_role.dart';
+import '../widgets/logo.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -96,10 +97,14 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (token != null && token.isNotEmpty && roleId != null) {
       final role = UserRole.fromId(roleId);
+      final userData = sessionManager.currentUser;
+      final bool profileCompleted = userData?['profile_completed'] ?? true;
+
       final route = switch (role) {
         UserRole.receptionist => AppRouter.receptionistHome,
         UserRole.doctor => AppRouter.doctorHome,
-        UserRole.patient => AppRouter.patientHome,
+        UserRole.patient =>
+          profileCompleted ? AppRouter.patientHome : AppRouter.completeProfile,
       };
       if (mounted) context.go(route);
       return;

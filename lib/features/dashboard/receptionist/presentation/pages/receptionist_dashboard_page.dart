@@ -9,6 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/widgets/feature_coming_soon_state.dart';
 import '../../../../appointments/presentation/appointments_page.dart';
+import '../../../../patients/presentation/screens/patients_list_screen.dart';
+import '../../../../patients/presentation/state/patients_cubit.dart';
 import '../../../../settings/presentation/screens/settings_screen.dart';
 import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
 import '../cubit/receptionist_dashboard_cubit.dart';
@@ -53,10 +55,9 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
       case 0:
         return _buildOverviewSection(state);
       case 1:
-        return FeatureComingSoonState(
-          titleKey: 'nav_patients',
-          icon: Icons.people_outline,
-          onBack: () => _onNavigationSelected(0),
+        return BlocProvider(
+          create: (context) => getIt<PatientsCubit>(),
+          child: const PatientsListScreen(),
         );
       case 2:
         return AppointmentsPage(mode: AppointmentsOverviewMode.receptionist);

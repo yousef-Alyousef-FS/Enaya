@@ -7,6 +7,8 @@ import 'package:enaya/features/appointments/data/models/appointments_overview_vi
 import 'package:enaya/features/dashboard/shared/presentation/models/dashboard_nav_item.dart';
 import 'package:enaya/features/dashboard/shared/presentation/pages/base_dashboard_page.dart';
 import 'package:enaya/features/dashboard/shared/presentation/widgets/dashboard_overview_builder.dart';
+import 'package:enaya/features/patients/presentation/screens/patients_list_screen.dart';
+import 'package:enaya/features/patients/presentation/state/patients_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -68,10 +70,9 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
           specificDoctorId: doctorId,
         );
       case 2:
-        return FeatureComingSoonState(
-          titleKey: 'nav_patients',
-          icon: Icons.people_outline,
-          onBack: () => _onNavigationSelected(0),
+        return BlocProvider(
+          create: (context) => getIt<PatientsCubit>(),
+          child: PatientsListScreen(readOnly: true, doctorId: doctorId),
         );
       case 3:
         return FeatureComingSoonState(

@@ -18,7 +18,6 @@ import '../../../../appointments/presentation/appointments_page.dart';
 import '../../../../appointments/presentation/cubit/list/patient_appointments_cubit.dart';
 import '../../../../appointments/presentation/cubit/list/patient_appointments_state.dart';
 import '../../../../appointments/presentation/widgets/shared/appointment_card.dart';
-import '../../../../patients/presentation/screens/patient_profile_screen.dart';
 import '../../../../patients/presentation/state/patient_profile_cubit.dart';
 import '../../../../settings/presentation/screens/settings_screen.dart';
 import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
