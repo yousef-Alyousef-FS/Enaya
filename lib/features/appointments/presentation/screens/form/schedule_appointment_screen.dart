@@ -123,8 +123,9 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
         }
 
         cubit.updateSelectedPatient(resolvedPatient);
-        if (widget.doctorId != null)
+        if (widget.doctorId != null) {
           cubit.updateSelectedDoctor(widget.doctorId!, widget.doctorName ?? '');
+        }
         return cubit;
       },
       child: BlocConsumer<AppointmentScheduleCubit, AppointmentScheduleState>(
@@ -250,22 +251,27 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
       ),
       child: EasyStepper(
         activeStep: state.currentStep,
+        enableStepTapping: false,
         lineStyle: LineStyle(
-          lineLength: 60,
+          lineLength: 58,
           lineType: LineType.normal,
           defaultLineColor: theme.colorScheme.outlineVariant.withValues(
-            alpha: 0.5,
+            alpha: 0.6,
           ),
           finishedLineColor: theme.colorScheme.primary,
           lineThickness: 2,
         ),
         activeStepTextColor: theme.colorScheme.primary,
         finishedStepTextColor: theme.colorScheme.primary.withValues(alpha: 0.7),
-        internalPadding: 40,
+        internalPadding: 24,
         showLoadingAnimation: false,
         stepRadius: 24,
         steps: steps,
-        onStepReached: (index) => cubit.goToStep(index, widget.isPatientMode),
+        onStepReached: (index) {
+          if (index != state.currentStep) {
+            cubit.goToStep(index, widget.isPatientMode);
+          }
+        },
       ),
     );
   }

@@ -43,10 +43,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (_) =>
-              getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
-        ),
+        BlocProvider(create: (_) => getIt<PatientAppointmentsCubit>()..loadAppointments(patientId)),
         BlocProvider(create: (_) => getIt<PatientProfileCubit>()),
       ],
       child: Builder(
@@ -63,11 +60,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
     );
   }
 
-  Widget _getSectionBody(
-    BuildContext context,
-    int index,
-    PatientSession session,
-  ) {
+  Widget _getSectionBody(BuildContext context, int index, PatientSession session) {
     switch (index) {
       case 0:
         return _buildOverviewSection(session);
@@ -102,14 +95,10 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
     return BlocBuilder<PatientAppointmentsCubit, PatientAppointmentsState>(
       builder: (context, state) {
         final isLoading =
-            state.status == PatientAppointmentsStatus.loading &&
-            state.appointments.isEmpty;
+            state.status == PatientAppointmentsStatus.loading && state.appointments.isEmpty;
 
-        if (state.status == PatientAppointmentsStatus.failure &&
-            state.appointments.isEmpty) {
-          return Center(
-            child: Text(state.errorMessage ?? 'Failed to load appointments'),
-          );
+        if (state.status == PatientAppointmentsStatus.failure && state.appointments.isEmpty) {
+          return Center(child: Text(state.errorMessage ?? 'Failed to load appointments'));
         }
 
         final nextApp = state.upcomingAppointments.isNotEmpty
@@ -118,9 +107,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
 
         return DashboardOverviewBuilder(
           header: _buildGreeting(session),
-          stats: isLoading
-              ? _buildShimmerStats()
-              : _buildStatsGrid(context, state),
+          stats: isLoading ? _buildShimmerStats() : _buildStatsGrid(context, state),
           actions: _buildQuickActions(context, session),
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -151,79 +138,76 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
     final primaryColor = theme.colorScheme.primary;
     const whiteColor = Color(0xFFFFFFFF);
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [primaryColor.withAlpha(240), primaryColor.withAlpha(120)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+    return Transform.translate(
+      offset: const Offset(0, 4),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [primaryColor.withAlpha(240), primaryColor.withAlpha(120)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: primaryColor.withValues(alpha: 0.18),
+              blurRadius: 18,
+              offset: const Offset(0, 10),
+            ),
+          ],
         ),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: whiteColor.withAlpha(28),
-              shape: BoxShape.circle,
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(color: whiteColor.withAlpha(28), shape: BoxShape.circle),
+              child: const Icon(Icons.person_rounded, color: whiteColor, size: 30),
             ),
-            child: const Icon(
-              Icons.person_rounded,
-              color: whiteColor,
-              size: 30,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        session.patientName ?? 'Patient',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: whiteColor,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          session.patientName ?? 'Patient',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: whiteColor,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                    ),
-                    if (session.isGuest)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
+                      if (session.isGuest)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: whiteColor.withAlpha(32),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: const Text(
+                            'Demo',
+                            style: TextStyle(color: whiteColor, fontSize: 11),
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          color: whiteColor.withAlpha(32),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: const Text(
-                          'Demo',
-                          style: TextStyle(color: whiteColor, fontSize: 11),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'patient_overview_subtitle'.tr(),
-                  style: TextStyle(
-                    color: whiteColor.withAlpha(220),
-                    fontSize: 13,
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 6),
+                  Text(
+                    'patient_overview_subtitle'.tr(),
+                    style: TextStyle(color: whiteColor.withAlpha(220), fontSize: 13),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -248,10 +232,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
   }
 
   Widget _buildStatsGrid(BuildContext context, PatientAppointmentsState state) {
-    final allAppointments = [
-      ...state.upcomingAppointments,
-      ...state.pastAppointments,
-    ];
+    final allAppointments = [...state.upcomingAppointments, ...state.pastAppointments];
     final completedCount = allAppointments
         .where((a) => a.status == AppointmentStatus.completed)
         .length;
@@ -279,10 +260,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
   }
 
   Widget _buildSectionHeader(String key) {
-    return Text(
-      key.tr(),
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-    );
+    return Text(key.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
   }
 
   Widget _buildEmptyAppointmentState(BuildContext context) {
@@ -325,9 +303,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
 
     // Only force reload if data is missing
     final cubit = context.read<PatientAppointmentsCubit>();
-    if (index == 0 &&
-        cubit.state.appointments.isEmpty &&
-        _activePatientId != null) {
+    if (index == 0 && cubit.state.appointments.isEmpty && _activePatientId != null) {
       cubit.loadAppointments(_activePatientId.toString());
     }
   }
@@ -353,10 +329,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
       highlightColor: isDark ? Colors.grey.shade700 : Colors.grey.shade100,
       child: Container(
         height: height,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(radius),
-        ),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(radius)),
       ),
     );
   }

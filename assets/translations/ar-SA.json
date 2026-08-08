@@ -140,6 +140,8 @@
   "slot_break": "استراحة",
   "slot_off": "خارج الدوام",
   "no_slots_available": "لا توجد أوقات متاحة في هذا اليوم",
+  "doctor_no_available_slots": "لا توجد مواعيد متاحة عند هذا الطبيب حالياً.\nجميع المواعيد محجوزة أو تم إغلاق الجدول.",
+  "back_to_dashboard": "العودة للوحة التحكم",
   "feature_coming_soon": "هذه الميزة ستتوفر قريباً",
   "notifications": "التنبيهات",
   "complete_profile": "إكمال الملف الشخصي",

@@ -138,6 +138,8 @@
   "slot_break": "Break",
   "slot_off": "Off-day",
   "no_slots_available": "No time slots available for this day",
+  "doctor_no_available_slots": "No appointments are available for this doctor right now.\nAll slots are booked or the schedule is closed.",
+  "back_to_dashboard": "Back to dashboard",
   "feature_coming_soon": "This feature will be available soon",
   "notifications": "Notifications",
   "complete_profile": "Complete Profile",

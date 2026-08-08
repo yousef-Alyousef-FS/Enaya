@@ -384,31 +384,51 @@ class _RailNavigationTileState extends State<_RailNavigationTile> {
                     ),
                     child: Row(
                       children: [
-                        AnimatedContainer(
-                          duration: DashboardConstants.railTileAnimationDuration,
-                          width: DashboardConstants.railIconContainerSize,
-                          height: DashboardConstants.railIconContainerSize,
-                          decoration: BoxDecoration(
-                            color: widget.selected
-                                ? color.primary
-                                : color.surfaceContainerHighest.withValues(
-                                    alpha: DashboardConstants.railIconContainerBackgroundOpacity,
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            AnimatedContainer(
+                              duration: DashboardConstants.railTileAnimationDuration,
+                              width: DashboardConstants.railIconContainerSize,
+                              height: DashboardConstants.railIconContainerSize,
+                              decoration: BoxDecoration(
+                                color: widget.selected
+                                    ? color.primary
+                                    : color.surfaceContainerHighest.withValues(
+                                        alpha:
+                                            DashboardConstants.railIconContainerBackgroundOpacity,
+                                      ),
+                                borderRadius: BorderRadius.circular(
+                                  DashboardConstants.railTileIconBorderRadius,
+                                ),
+                              ),
+                              child: AnimatedSwitcher(
+                                duration: DashboardConstants.railTileAnimationDuration,
+                                transitionBuilder: (child, animation) =>
+                                    ScaleTransition(scale: animation, child: child),
+                                child: Icon(
+                                  widget.selected ? widget.item.selectedIcon : widget.item.icon,
+                                  key: ValueKey('${widget.item.labelKey}-${widget.selected}'),
+                                  size: DashboardConstants.railIconInnerSize,
+                                  color: widget.selected ? color.onPrimary : color.onSurfaceVariant,
+                                ),
+                              ),
+                            ),
+                            if ((widget.item.badgeCount ?? 0) > 0)
+                              Positioned(
+                                right: -3,
+                                top: -3,
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.shade600,
+                                    borderRadius: BorderRadius.circular(999),
+                                    border: Border.all(color: color.surface, width: 1.5),
                                   ),
-                            borderRadius: BorderRadius.circular(
-                              DashboardConstants.railTileIconBorderRadius,
-                            ),
-                          ),
-                          child: AnimatedSwitcher(
-                            duration: DashboardConstants.railTileAnimationDuration,
-                            transitionBuilder: (child, animation) =>
-                                ScaleTransition(scale: animation, child: child),
-                            child: Icon(
-                              widget.selected ? widget.item.selectedIcon : widget.item.icon,
-                              key: ValueKey('${widget.item.labelKey}-${widget.selected}'),
-                              size: DashboardConstants.railIconInnerSize,
-                              color: widget.selected ? color.onPrimary : color.onSurfaceVariant,
-                            ),
-                          ),
+                                ),
+                              ),
+                          ],
                         ),
                         const SizedBox(width: 12),
                         Expanded(
@@ -501,30 +521,49 @@ class _BottomNavigationTile extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
+                Stack(
+                  clipBehavior: Clip.none,
                   children: [
-                    Icon(
-                      selected ? item.selectedIcon : item.icon,
-                      color: selected ? color.primary : color.onSurfaceVariant,
-                      size: selected
-                          ? DashboardConstants.bottomNavIconSizeSelected
-                          : DashboardConstants.bottomNavIconSize,
-                    ),
-                    const SizedBox(width: 8),
-                    ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: selected
-                            ? DashboardConstants.bottomNavTileTextMaxWidthSelected
-                            : DashboardConstants.bottomNavTileTextMaxWidthUnselected,
-                      ),
-                      child: Text(
-                        item.labelKey.tr(),
-                        style: TextStyle(
+                    Row(
+                      children: [
+                        Icon(
+                          selected ? item.selectedIcon : item.icon,
                           color: selected ? color.primary : color.onSurfaceVariant,
-                          fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
+                          size: selected
+                              ? DashboardConstants.bottomNavIconSizeSelected
+                              : DashboardConstants.bottomNavIconSize,
+                        ),
+                        const SizedBox(width: 8),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: selected
+                                ? DashboardConstants.bottomNavTileTextMaxWidthSelected
+                                : DashboardConstants.bottomNavTileTextMaxWidthUnselected,
+                          ),
+                          child: Text(
+                            item.labelKey.tr(),
+                            style: TextStyle(
+                              color: selected ? color.primary : color.onSurfaceVariant,
+                              fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if ((item.badgeCount ?? 0) > 0)
+                      Positioned(
+                        right: -4,
+                        top: -4,
+                        child: Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade600,
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(color: color.surface, width: 1.5),
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
