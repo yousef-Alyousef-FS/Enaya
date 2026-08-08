@@ -134,6 +134,100 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
   }
 
   Widget _buildGreeting(PatientSession session) {
+    return PatientDashboardGreetingCard(session: session);
+  }
+
+  Widget _buildQuickActions(BuildContext context, PatientSession session) {
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        FilledButton.icon(
+          onPressed: () => _onNavigationSelected(context, 1),
+          icon: const Icon(Icons.calendar_month_outlined),
+          label: Text('new_appointment'.tr()),
+        ),
+        OutlinedButton.icon(
+          onPressed: () => _onNavigationSelected(context, 1),
+          icon: const Icon(Icons.view_agenda_outlined),
+          label: Text('my_appointments'.tr()),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsGrid(BuildContext context, PatientAppointmentsState state) {
+    final allAppointments = [...state.upcomingAppointments, ...state.pastAppointments];
+    final completedCount = allAppointments
+        .where((a) => a.status == AppointmentStatus.completed)
+        .length;
+
+    return ResponsiveStatsGrid(
+      children: [
+        StatCard(
+          title: 'total_appointments'.tr(),
+          value: '${allAppointments.length}',
+          subtitle: 'all_time'.tr(),
+          icon: Icons.calendar_today,
+          color: Theme.of(context).colorScheme.primary,
+          accentColor: Colors.blue,
+        ),
+        StatCard(
+          title: 'completed_visits'.tr(),
+          value: '$completedCount',
+          subtitle: 'past_visits'.tr(),
+          icon: Icons.check_circle_outline,
+          color: AppColors.success,
+          accentColor: Colors.green,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String key) {
+    return DashboardSectionHeader(title: key.tr());
+  }
+
+  Widget _buildEmptyAppointmentState(BuildContext context) {
+    return DashboardEmptyStateCard(
+      title: 'no_upcoming_appointments'.tr(),
+      actionLabel: 'new_appointment'.tr(),
+      onAction: () => _onNavigationSelected(context, 1),
+    );
+  }
+
+  void _onNavigationSelected(BuildContext context, int index) {
+    final item = _navigationItems[index];
+    if (!item.isEnabled) return;
+    if (_selectedIndex == index) return;
+
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    // Only force reload if data is missing
+    final cubit = context.read<PatientAppointmentsCubit>();
+    if (index == 0 && cubit.state.appointments.isEmpty && _activePatientId != null) {
+      cubit.loadAppointments(_activePatientId.toString());
+    }
+  }
+
+  Widget _buildShimmerStats() {
+    return DashboardShimmerStatsRow();
+  }
+
+  Widget _buildShimmerNextAppointment() {
+    return DashboardShimmerTile(height: 180, radius: 32);
+  }
+}
+
+class PatientDashboardGreetingCard extends StatelessWidget {
+  const PatientDashboardGreetingCard({super.key, required this.session});
+
+  final PatientSession session;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = theme.colorScheme.primary;
     const whiteColor = Color(0xFFFFFFFF);
@@ -211,59 +305,33 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
       ),
     );
   }
+}
 
-  Widget _buildQuickActions(BuildContext context, PatientSession session) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        FilledButton.icon(
-          onPressed: () => _onNavigationSelected(context, 1),
-          icon: const Icon(Icons.calendar_month_outlined),
-          label: Text('new_appointment'.tr()),
-        ),
-        OutlinedButton.icon(
-          onPressed: () => _onNavigationSelected(context, 1),
-          icon: const Icon(Icons.view_agenda_outlined),
-          label: Text('my_appointments'.tr()),
-        ),
-      ],
-    );
+class DashboardSectionHeader extends StatelessWidget {
+  const DashboardSectionHeader({super.key, required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
   }
+}
 
-  Widget _buildStatsGrid(BuildContext context, PatientAppointmentsState state) {
-    final allAppointments = [...state.upcomingAppointments, ...state.pastAppointments];
-    final completedCount = allAppointments
-        .where((a) => a.status == AppointmentStatus.completed)
-        .length;
+class DashboardEmptyStateCard extends StatelessWidget {
+  const DashboardEmptyStateCard({
+    super.key,
+    required this.title,
+    required this.actionLabel,
+    required this.onAction,
+  });
 
-    return ResponsiveStatsGrid(
-      children: [
-        StatCard(
-          title: 'total_appointments'.tr(),
-          value: '${allAppointments.length}',
-          subtitle: 'all_time'.tr(),
-          icon: Icons.calendar_today,
-          color: Theme.of(context).colorScheme.primary,
-          accentColor: Colors.blue,
-        ),
-        StatCard(
-          title: 'completed_visits'.tr(),
-          value: '$completedCount',
-          subtitle: 'past_visits'.tr(),
-          icon: Icons.check_circle_outline,
-          color: AppColors.success,
-          accentColor: Colors.green,
-        ),
-      ],
-    );
-  }
+  final String title;
+  final String actionLabel;
+  final VoidCallback onAction;
 
-  Widget _buildSectionHeader(String key) {
-    return Text(key.tr(), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
-  }
-
-  Widget _buildEmptyAppointmentState(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Container(
@@ -276,53 +344,43 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
       child: Column(
         children: [
           Center(
-            child: Text(
-              'no_upcoming_appointments'.tr(),
-              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-            ),
+            child: Text(title, style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
-            onPressed: () => _onNavigationSelected(context, 1),
+            onPressed: onAction,
             icon: const Icon(Icons.add),
-            label: Text('new_appointment'.tr()),
+            label: Text(actionLabel),
           ),
         ],
       ),
     );
   }
+}
 
-  void _onNavigationSelected(BuildContext context, int index) {
-    final item = _navigationItems[index];
-    if (!item.isEnabled) return;
-    if (_selectedIndex == index) return;
+class DashboardShimmerStatsRow extends StatelessWidget {
+  const DashboardShimmerStatsRow({super.key});
 
-    setState(() {
-      _selectedIndex = index;
-    });
-
-    // Only force reload if data is missing
-    final cubit = context.read<PatientAppointmentsCubit>();
-    if (index == 0 && cubit.state.appointments.isEmpty && _activePatientId != null) {
-      cubit.loadAppointments(_activePatientId.toString());
-    }
-  }
-
-  Widget _buildShimmerStats() {
+  @override
+  Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(child: _shimmerBox(height: 120)),
+        Expanded(child: DashboardShimmerTile(height: 120)),
         const SizedBox(width: 16),
-        Expanded(child: _shimmerBox(height: 120)),
+        Expanded(child: DashboardShimmerTile(height: 120)),
       ],
     );
   }
+}
 
-  Widget _buildShimmerNextAppointment() {
-    return _shimmerBox(height: 180, radius: 32);
-  }
+class DashboardShimmerTile extends StatelessWidget {
+  const DashboardShimmerTile({super.key, required this.height, this.radius = 24});
 
-  Widget _shimmerBox({required double height, double radius = 24}) {
+  final double height;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Shimmer.fromColors(
       baseColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,

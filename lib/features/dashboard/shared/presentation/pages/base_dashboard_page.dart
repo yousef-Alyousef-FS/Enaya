@@ -1,6 +1,8 @@
 import 'package:easy_localization/easy_localization.dart' hide TextDirection;
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../../core/routing/app_router.dart';
 import '../models/dashboard_nav_item.dart';
 import '../widgets/dashboard_appbar.dart';
 import '../widgets/dashboard_shell.dart';
@@ -39,8 +41,7 @@ class _BaseDashboardPageState extends State<BaseDashboardPage> {
   @override
   void didUpdateWidget(covariant BaseDashboardPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.initialIndex != widget.initialIndex &&
-        _selectedIndex != widget.initialIndex) {
+    if (oldWidget.initialIndex != widget.initialIndex && _selectedIndex != widget.initialIndex) {
       setState(() => _selectedIndex = widget.initialIndex);
     }
   }
@@ -56,6 +57,8 @@ class _BaseDashboardPageState extends State<BaseDashboardPage> {
         widget.appBar ??
         DashboardAppBar(
           titleText: widget.navigationItems[_selectedIndex].labelKey.tr(),
+          notificationCount: 3,
+          onNotificationsTap: () => context.push(AppRouter.notifications),
           onProfileTap: () {
             final profileIndex = widget.navigationItems.indexWhere(
               (item) => item.labelKey == 'nav_profile',
@@ -126,8 +129,7 @@ class _AbstractDashboardPageState extends State<AbstractDashboardPage> {
       initialIndex: _selectedIndex,
       appBar: widget.customAppBar,
       onItemSelected: _handleNavigationSelected,
-      bodyBuilder: (context, selectedIndex) =>
-          widget.buildContent(context, selectedIndex),
+      bodyBuilder: (context, selectedIndex) => widget.buildContent(context, selectedIndex),
     );
   }
 }

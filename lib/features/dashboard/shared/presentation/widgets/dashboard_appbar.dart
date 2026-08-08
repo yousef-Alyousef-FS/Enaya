@@ -15,6 +15,7 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showUserMenu;
   final int notificationCount;
   final VoidCallback? onProfileTap;
+  final VoidCallback? onNotificationsTap;
 
   const DashboardAppBar({
     super.key,
@@ -24,6 +25,7 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.showUserMenu = true,
     this.notificationCount = 3,
     this.onProfileTap,
+    this.onNotificationsTap,
   });
 
   @override
@@ -56,7 +58,7 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           tooltip: 'notifications'.tr(),
           icon: const Icon(Icons.notifications_none_outlined),
-          onPressed: () => _showComingSoon(context, 'notifications'.tr()),
+          onPressed: onNotificationsTap ?? () => _showComingSoon(context, 'notifications'.tr()),
         ),
         if (notificationCount > 0)
           Positioned(

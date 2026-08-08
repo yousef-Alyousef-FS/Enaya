@@ -37,8 +37,7 @@ class ScheduleAppointmentScreen extends StatefulWidget {
   });
 
   @override
-  State<ScheduleAppointmentScreen> createState() =>
-      _ScheduleAppointmentScreenState();
+  State<ScheduleAppointmentScreen> createState() => _ScheduleAppointmentScreenState();
 }
 
 class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
@@ -61,8 +60,7 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
 
   void _handleNavigation(BuildContext context, AppointmentScheduleState state) {
     final cubit = context.read<AppointmentScheduleCubit>();
-    final isLastStep =
-        state.currentStep == state.totalSteps(widget.isPatientMode) - 1;
+    final isLastStep = state.currentStep == state.totalSteps(widget.isPatientMode) - 1;
 
     if (isLastStep) {
       _confirmAppointment(context);
@@ -82,8 +80,7 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
 
   void _confirmAppointment(BuildContext context) {
     final cubit = context.read<AppointmentScheduleCubit>();
-    if (widget.mode == AppointmentScreenMode.reschedule &&
-        widget.appointment != null) {
+    if (widget.mode == AppointmentScreenMode.reschedule && widget.appointment != null) {
       cubit.rescheduleAppointment(appointmentId: widget.appointment!.id);
     } else {
       cubit.createAppointment(
@@ -102,11 +99,9 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
         final cubit = getIt<AppointmentScheduleCubit>();
         cubit.loadAvailableDoctors();
         final session = PatientSession();
-        final resolvedPatient =
-            widget.patient ?? session.patientEntity ?? _createDefaultPatient();
+        final resolvedPatient = widget.patient ?? session.patientEntity ?? _createDefaultPatient();
 
-        if (widget.mode == AppointmentScreenMode.reschedule &&
-            widget.appointment != null) {
+        if (widget.mode == AppointmentScreenMode.reschedule && widget.appointment != null) {
           final appointment = widget.appointment!;
           cubit.updateSelectedPatient(resolvedPatient);
           cubit.updateSelectedDoctor(
@@ -134,8 +129,7 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
             context.pushReplacement(
               AppRouter.appointmentSuccess,
               extra: {
-                'dateTime':
-                    state.selectedTimeSlot?.dateTime ?? state.selectedDate,
+                'dateTime': state.selectedTimeSlot?.dateTime ?? state.selectedDate,
                 'doctorName': state.selectedDoctorName,
               },
             );
@@ -171,19 +165,18 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
                     duration: const Duration(milliseconds: 400),
                     switchInCurve: Curves.easeOutCubic,
                     switchOutCurve: Curves.easeInCubic,
-                    transitionBuilder:
-                        (Widget child, Animation<double> animation) {
-                          return FadeTransition(
-                            opacity: animation,
-                            child: SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(0.05, 0.0),
-                                end: Offset.zero,
-                              ).animate(animation),
-                              child: child,
-                            ),
-                          );
-                        },
+                    transitionBuilder: (Widget child, Animation<double> animation) {
+                      return FadeTransition(
+                        opacity: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0.05, 0.0),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      );
+                    },
                     child: SingleChildScrollView(
                       key: ValueKey(state.currentStep),
                       padding: const EdgeInsets.fromLTRB(24, 12, 24, 140),
@@ -193,8 +186,7 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
                 ),
               ],
             ),
-            floatingActionButtonLocation:
-                FloatingActionButtonLocation.centerDocked,
+            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
             floatingActionButton: _buildFloatingAction(context, state),
           );
         },
@@ -208,30 +200,34 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
 
     final steps = [
       EasyStep(
-        customStep: _buildStepIcon(Icons.group_rounded, 0, state.currentStep),
+        customStep: AppointmentStepIcon(
+          icon: Icons.group_rounded,
+          step: 0,
+          currentStep: state.currentStep,
+        ),
         title: widget.isPatientMode ? 'doctor'.tr() : 'parties'.tr(),
       ),
       EasyStep(
-        customStep: _buildStepIcon(
-          Icons.calendar_month_rounded,
-          1,
-          state.currentStep,
+        customStep: AppointmentStepIcon(
+          icon: Icons.calendar_month_rounded,
+          step: 1,
+          currentStep: state.currentStep,
         ),
         title: 'schedule'.tr(),
       ),
       EasyStep(
-        customStep: _buildStepIcon(
-          Icons.edit_note_rounded,
-          2,
-          state.currentStep,
+        customStep: AppointmentStepIcon(
+          icon: Icons.edit_note_rounded,
+          step: 2,
+          currentStep: state.currentStep,
         ),
         title: 'details'.tr(),
       ),
       EasyStep(
-        customStep: _buildStepIcon(
-          Icons.task_alt_rounded,
-          3,
-          state.currentStep,
+        customStep: AppointmentStepIcon(
+          icon: Icons.task_alt_rounded,
+          step: 3,
+          currentStep: state.currentStep,
         ),
         title: 'review'.tr(),
       ),
@@ -255,9 +251,7 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
         lineStyle: LineStyle(
           lineLength: 58,
           lineType: LineType.normal,
-          defaultLineColor: theme.colorScheme.outlineVariant.withValues(
-            alpha: 0.6,
-          ),
+          defaultLineColor: theme.colorScheme.outlineVariant.withValues(alpha: 0.6),
           finishedLineColor: theme.colorScheme.primary,
           lineThickness: 2,
         ),
@@ -276,52 +270,6 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
     );
   }
 
-  Widget _buildStepIcon(IconData icon, int step, int currentStep) {
-    final theme = Theme.of(context);
-    final isActive = currentStep == step;
-    final isFinished = currentStep > step;
-
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.elasticOut,
-      padding: EdgeInsets.all(isActive ? 12 : 8),
-      decoration: BoxDecoration(
-        color: isActive
-            ? theme.colorScheme.primary
-            : (isFinished
-                  ? theme.colorScheme.primary.withValues(alpha: 0.15)
-                  : theme.colorScheme.surfaceContainerHighest.withValues(
-                      alpha: 0.4,
-                    )),
-        shape: BoxShape.circle,
-        border: isActive
-            ? Border.all(color: theme.colorScheme.primaryContainer, width: 4)
-            : (isFinished
-                  ? Border.all(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
-                      width: 1.5,
-                    )
-                  : null),
-        boxShadow: isActive
-            ? [
-                BoxShadow(
-                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  spreadRadius: 2,
-                ),
-              ]
-            : null,
-      ),
-      child: Icon(
-        icon,
-        color: isActive
-            ? Colors.white
-            : (isFinished ? theme.colorScheme.primary : Colors.grey.shade500),
-        size: isActive ? 22 : 18,
-      ),
-    );
-  }
-
   Widget _buildCurrentStep(AppointmentScheduleState state) {
     switch (state.currentStep) {
       case 0:
@@ -329,10 +277,7 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
       case 1:
         return const StepDateTime();
       case 2:
-        return StepDetails(
-          reasonController: _reasonController,
-          notesController: _notesController,
-        );
+        return StepDetails(reasonController: _reasonController, notesController: _notesController);
       case 3:
         return StepReview(reason: _reasonController.text);
       default:
@@ -340,81 +285,18 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
     }
   }
 
-  Widget _buildFloatingAction(
-    BuildContext context,
-    AppointmentScheduleState state,
-  ) {
-    final theme = Theme.of(context);
-    final isValid = state.canGoNext(widget.isPatientMode);
-    final isLastStep =
-        state.currentStep == state.totalSteps(widget.isPatientMode) - 1;
-
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            theme.colorScheme.surface.withValues(alpha: 0.0),
-            theme.colorScheme.surface,
-            theme.colorScheme.surface,
-          ],
-        ),
-      ),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        height: 60,
-        width: double.infinity,
-        child: ElevatedButton(
-          onPressed: (isValid && !state.isLoading)
-              ? () => _handleNavigation(context, state)
-              : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: theme.colorScheme.primary,
-            foregroundColor: Colors.white,
-            disabledBackgroundColor: theme.colorScheme.surfaceContainerHighest,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            elevation: isValid ? 8 : 0,
-            shadowColor: theme.colorScheme.primary.withValues(alpha: 0.4),
-          ),
-          child: state.isLoading
-              ? const SpinKitThreeBounce(color: Colors.white, size: 24)
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      isLastStep ? 'confirm_appointment'.tr() : 'next'.tr(),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      isLastStep
-                          ? Icons.check_circle_rounded
-                          : Icons.arrow_forward_rounded,
-                      size: 20,
-                    ),
-                  ],
-                ),
-        ),
-      ),
+  Widget _buildFloatingAction(BuildContext context, AppointmentScheduleState state) {
+    return AppointmentBookingFooter(
+      isLoading: state.isLoading,
+      isValid: state.canGoNext(widget.isPatientMode),
+      isLastStep: state.currentStep == state.totalSteps(widget.isPatientMode) - 1,
+      onPressed: () => _handleNavigation(context, state),
     );
   }
 
-  void _handleBookingError(
-    BuildContext context,
-    AppointmentScheduleState state,
-    ThemeData theme,
-  ) {
+  void _handleBookingError(BuildContext context, AppointmentScheduleState state, ThemeData theme) {
     final isConflict =
-        state.errorMessage!.contains('already') ||
-        state.errorMessage!.contains('active');
+        state.errorMessage!.contains('already') || state.errorMessage!.contains('active');
 
     AwesomeDialog(
       context: context,
@@ -441,4 +323,130 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
     job: 'None',
     address: 'Cairo, Egypt',
   );
+}
+
+class AppointmentStepIcon extends StatelessWidget {
+  const AppointmentStepIcon({
+    super.key,
+    required this.icon,
+    required this.step,
+    required this.currentStep,
+  });
+
+  final IconData icon;
+  final int step;
+  final int currentStep;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isActive = currentStep == step;
+    final isFinished = currentStep > step;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.elasticOut,
+      padding: EdgeInsets.all(isActive ? 12 : 8),
+      decoration: BoxDecoration(
+        color: isActive
+            ? theme.colorScheme.primary
+            : (isFinished
+                  ? theme.colorScheme.primary.withValues(alpha: 0.15)
+                  : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4)),
+        shape: BoxShape.circle,
+        border: isActive
+            ? Border.all(color: theme.colorScheme.primaryContainer, width: 4)
+            : (isFinished
+                  ? Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2), width: 1.5)
+                  : null),
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  spreadRadius: 2,
+                ),
+              ]
+            : null,
+      ),
+      child: Icon(
+        icon,
+        color: isActive
+            ? Colors.white
+            : (isFinished ? theme.colorScheme.primary : Colors.grey.shade500),
+        size: isActive ? 22 : 18,
+      ),
+    );
+  }
+}
+
+class AppointmentBookingFooter extends StatelessWidget {
+  const AppointmentBookingFooter({
+    super.key,
+    required this.isLoading,
+    required this.isValid,
+    required this.isLastStep,
+    required this.onPressed,
+  });
+
+  final bool isLoading;
+  final bool isValid;
+  final bool isLastStep;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            theme.colorScheme.surface.withValues(alpha: 0.0),
+            theme.colorScheme.surface,
+            theme.colorScheme.surface,
+          ],
+        ),
+      ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        height: 60,
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: (isValid && !isLoading) ? onPressed : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: theme.colorScheme.primary,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: theme.colorScheme.surfaceContainerHighest,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            elevation: isValid ? 8 : 0,
+            shadowColor: theme.colorScheme.primary.withValues(alpha: 0.4),
+          ),
+          child: isLoading
+              ? const SpinKitThreeBounce(color: Colors.white, size: 24)
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      isLastStep ? 'confirm_appointment'.tr() : 'next'.tr(),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Icon(
+                      isLastStep ? Icons.check_circle_rounded : Icons.arrow_forward_rounded,
+                      size: 20,
+                    ),
+                  ],
+                ),
+        ),
+      ),
+    );
+  }
 }
