@@ -1,0 +1,30 @@
+[
+    { "name": "Panadol", "type": "tablet" },
+    { "name": "Panadol", "type": "syrup" },
+
+    { "name": "Augmentin", "type": "capsule" },
+    { "name": "Cataflam Syrup", "type": "syrup" },
+
+    { "name": "NasalClear", "type": "spray" },
+
+    { "name": "Voltaren Gel", "type": "gel" },
+    { "name": "Fucidin Ointment", "type": "ointment" },
+    { "name": "Bepanthen Cream", "type": "cream" },
+
+    { "name": "Tobrex", "type": "drops_eye" },
+    { "name": "Otosept", "type": "drops_ear" },
+    { "name": "Otrivin", "type": "drops_nose" },
+
+    { "name": "Cataflam Supp", "type": "suppository" },
+
+    { "name": "Ceftriaxone", "type": "injection_im" },
+    { "name": "Paracetamol IV", "type": "injection_iv" },
+
+    { "name": "Ventolin", "type": "inhaler" },
+
+    { "name": "Nicotine Patch", "type": "patch" },
+
+    { "name": "ORS Powder", "type": "powder" },
+
+    { "name": "Chlorhexidine", "type": "mouthwash" }
+]

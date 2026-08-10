@@ -131,6 +131,11 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
               },
               onStart: () {
                 final current = state.currentAppointment!;
+                if (current.status == AppointmentStatus.inProgress) {
+                  context.push('${AppRouter.doctorSession}/${current.id}');
+                  return;
+                }
+
                 if (current.status != AppointmentStatus.arrived) return;
 
                 context.read<DoctorDashboardCubit>().updateAppointmentStatus(
@@ -138,6 +143,8 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
                   current.id,
                   AppointmentStatus.inProgress,
                 );
+
+                context.push('${AppRouter.doctorSession}/${current.id}');
               },
             ),
             const SizedBox(height: 32),

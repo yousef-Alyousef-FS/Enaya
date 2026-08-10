@@ -97,3 +97,4 @@ flutter:
   assets:
     - assets/translations/
     - assets/images/
+    - assets/mock_data/drugs_dictionary.json
