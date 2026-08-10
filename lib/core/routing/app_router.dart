@@ -146,8 +146,16 @@ class AppRouter {
       GoRoute(
         path: patientDetails,
         builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>;
-          final patient = extra['patient'] as PatientEntity;
+          final extra = state.extra;
+          if (extra is! Map<String, dynamic>) {
+            return const _InvalidRouteDataScreen(title: 'Missing patient details');
+          }
+
+          final patient = extra['patient'];
+          if (patient is! PatientEntity) {
+            return const _InvalidRouteDataScreen(title: 'Invalid patient data');
+          }
+
           final readOnly = extra['readOnly'] as bool? ?? false;
 
           return BlocProvider(
@@ -159,7 +167,11 @@ class AppRouter {
       GoRoute(
         path: editPatient,
         builder: (context, state) {
-          final patient = state.extra as PatientEntity;
+          final patient = state.extra;
+          if (patient is! PatientEntity) {
+            return const _InvalidRouteDataScreen(title: 'Invalid patient data');
+          }
+
           return BlocProvider(
             create: (context) => getIt<PatientsCubit>(),
             child: EditPatientScreen(patient: patient),
@@ -263,4 +275,39 @@ class AppRouter {
       ),
     ],
   );
+}
+
+class _InvalidRouteDataScreen extends StatelessWidget {
+  const _InvalidRouteDataScreen({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline_rounded, size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'This screen was opened with incomplete data.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: () => context.go(AppRouter.patientHome),
+                icon: const Icon(Icons.home_rounded),
+                label: const Text('Back to dashboard'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
