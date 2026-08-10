@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:enaya/core/utils/user_role.dart';
-import 'package:enaya/core/utils/role_mapper.dart';
+import '../../../auth/domain/entities/user_role.dart';
 
 import '../../domain/entities/base_profile_entity.dart';
 import '../models/user_api_response.dart';
@@ -23,7 +22,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
     final userApi = UserApiResponse.fromApi(meResponse.data);
 
     // convert roleId → UserRole enum → string name
-    final roleEnum = RoleMapper.fromId(userApi.roleId);
+    final roleEnum = UserRole.fromId(userApi.roleId);
     final roleString = roleEnum.name;
 
     // 2) default entity
@@ -62,7 +61,6 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           );
 
         case UserRole.receptionist:
-        case UserRole.unknown:
         default:
           return baseEntity;
       }
