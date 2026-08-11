@@ -2,9 +2,10 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:enaya/core/routing/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import '../../../../../core/di/injection.dart';
 import '../../../../patients/domain/entities/patient_entity.dart';
 import '../../../../patients/domain/usecases/search_patients_usecase.dart';
-import '../../../../../core/di/injection.dart';
 
 /// A searchable patient selection field with autocomplete and quick-add.
 ///
@@ -74,7 +75,10 @@ class _PatientSearchFieldState extends State<PatientSearchField> {
           LayoutBuilder(
             builder: (context, constraints) {
               final double fieldHeight =
-                  widget.height ?? (constraints.maxHeight.isFinite ? constraints.maxHeight : 48.0);
+                  widget.height ??
+                  (constraints.maxHeight.isFinite
+                      ? constraints.maxHeight
+                      : 48.0);
 
               return Autocomplete<PatientEntity>(
                 displayStringForOption: (PatientEntity p) => p.name,
@@ -89,71 +93,94 @@ class _PatientSearchFieldState extends State<PatientSearchField> {
                   if (!_isLoading && mounted) {
                     setState(() => _isLoading = true);
                   }
-                  final result = await getIt<SearchPatientsUseCase>().call(textEditingValue.text);
+                  final result = await getIt<SearchPatientsUseCase>().call(
+                    SearchPatientsParams(query: textEditingValue.text),
+                  );
                   if (mounted && _isLoading) {
                     setState(() => _isLoading = false);
                   }
-                  return result.fold((_) => const Iterable.empty(), (patients) => patients);
+                  return result.fold(
+                    (_) => const Iterable.empty(),
+                    (patients) => patients,
+                  );
                 },
                 onSelected: (PatientEntity patient) {
                   setState(() => _selectedPatient = patient);
                   widget.onPatientSelected(patient);
                 },
-                fieldViewBuilder: (context, controller, focusNode, onFieldSubmitted) {
-                  // ensure initial text is forwarded to the autocomplete controller
-                  if (_localController.text.isNotEmpty && controller.text.isEmpty) {
-                    controller.text = _localController.text;
-                  }
+                fieldViewBuilder:
+                    (context, controller, focusNode, onFieldSubmitted) {
+                      // ensure initial text is forwarded to the autocomplete controller
+                      if (_localController.text.isNotEmpty &&
+                          controller.text.isEmpty) {
+                        controller.text = _localController.text;
+                      }
 
-                  final textField = TextField(
-                    controller: controller,
-                    focusNode: focusNode,
-                    textAlignVertical: TextAlignVertical.center,
-                    decoration: InputDecoration(
-                      hintText: 'search_patient_hint'.tr(),
-                      prefixIcon: Icon(Icons.person_search, color: colorScheme.primary),
-                      suffixIcon: _isLoading
-                          ? const Padding(
-                              padding: EdgeInsets.all(12.0),
-                              child: SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            )
-                          : Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.person_add),
-                                  onPressed: () async {
-                                    if (widget.onAddPatient != null) {
-                                      widget.onAddPatient!();
-                                    } else {
-                                      await context.push(AppRouter.patientRegistration);
-                                    }
-                                  },
-                                  tooltip: 'add_patient'.tr(),
+                      final textField = TextField(
+                        controller: controller,
+                        focusNode: focusNode,
+                        textAlignVertical: TextAlignVertical.center,
+                        decoration: InputDecoration(
+                          hintText: 'search_patient_hint'.tr(),
+                          prefixIcon: Icon(
+                            Icons.person_search,
+                            color: colorScheme.primary,
+                          ),
+                          suffixIcon: _isLoading
+                              ? const Padding(
+                                  padding: EdgeInsets.all(12.0),
+                                  child: SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.person_add),
+                                      onPressed: () async {
+                                        if (widget.onAddPatient != null) {
+                                          widget.onAddPatient!();
+                                        } else {
+                                          await context.push(
+                                            AppRouter.patientRegistration,
+                                          );
+                                        }
+                                      },
+                                      tooltip: 'add_patient'.tr(),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                          filled: true,
+                          fillColor: colorScheme.surface,
+                          constraints: BoxConstraints.tightFor(
+                            height: fieldHeight,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: colorScheme.outlineVariant,
                             ),
-                      filled: true,
-                      fillColor: colorScheme.surface,
-                      constraints: BoxConstraints.tightFor(height: fieldHeight),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: colorScheme.outlineVariant),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: colorScheme.primary, width: 1.3),
-                      ),
-                    ),
-                  );
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: colorScheme.primary,
+                              width: 1.3,
+                            ),
+                          ),
+                        ),
+                      );
 
-                  return SizedBox(height: fieldHeight, child: textField);
-                },
+                      return SizedBox(height: fieldHeight, child: textField);
+                    },
                 optionsViewBuilder: (context, onSelected, options) {
                   return Align(
                     alignment: AlignmentDirectional.topStart,
@@ -162,13 +189,18 @@ class _PatientSearchFieldState extends State<PatientSearchField> {
                       borderRadius: BorderRadius.circular(12),
                       color: colorScheme.surface,
                       child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxHeight: 300, maxWidth: 520),
+                        constraints: const BoxConstraints(
+                          maxHeight: 300,
+                          maxWidth: 520,
+                        ),
                         child: ListView.builder(
                           padding: EdgeInsets.zero,
                           shrinkWrap: true,
                           itemCount: options.length,
                           itemBuilder: (BuildContext context, int index) {
-                            final PatientEntity option = options.elementAt(index);
+                            final PatientEntity option = options.elementAt(
+                              index,
+                            );
                             return ListTile(
                               title: Text(
                                 option.name,
@@ -176,7 +208,9 @@ class _PatientSearchFieldState extends State<PatientSearchField> {
                               ),
                               subtitle: Text(
                                 option.phone,
-                                style: TextStyle(color: colorScheme.onSurfaceVariant),
+                                style: TextStyle(
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
                               ),
                               onTap: () => onSelected(option),
                             );
@@ -210,7 +244,9 @@ class _PatientSearchFieldState extends State<PatientSearchField> {
                 children: [
                   CircleAvatar(
                     child: Text(
-                      _selectedPatient!.name.isNotEmpty ? _selectedPatient!.name[0] : '?',
+                      _selectedPatient!.name.isNotEmpty
+                          ? _selectedPatient!.name[0]
+                          : '?',
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -240,7 +276,8 @@ class _PatientSearchFieldState extends State<PatientSearchField> {
                         _selectedPatient = null;
                         _localController.clear();
                       });
-                      if (widget.onClearPatient != null) widget.onClearPatient!();
+                      if (widget.onClearPatient != null)
+                        widget.onClearPatient!();
                     },
                     tooltip: 'clear'.tr(),
                   ),

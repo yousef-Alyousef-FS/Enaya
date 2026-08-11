@@ -23,9 +23,21 @@ import '../../features/auth/presentation/screens/verify_email_screen.dart';
 import '../../features/dashboard/doctor/presentation/pages/doctor_dashboard_page.dart';
 import '../../features/dashboard/patient/presentation/pages/patient_dashboard_page.dart';
 import '../../features/dashboard/receptionist/presentation/pages/receptionist_dashboard_page.dart';
+import '../../features/notifications/data/repositories/notifications_repository.dart';
+import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
+import '../../features/notifications/presentation/screens/notifications_screen.dart';
+import '../../features/patients/domain/entities/patient_entity.dart';
 import '../../features/patients/presentation/screens/complete_profile_screen.dart';
+import '../../features/patients/presentation/screens/edit_patient_screen.dart';
+import '../../features/patients/presentation/screens/patient_details_screen.dart';
 import '../../features/patients/presentation/screens/patient_registration_screen.dart';
+import '../../features/patients/presentation/screens/patients_list_screen.dart';
 import '../../features/patients/presentation/state/patient_profile_cubit.dart';
+import '../../features/patients/presentation/state/patients_cubit.dart';
+import '../../features/prescriptions/presentation/cubit/prescription_cubit.dart';
+import '../../features/prescriptions/presentation/screens/add_prescription_screen.dart';
+import '../../features/session/presentation/cubit/session_cubit.dart';
+import '../../features/session/presentation/screens/session_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../constants/dev_config.dart';
 import '../di/injection.dart';
@@ -61,9 +73,17 @@ class AppRouter {
   static const String doctorSchedule = '/doctor/schedule';
   static const String patientHome = '/patient';
   static const String receptionistHome = '/receptionist';
+  static const String patients = '/patients';
+  static const String patientDetails = '/patients/details';
+  static const String editPatient = '/patients/edit';
   static const String patientRegistration = '/patients/register';
   static const String completeProfile = '/patients/complete-profile';
+  static const String notifications = '/notifications';
   static const String settings = '/settings';
+
+  // Doctor Session & Prescriptions
+  static const String doctorSession = '/doctor/session';
+  static const String addPrescription = '/doctor/prescription/add';
 
   static final router = GoRouter(
     initialLocation: DevConfig.isDevMode ? devMenu : splash,
@@ -144,14 +164,69 @@ class AppRouter {
         builder: (context, state) => const ReceptionistDashboardPage(),
       ),
       GoRoute(
+        path: patients,
+        builder: (context, state) => BlocProvider(
+          create: (context) => getIt<PatientsCubit>(),
+          child: const PatientsListScreen(),
+        ),
+      ),
+      GoRoute(
+        path: patientDetails,
+        builder: (context, state) {
+          final extra = state.extra;
+          if (extra is! Map<String, dynamic>) {
+            return const _InvalidRouteDataScreen(
+              title: 'Missing patient details',
+            );
+          }
+
+          final patient = extra['patient'];
+          if (patient is! PatientEntity) {
+            return const _InvalidRouteDataScreen(title: 'Invalid patient data');
+          }
+
+          final readOnly = extra['readOnly'] as bool? ?? false;
+
+          return BlocProvider(
+            create: (context) => getIt<PatientsCubit>(),
+            child: PatientDetailsScreen(patient: patient, readOnly: readOnly),
+          );
+        },
+      ),
+      GoRoute(
+        path: editPatient,
+        builder: (context, state) {
+          final patient = state.extra;
+          if (patient is! PatientEntity) {
+            return const _InvalidRouteDataScreen(title: 'Invalid patient data');
+          }
+
+          return BlocProvider(
+            create: (context) => getIt<PatientsCubit>(),
+            child: EditPatientScreen(patient: patient),
+          );
+        },
+      ),
+      GoRoute(
         path: patientRegistration,
-        builder: (context, state) => const PatientRegistrationScreen(),
+        builder: (context, state) => BlocProvider(
+          create: (context) => getIt<PatientsCubit>(),
+          child: const PatientRegistrationScreen(),
+        ),
       ),
       GoRoute(
         path: completeProfile,
         builder: (context, state) => BlocProvider(
           create: (context) => getIt<PatientProfileCubit>(),
           child: const CompleteProfileScreen(),
+        ),
+      ),
+      GoRoute(
+        path: notifications,
+        builder: (context, state) => BlocProvider(
+          create: (context) =>
+              NotificationsCubit(FakeNotificationsRepository())..load(),
+          child: const NotificationsScreen(),
         ),
       ),
       GoRoute(
@@ -245,6 +320,85 @@ class AppRouter {
           );
         },
       ),
+      GoRoute(
+        path: '$doctorSession/:appointmentId',
+        builder: (context, state) {
+          final appointmentId = int.tryParse(
+            state.pathParameters['appointmentId'] ?? '',
+          );
+          if (appointmentId == null) {
+            return const _InvalidRouteDataScreen(
+              title: 'Invalid appointment ID',
+            );
+          }
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(
+                create: (context) =>
+                    getIt<SessionCubit>()..loadOrStartSession(appointmentId),
+              ),
+              BlocProvider(
+                create: (context) =>
+                    getIt<PrescriptionCubit>()
+                      ..loadPrescriptions(appointmentId),
+              ),
+            ],
+            child: SessionScreen(appointmentId: appointmentId),
+          );
+        },
+      ),
+      GoRoute(
+        path: '$addPrescription/:appointmentId',
+        builder: (context, state) {
+          final appointmentId = int.tryParse(
+            state.pathParameters['appointmentId'] ?? '',
+          );
+          if (appointmentId == null) {
+            return const _InvalidRouteDataScreen(
+              title: 'Invalid appointment ID',
+            );
+          }
+          return BlocProvider(
+            create: (context) => getIt<PrescriptionCubit>(),
+            child: AddPrescriptionScreen(appointmentId: appointmentId),
+          );
+        },
+      ),
     ],
   );
+}
+
+class _InvalidRouteDataScreen extends StatelessWidget {
+  const _InvalidRouteDataScreen({required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline_rounded, size: 48),
+              const SizedBox(height: 16),
+              const Text(
+                'This screen was opened with incomplete data.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: () => context.go(AppRouter.patientHome),
+                icon: const Icon(Icons.home_rounded),
+                label: const Text('Back to dashboard'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

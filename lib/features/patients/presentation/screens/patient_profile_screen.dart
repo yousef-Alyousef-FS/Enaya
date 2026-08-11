@@ -8,7 +8,9 @@ import '../state/patient_profile_cubit.dart';
 import '../state/patient_profile_state.dart';
 
 class PatientProfileScreen extends StatefulWidget {
-  const PatientProfileScreen({super.key});
+  final bool showAppBar;
+
+  const PatientProfileScreen({super.key, this.showAppBar = true});
 
   @override
   State<PatientProfileScreen> createState() => _PatientProfileScreenState();
@@ -25,32 +27,37 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    final content = BlocBuilder<PatientProfileCubit, PatientProfileState>(
+      builder: (context, state) {
+        if (state.isLoading && state.profile == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final profile = state.profile;
+        if (profile == null) {
+          return Center(child: Text('error_loading_profile'.tr()));
+        }
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              _buildHeader(profile, theme),
+              const SizedBox(height: 32),
+              _buildInfoSection(profile, theme),
+              const SizedBox(height: 24),
+              _buildActionButtons(theme),
+            ],
+          ),
+        );
+      },
+    );
+
+    if (!widget.showAppBar) return content;
+
     return Scaffold(
-      body: BlocBuilder<PatientProfileCubit, PatientProfileState>(
-        builder: (context, state) {
-          if (state.isLoading && state.profile == null) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          final profile = state.profile;
-          if (profile == null) {
-            return Center(child: Text('error_loading_profile'.tr()));
-          }
-
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              children: [
-                _buildHeader(profile, theme),
-                const SizedBox(height: 32),
-                _buildInfoSection(profile, theme),
-                const SizedBox(height: 24),
-                _buildActionButtons(theme),
-              ],
-            ),
-          );
-        },
-      ),
+      appBar: AppBar(title: Text('profile'.tr()), centerTitle: true),
+      body: content,
     );
   }
 

@@ -65,6 +65,7 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
       final result = await remote.createAppointment(
         doctorId: int.parse(appointment.doctorId),
         scheduledAt: _formatDateTime(appointment.dateTime),
+        patientId: int.tryParse(appointment.patientId),
         visitReason: appointment.reason,
         notes: appointment.notes,
       );

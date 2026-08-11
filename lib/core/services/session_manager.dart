@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import '../cache/cache_helper.dart';
 import '../constants/api_constants.dart';
 
@@ -68,7 +69,20 @@ class SessionManager {
 
     final rawRole = data['roleId'] ?? data['role_id'] ?? data['role'];
     if (rawRole is int) return rawRole;
-    return int.tryParse(rawRole?.toString() ?? '');
+
+    final rawString = rawRole?.toString().trim().toLowerCase();
+    if (rawString == null || rawString.isEmpty) return null;
+
+    switch (rawString) {
+      case 'receptionist':
+        return 1;
+      case 'doctor':
+        return 2;
+      case 'patient':
+        return 3;
+      default:
+        return int.tryParse(rawString);
+    }
   }
 
   /// Clears the user session data.

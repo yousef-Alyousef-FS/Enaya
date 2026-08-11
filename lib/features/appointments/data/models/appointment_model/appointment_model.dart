@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 import '../../../domain/entities/appointment_status.dart';
 import '../../../domain/entities/appointment_entity.dart';

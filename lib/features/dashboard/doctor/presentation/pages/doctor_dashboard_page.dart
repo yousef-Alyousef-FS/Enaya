@@ -7,6 +7,8 @@ import 'package:enaya/features/appointments/data/models/appointments_overview_vi
 import 'package:enaya/features/dashboard/shared/presentation/models/dashboard_nav_item.dart';
 import 'package:enaya/features/dashboard/shared/presentation/pages/base_dashboard_page.dart';
 import 'package:enaya/features/dashboard/shared/presentation/widgets/dashboard_overview_builder.dart';
+import 'package:enaya/features/patients/presentation/screens/patients_list_screen.dart';
+import 'package:enaya/features/patients/presentation/state/patients_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -66,12 +68,16 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
         return AppointmentsPage(
           mode: AppointmentsOverviewMode.doctor,
           specificDoctorId: doctorId,
+          isEmbedded: true,
         );
       case 2:
-        return FeatureComingSoonState(
-          titleKey: 'nav_patients',
-          icon: Icons.people_outline,
-          onBack: () => _onNavigationSelected(0),
+        return BlocProvider(
+          create: (context) => getIt<PatientsCubit>(),
+          child: PatientsListScreen(
+            readOnly: true,
+            doctorId: doctorId,
+            embedded: true,
+          ),
         );
       case 3:
         return FeatureComingSoonState(
@@ -92,7 +98,7 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
           onBack: () => _onNavigationSelected(0),
         );
       case 6:
-        return const SettingsScreen();
+        return const SettingsScreen(showAppBar: false);
       default:
         return _buildOverviewSection(state, doctorId);
     }
@@ -125,6 +131,11 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
               },
               onStart: () {
                 final current = state.currentAppointment!;
+                if (current.status == AppointmentStatus.inProgress) {
+                  context.push('${AppRouter.doctorSession}/${current.id}');
+                  return;
+                }
+
                 if (current.status != AppointmentStatus.arrived) return;
 
                 context.read<DoctorDashboardCubit>().updateAppointmentStatus(
@@ -132,6 +143,8 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
                   current.id,
                   AppointmentStatus.inProgress,
                 );
+
+                context.push('${AppRouter.doctorSession}/${current.id}');
               },
             ),
             const SizedBox(height: 32),

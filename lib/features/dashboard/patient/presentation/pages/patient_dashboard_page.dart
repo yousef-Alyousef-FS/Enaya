@@ -43,10 +43,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (_) =>
-              getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
-        ),
+        BlocProvider(create: (_) => getIt<PatientAppointmentsCubit>()..loadAppointments(patientId)),
         BlocProvider(create: (_) => getIt<PatientProfileCubit>()),
       ],
       child: Builder(
@@ -63,11 +60,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
     );
   }
 
-  Widget _getSectionBody(
-    BuildContext context,
-    int index,
-    PatientSession session,
-  ) {
+  Widget _getSectionBody(BuildContext context, int index, PatientSession session) {
     switch (index) {
       case 0:
         return _buildOverviewSection(session);
@@ -90,13 +83,9 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
           onBack: () => _onNavigationSelected(context, 0),
         );
       case 4:
-        return FeatureComingSoonState(
-          titleKey: 'nav_profile',
-          icon: Icons.person_outline,
-          onBack: () => _onNavigationSelected(context, 0),
-        );
+        return const PatientProfileScreen(showAppBar: false);
       case 5:
-        return const SettingsScreen();
+        return const SettingsScreen(showAppBar: false);
       default:
         return _buildOverviewSection(session);
     }
@@ -106,14 +95,10 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
     return BlocBuilder<PatientAppointmentsCubit, PatientAppointmentsState>(
       builder: (context, state) {
         final isLoading =
-            state.status == PatientAppointmentsStatus.loading &&
-            state.appointments.isEmpty;
+            state.status == PatientAppointmentsStatus.loading && state.appointments.isEmpty;
 
-        if (state.status == PatientAppointmentsStatus.failure &&
-            state.appointments.isEmpty) {
-          return Center(
-            child: Text(state.errorMessage ?? 'Failed to load appointments'),
-          );
+        if (state.status == PatientAppointmentsStatus.failure && state.appointments.isEmpty) {
+          return Center(child: Text(state.errorMessage ?? 'Failed to load appointments'));
         }
 
         final nextApp = state.upcomingAppointments.isNotEmpty
@@ -122,9 +107,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
 
         return DashboardOverviewBuilder(
           header: _buildGreeting(session),
-          stats: isLoading
-              ? _buildShimmerStats()
-              : _buildStatsGrid(context, state),
+          stats: isLoading ? _buildShimmerStats() : _buildStatsGrid(context, state),
           actions: _buildQuickActions(context, session),
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -151,85 +134,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
   }
 
   Widget _buildGreeting(PatientSession session) {
-    final theme = Theme.of(context);
-    final primaryColor = theme.colorScheme.primary;
-    const whiteColor = Color(0xFFFFFFFF);
-
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [primaryColor.withAlpha(240), primaryColor.withAlpha(120)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: whiteColor.withAlpha(28),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.person_rounded,
-              color: whiteColor,
-              size: 30,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        session.patientName ?? 'Patient',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: whiteColor,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    if (session.isGuest)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: whiteColor.withAlpha(32),
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        child: const Text(
-                          'Demo',
-                          style: TextStyle(color: whiteColor, fontSize: 11),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'patient_overview_subtitle'.tr(),
-                  style: TextStyle(
-                    color: whiteColor.withAlpha(220),
-                    fontSize: 13,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    return PatientDashboardGreetingCard(session: session);
   }
 
   Widget _buildQuickActions(BuildContext context, PatientSession session) {
@@ -252,10 +157,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
   }
 
   Widget _buildStatsGrid(BuildContext context, PatientAppointmentsState state) {
-    final allAppointments = [
-      ...state.upcomingAppointments,
-      ...state.pastAppointments,
-    ];
+    final allAppointments = [...state.upcomingAppointments, ...state.pastAppointments];
     final completedCount = allAppointments
         .where((a) => a.status == AppointmentStatus.completed)
         .length;
@@ -283,38 +185,14 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
   }
 
   Widget _buildSectionHeader(String key) {
-    return Text(
-      key.tr(),
-      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-    );
+    return DashboardSectionHeader(title: key.tr());
   }
 
   Widget _buildEmptyAppointmentState(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outlineVariant),
-      ),
-      child: Column(
-        children: [
-          Center(
-            child: Text(
-              'no_upcoming_appointments'.tr(),
-              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
-            ),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            onPressed: () => _onNavigationSelected(context, 1),
-            icon: const Icon(Icons.add),
-            label: Text('new_appointment'.tr()),
-          ),
-        ],
-      ),
+    return DashboardEmptyStateCard(
+      title: 'no_upcoming_appointments'.tr(),
+      actionLabel: 'new_appointment'.tr(),
+      onAction: () => _onNavigationSelected(context, 1),
     );
   }
 
@@ -329,38 +207,187 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
 
     // Only force reload if data is missing
     final cubit = context.read<PatientAppointmentsCubit>();
-    if (index == 0 &&
-        cubit.state.appointments.isEmpty &&
-        _activePatientId != null) {
+    if (index == 0 && cubit.state.appointments.isEmpty && _activePatientId != null) {
       cubit.loadAppointments(_activePatientId.toString());
     }
   }
 
   Widget _buildShimmerStats() {
-    return Row(
-      children: [
-        Expanded(child: _shimmerBox(height: 120)),
-        const SizedBox(width: 16),
-        Expanded(child: _shimmerBox(height: 120)),
-      ],
-    );
+    return DashboardShimmerStatsRow();
   }
 
   Widget _buildShimmerNextAppointment() {
-    return _shimmerBox(height: 180, radius: 32);
+    return DashboardShimmerTile(height: 180, radius: 32);
   }
+}
 
-  Widget _shimmerBox({required double height, double radius = 24}) {
+class PatientDashboardGreetingCard extends StatelessWidget {
+  const PatientDashboardGreetingCard({super.key, required this.session});
+
+  final PatientSession session;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    const whiteColor = Color(0xFFFFFFFF);
+
+    return Transform.translate(
+      offset: const Offset(0, 4),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [primaryColor.withAlpha(240), primaryColor.withAlpha(120)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: primaryColor.withValues(alpha: 0.18),
+              blurRadius: 18,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(color: whiteColor.withAlpha(28), shape: BoxShape.circle),
+              child: const Icon(Icons.person_rounded, color: whiteColor, size: 30),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          session.patientName ?? 'Patient',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: whiteColor,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      if (session.isGuest)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: whiteColor.withAlpha(32),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: const Text(
+                            'Demo',
+                            style: TextStyle(color: whiteColor, fontSize: 11),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'patient_overview_subtitle'.tr(),
+                    style: TextStyle(color: whiteColor.withAlpha(220), fontSize: 13),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DashboardSectionHeader extends StatelessWidget {
+  const DashboardSectionHeader({super.key, required this.title});
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
+  }
+}
+
+class DashboardEmptyStateCard extends StatelessWidget {
+  const DashboardEmptyStateCard({
+    super.key,
+    required this.title,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  final String title;
+  final String actionLabel;
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: theme.colorScheme.outlineVariant),
+      ),
+      child: Column(
+        children: [
+          Center(
+            child: Text(title, style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            onPressed: onAction,
+            icon: const Icon(Icons.add),
+            label: Text(actionLabel),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class DashboardShimmerStatsRow extends StatelessWidget {
+  const DashboardShimmerStatsRow({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: DashboardShimmerTile(height: 120)),
+        const SizedBox(width: 16),
+        Expanded(child: DashboardShimmerTile(height: 120)),
+      ],
+    );
+  }
+}
+
+class DashboardShimmerTile extends StatelessWidget {
+  const DashboardShimmerTile({super.key, required this.height, this.radius = 24});
+
+  final double height;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Shimmer.fromColors(
       baseColor: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
       highlightColor: isDark ? Colors.grey.shade700 : Colors.grey.shade100,
       child: Container(
         height: height,
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(radius),
-        ),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(radius)),
       ),
     );
   }

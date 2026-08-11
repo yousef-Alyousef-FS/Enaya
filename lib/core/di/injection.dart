@@ -1,9 +1,12 @@
 import 'package:get_it/get_it.dart';
-import 'injection_container_core.dart';
-import 'injection_container_auth.dart';
-import 'injection_container_patients.dart';
+
 import 'injection_container_appointments.dart';
+import 'injection_container_auth.dart';
+import 'injection_container_core.dart';
 import 'injection_container_dashboards.dart';
+import 'injection_container_doctor_session.dart';
+import 'injection_container_patients.dart';
+import 'injection_container_profile.dart';
 
 final getIt = GetIt.instance;
 
@@ -15,4 +18,6 @@ Future<void> initGetIt() async {
   await initPatientsInjection();
   await initAppointmentsInjection();
   await initDashboardsInjection();
+  await initDoctorSessionInjection();
+  await initProfileInjection();
 }

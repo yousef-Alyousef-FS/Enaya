@@ -35,11 +35,7 @@ const List<DashboardNavItem> receptionistNavigationItems = [
     labelKey: 'nav_billing',
     isEnabled: false,
   ),
-  DashboardNavItem(
-    icon: Icons.person_outline,
-    selectedIcon: Icons.person,
-    labelKey: 'nav_profile',
-  ),
+  DashboardNavItem(icon: Icons.person_outline, selectedIcon: Icons.person, labelKey: 'nav_profile'),
   DashboardNavItem(
     icon: Icons.settings_outlined,
     selectedIcon: Icons.settings,
@@ -76,11 +72,7 @@ const List<DashboardNavItem> doctorNavigationItems = [
     labelKey: 'nav_billing',
     isEnabled: false,
   ),
-  DashboardNavItem(
-    icon: Icons.person_outline,
-    selectedIcon: Icons.person,
-    labelKey: 'nav_profile',
-  ),
+  DashboardNavItem(icon: Icons.person_outline, selectedIcon: Icons.person, labelKey: 'nav_profile'),
   DashboardNavItem(
     icon: Icons.settings_outlined,
     selectedIcon: Icons.settings,
@@ -112,11 +104,7 @@ const List<DashboardNavItem> patientNavigationItems = [
     labelKey: 'nav_billing',
     isEnabled: false,
   ),
-  DashboardNavItem(
-    icon: Icons.person_outline,
-    selectedIcon: Icons.person,
-    labelKey: 'nav_profile',
-  ),
+  DashboardNavItem(icon: Icons.person_outline, selectedIcon: Icons.person, labelKey: 'nav_profile'),
   DashboardNavItem(
     icon: Icons.settings_outlined,
     selectedIcon: Icons.settings,

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/services/session_manager.dart';
 import '../models/appointment_model/appointment_model.dart';
@@ -16,6 +17,7 @@ abstract class AppointmentRemoteDataSource {
   Future<AppointmentModel> createAppointment({
     required int doctorId,
     required String scheduledAt,
+    int? patientId,
     String? visitReason,
     String? notes,
   });
@@ -86,14 +88,17 @@ class AppointmentRemoteDataSourceImpl implements AppointmentRemoteDataSource {
   Future<AppointmentModel> createAppointment({
     required int doctorId,
     required String scheduledAt,
+    int? patientId,
     String? visitReason,
     String? notes,
   }) async {
+    final roleId = sessionManager.currentRoleId;
     final response = await dio.post(
       _basePath,
       data: {
         'doctor_id': doctorId,
         'scheduled_at': scheduledAt,
+        if (patientId != null && roleId == 1) 'patient_id': patientId,
         'visit_reason': visitReason,
         'notes': notes,
       },

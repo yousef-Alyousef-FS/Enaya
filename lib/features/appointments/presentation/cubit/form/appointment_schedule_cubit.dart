@@ -48,39 +48,26 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
     final result = await _getAvailableDoctorsUseCase(NoParams());
 
     result.fold(
-      (failure) => emit(
-        state.copyWith(isDoctorsLoading: false, errorMessage: failure.message),
-      ),
+      (failure) => emit(state.copyWith(isDoctorsLoading: false, errorMessage: failure.message)),
       (doctors) => emit(
-        state.copyWith(
-          isDoctorsLoading: false,
-          availableDoctors: doctors,
-          clearErrorMessage: true,
-        ),
+        state.copyWith(isDoctorsLoading: false, availableDoctors: doctors, clearErrorMessage: true),
       ),
     );
   }
 
   Future<void> loadAvailableDays(String doctorId) async {
-    emit(state.copyWith(isLoading: true, clearErrorMessage: true));
+    emit(state.copyWith(isLoading: true, clearErrorMessage: true, availableDays: const []));
 
     final result = await _getAvailableDaysUseCase(doctorId);
 
     result.fold(
-      (failure) =>
-          emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
-      (days) {
-        // [STAGE 2]: Success. You can store 'days' in state if you want to
-        // highlight specific days in the calendar.
-        emit(state.copyWith(isLoading: false));
-      },
+      (failure) => emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
+      (days) =>
+          emit(state.copyWith(isLoading: false, availableDays: days, clearErrorMessage: true)),
     );
   }
 
-  Future<void> loadAvailableSlots({
-    required String doctorId,
-    required DateTime date,
-  }) async {
+  Future<void> loadAvailableSlots({required String doctorId, required DateTime date}) async {
     if (state.selectedPatient == null) {
       emit(
         state.copyWith(
@@ -110,18 +97,25 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
     );
 
     result.fold(
-      (failure) =>
-          emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
+      (failure) => emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
       (slotsStrings) {
         final slots = slotsStrings.map((time) {
-          final parts = time.split(':');
-          final dt = DateTime(
-            date.year,
-            date.month,
-            date.day,
-            int.parse(parts[0]),
-            int.parse(parts[1]),
-          );
+          // [API_ADAPT]: Support both "HH:mm" and "yyyy-MM-dd HH:mm:ss" formats
+          DateTime dt;
+          if (time.contains('-')) {
+            // Full date-time string
+            dt = DateTime.tryParse(time.replaceFirst(' ', 'T')) ?? date;
+          } else {
+            // Time-only string "HH:mm"
+            final parts = time.split(':');
+            dt = DateTime(
+              date.year,
+              date.month,
+              date.day,
+              int.tryParse(parts[0]) ?? 0,
+              int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0,
+            );
+          }
           return TimeSlot(dateTime: dt, status: TimeSlotStatus.available);
         }).toList();
 
@@ -166,16 +160,11 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
     );
 
     final result = await _searchAvailableSlotsUseCase(
-      SearchAvailableSlotsParams(
-        doctorId: doctorId,
-        startDate: startDate,
-        endDate: endDate,
-      ),
+      SearchAvailableSlotsParams(doctorId: doctorId, startDate: startDate, endDate: endDate),
     );
 
     result.fold(
-      (failure) =>
-          emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
+      (failure) => emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
       (rangeSlots) => emit(
         state.copyWith(
           isLoading: false,
@@ -199,6 +188,7 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
         clearSelectedTimeSlot: true,
         clearErrorMessage: true,
         availableSlots: const [],
+        availableDays: const [],
         rangeSlots: const {},
         clearEndDate: true,
       ),
@@ -212,25 +202,23 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
         clearSelectedTimeSlot: true,
         clearErrorMessage: true,
         availableSlots: const [],
+        availableDays: const [],
         rangeSlots: const {},
         clearEndDate: true,
       ),
     );
   }
 
-  void updateSelectedDoctor(
-    String id,
-    String name, {
-    bool autoLoadSlots = true,
-  }) {
+  void updateSelectedDoctor(String id, String name, {bool autoLoadSlots = true}) {
     emit(
       state.copyWith(
         selectedDoctorId: id,
         selectedDoctorName: name,
         clearErrorMessage: true,
-        availableSlots: [],
+        availableSlots: const [],
+        availableDays: const [],
         clearSelectedTimeSlot: true,
-        rangeSlots: {},
+        rangeSlots: const {},
       ),
     );
 
@@ -268,30 +256,16 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
       return;
     }
 
-    emit(
-      state.copyWith(
-        selectedDate: date,
-        clearSelectedTimeSlot: true,
-        clearErrorMessage: true,
-      ),
-    );
+    emit(state.copyWith(selectedDate: date, clearSelectedTimeSlot: true, clearErrorMessage: true));
 
     if (state.endDate != null) {
-      searchAvailableSlotsRange(
-        doctorId: doctorId,
-        startDate: date,
-        endDate: state.endDate!,
-      );
+      searchAvailableSlotsRange(doctorId: doctorId, startDate: date, endDate: state.endDate!);
     } else {
       loadAvailableSlots(doctorId: doctorId, date: date);
     }
   }
 
-  void updateDateRange({
-    required DateTime start,
-    required DateTime end,
-    required String doctorId,
-  }) {
+  void updateDateRange({required DateTime start, required DateTime end, required String doctorId}) {
     if (state.selectedPatient == null) {
       emit(
         state.copyWith(
@@ -322,11 +296,7 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
       ),
     );
 
-    searchAvailableSlotsRange(
-      doctorId: doctorId,
-      startDate: start,
-      endDate: end,
-    );
+    searchAvailableSlotsRange(doctorId: doctorId, startDate: start, endDate: end);
   }
 
   void _tryLoadSlotsIfReady() {
@@ -345,13 +315,7 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
   }
 
   void updateSelectedTimeSlot(TimeSlot? slot) {
-    emit(
-      state.copyWith(
-        selectedTimeSlot: slot,
-        clearErrorMessage: true,
-        isSuccess: false,
-      ),
-    );
+    emit(state.copyWith(selectedTimeSlot: slot, clearErrorMessage: true, isSuccess: false));
   }
 
   void nextStep(bool isPatientMode) {
@@ -385,18 +349,9 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
 
   void toggleRangeMode(bool isRange) {
     if (!isRange) {
-      emit(
-        state.copyWith(
-          isRangeMode: false,
-          clearEndDate: true,
-          clearSelectedTimeSlot: true,
-        ),
-      );
+      emit(state.copyWith(isRangeMode: false, clearEndDate: true, clearSelectedTimeSlot: true));
       if (state.selectedDoctorId != null) {
-        loadAvailableSlots(
-          doctorId: state.selectedDoctorId!,
-          date: state.selectedDate,
-        );
+        loadAvailableSlots(doctorId: state.selectedDoctorId!, date: state.selectedDate);
       }
     } else {
       emit(state.copyWith(isRangeMode: true, clearSelectedTimeSlot: true));
@@ -466,13 +421,7 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
       return;
     }
 
-    emit(
-      state.copyWith(
-        isLoading: true,
-        clearErrorMessage: true,
-        isSuccess: false,
-      ),
-    );
+    emit(state.copyWith(isLoading: true, clearErrorMessage: true, isSuccess: false));
 
     final appointment = AppointmentEntity(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -486,9 +435,7 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
       notes: notes,
     );
 
-    final result = await _createAppointmentUseCase(
-      CreateAppointmentParams(appointment),
-    );
+    final result = await _createAppointmentUseCase(CreateAppointmentParams(appointment));
 
     result.fold(
       (failure) {
@@ -502,13 +449,7 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
         );
       },
       (_) {
-        emit(
-          state.copyWith(
-            isLoading: false,
-            clearErrorMessage: true,
-            isSuccess: true,
-          ),
-        );
+        emit(state.copyWith(isLoading: false, clearErrorMessage: true, isSuccess: true));
       },
     );
   }
@@ -573,19 +514,10 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
       return;
     }
 
-    emit(
-      state.copyWith(
-        isLoading: true,
-        clearErrorMessage: true,
-        isSuccess: false,
-      ),
-    );
+    emit(state.copyWith(isLoading: true, clearErrorMessage: true, isSuccess: false));
 
     final result = await _rescheduleAppointmentUseCase(
-      RescheduleAppointmentParams(
-        appointmentId: appointmentId,
-        newDateTime: slot.dateTime,
-      ),
+      RescheduleAppointmentParams(appointmentId: appointmentId, newDateTime: slot.dateTime),
     );
 
     result.fold(
@@ -597,13 +529,7 @@ class AppointmentScheduleCubit extends Cubit<AppointmentScheduleState> {
           isSuccess: false,
         ),
       ),
-      (_) => emit(
-        state.copyWith(
-          isLoading: false,
-          clearErrorMessage: true,
-          isSuccess: true,
-        ),
-      ),
+      (_) => emit(state.copyWith(isLoading: false, clearErrorMessage: true, isSuccess: true)),
     );
   }
 }

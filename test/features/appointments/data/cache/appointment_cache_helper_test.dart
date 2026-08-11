@@ -1,10 +1,9 @@
-import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
-
 import 'package:enaya/core/cache/cache_helper.dart';
 import 'package:enaya/features/appointments/data/cache/appointment_cache_helper.dart';
 import 'package:enaya/features/appointments/data/models/appointment_model/appointment_model.dart';
 import 'package:enaya/features/appointments/domain/entities/appointment_status.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 class MockCacheHelper extends Mock implements CacheHelper {}
 
@@ -33,7 +32,7 @@ void main() {
             patientName: 'Patient Test',
             doctorId: 'd1',
             doctorName: 'Dr. Test',
-            dateTime: DateTime(2026, 5, 15, 10, 0),
+            scheduledAt: DateTime(2026, 5, 15, 10, 0),
             status: AppointmentStatus.scheduled,
           ),
         ];
@@ -94,7 +93,7 @@ void main() {
             patientName: 'Patient Test',
             doctorId: 'd1',
             doctorName: 'Dr. Test',
-            dateTime: DateTime(2026, 5, 15, 10, 0),
+            scheduledAt: DateTime(2026, 5, 15, 10, 0),
             status: AppointmentStatus.scheduled,
           ),
         ];
@@ -143,7 +142,7 @@ void main() {
             patientName: 'Patient Test',
             doctorId: doctorId,
             doctorName: 'Dr. Test',
-            dateTime: DateTime(2026, 5, 15, 10, 0),
+            scheduledAt: DateTime(2026, 5, 15, 10, 0),
             status: AppointmentStatus.scheduled,
           ),
         ];
@@ -191,7 +190,7 @@ void main() {
             patientName: 'Patient Test',
             doctorId: 'd1',
             doctorName: 'Dr. Test',
-            dateTime: DateTime(2026, 5, 15, 10, 0),
+            scheduledAt: DateTime(2026, 5, 15, 10, 0),
             status: AppointmentStatus.scheduled,
           ),
         ];

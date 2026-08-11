@@ -1,21 +1,22 @@
 import 'package:dartz/dartz.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:enaya/core/di/injection.dart';
 import 'package:enaya/features/auth/domain/entities/user_entity.dart';
+import 'package:enaya/features/auth/domain/usecases/change_password_usecase.dart';
 import 'package:enaya/features/auth/domain/usecases/forgot_password_usecase.dart';
 import 'package:enaya/features/auth/domain/usecases/login_usecase.dart';
 import 'package:enaya/features/auth/domain/usecases/logout_usecase.dart';
-import 'package:enaya/features/auth/domain/usecases/change_password_usecase.dart';
 import 'package:enaya/features/auth/domain/usecases/reset_password_usecase.dart';
 import 'package:enaya/features/auth/domain/usecases/send_email_verification_usecase.dart';
 import 'package:enaya/features/auth/domain/usecases/signup_usecase.dart';
 import 'package:enaya/features/auth/domain/usecases/verify_email_usecase.dart';
 import 'package:enaya/features/auth/presentation/cubit/auth_cubit.dart';
 import 'package:enaya/features/auth/presentation/screens/login_screen.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:enaya/features/patients/domain/usecases/get_patient_profile_usecase.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 
 // 1. Mock the UseCases
 class MockLoginUseCase extends Mock implements LoginUseCase {}
@@ -35,6 +36,9 @@ class MockVerifyEmailUseCase extends Mock implements VerifyEmailUseCase {}
 
 class MockLogoutUseCase extends Mock implements LogoutUseCase {}
 
+class MockGetPatientProfileUseCase extends Mock
+    implements GetPatientProfileUseCase {}
+
 class FakeLoginParams extends Fake implements LoginParams {}
 
 void main() {
@@ -46,6 +50,7 @@ void main() {
   late MockSendEmailVerificationUseCase mockSendEmailVerificationUseCase;
   late MockVerifyEmailUseCase mockVerifyEmailUseCase;
   late MockLogoutUseCase mockLogoutUseCase;
+  late MockGetPatientProfileUseCase mockGetPatientProfileUseCase;
 
   setUpAll(() {
     registerFallbackValue(FakeLoginParams());
@@ -62,6 +67,7 @@ void main() {
     mockSendEmailVerificationUseCase = MockSendEmailVerificationUseCase();
     mockVerifyEmailUseCase = MockVerifyEmailUseCase();
     mockLogoutUseCase = MockLogoutUseCase();
+    mockGetPatientProfileUseCase = MockGetPatientProfileUseCase();
 
     getIt.registerLazySingleton<LoginUseCase>(() => mockLoginUseCase);
     getIt.registerLazySingleton<SignupUsecase>(() => mockSignupUseCase);
@@ -81,6 +87,10 @@ void main() {
       () => mockVerifyEmailUseCase,
     );
     getIt.registerLazySingleton<LogoutUseCase>(() => mockLogoutUseCase);
+    getIt.registerLazySingleton<GetPatientProfileUseCase>(
+      () => mockGetPatientProfileUseCase,
+    );
+
     getIt.registerFactory(
       () => AuthCubit(
         loginUseCase: getIt(),
@@ -91,6 +101,7 @@ void main() {
         sendEmailVerificationUseCase: getIt(),
         verifyEmailUseCase: getIt(),
         logoutUseCase: getIt(),
+        getPatientProfileUseCase: getIt(),
       ),
     );
   });

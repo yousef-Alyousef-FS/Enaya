@@ -15,6 +15,7 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool showUserMenu;
   final int notificationCount;
   final VoidCallback? onProfileTap;
+  final VoidCallback? onNotificationsTap;
 
   const DashboardAppBar({
     super.key,
@@ -24,6 +25,7 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.showUserMenu = true,
     this.notificationCount = 3,
     this.onProfileTap,
+    this.onNotificationsTap,
   });
 
   @override
@@ -43,46 +45,52 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
           ? _buildNotificationIcon(context)
           : null, // أو يمكن وضع SizedBox() إذا أردت الاحتفاظ بالمسافة
 
-      actions: [
-        if (showUserMenu) _buildUserMenu(context),
-        const SizedBox(width: 8),
-      ],
+      actions: [if (showUserMenu) _buildUserMenu(context), const SizedBox(width: 8)],
     );
   }
 
   Widget _buildNotificationIcon(BuildContext context) {
+    final color = Theme.of(context).colorScheme;
+
     return Stack(
       clipBehavior: Clip.none,
       children: [
         IconButton(
           tooltip: 'notifications'.tr(),
           icon: const Icon(Icons.notifications_none_outlined),
-          onPressed: () => _showComingSoon(context, 'notifications'.tr()),
+          onPressed: onNotificationsTap ?? () => _showComingSoon(context, 'notifications'.tr()),
         ),
-
         if (notificationCount > 0)
           Positioned(
-            right: 8,
-            top: 8,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+            right: 6,
+            top: 6,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              width: notificationCount > 9 ? 22 : 18,
+              height: 18,
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
-                color: Colors.red,
+                color: Colors.red.shade600,
                 borderRadius: BorderRadius.circular(999),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.surface,
-                  width: 1.5,
-                ),
+                border: Border.all(color: color.surface, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.red.withValues(alpha: 0.28),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
-              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
               child: Text(
                 notificationCount > 9 ? '9+' : '$notificationCount',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
                 ),
                 textAlign: TextAlign.center,
+                maxLines: 1,
               ),
             ),
           ),
@@ -98,16 +106,11 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outlineVariant,
-            width: 1,
-          ),
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
         ),
         child: const CircleAvatar(
           radius: 17,
-          backgroundImage: NetworkImage(
-            'https://i.pravatar.cc/150?u=reception',
-          ),
+          backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=reception'),
           backgroundColor: Colors.grey,
         ),
       ),

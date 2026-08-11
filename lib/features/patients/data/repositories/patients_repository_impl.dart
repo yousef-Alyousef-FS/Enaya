@@ -13,9 +13,11 @@ class PatientsRepositoryImpl implements PatientsRepository {
   PatientsRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, List<PatientEntity>>> getPatients() async {
+  Future<Either<Failure, List<PatientEntity>>> getPatients({
+    String? doctorId,
+  }) async {
     try {
-      final patients = await remoteDataSource.getPatients();
+      final patients = await remoteDataSource.getPatients(doctorId: doctorId);
       return Right(patients);
     } catch (e) {
       return Left(ApiErrorHandler.handle(e));
@@ -24,10 +26,14 @@ class PatientsRepositoryImpl implements PatientsRepository {
 
   @override
   Future<Either<Failure, List<PatientEntity>>> searchPatients(
-    String query,
-  ) async {
+    String query, {
+    String? doctorId,
+  }) async {
     try {
-      final patients = await remoteDataSource.searchPatients(query);
+      final patients = await remoteDataSource.searchPatients(
+        query,
+        doctorId: doctorId,
+      );
       return Right(patients);
     } catch (e) {
       return Left(ApiErrorHandler.handle(e));
@@ -35,9 +41,15 @@ class PatientsRepositoryImpl implements PatientsRepository {
   }
 
   @override
-  Future<Either<Failure, PatientEntity>> getPatientById(String id) async {
+  Future<Either<Failure, PatientEntity>> getPatientById(
+    String id, {
+    String? doctorId,
+  }) async {
     try {
-      final patient = await remoteDataSource.getPatientById(id);
+      final patient = await remoteDataSource.getPatientById(
+        id,
+        doctorId: doctorId,
+      );
       return Right(patient);
     } catch (e) {
       return Left(ApiErrorHandler.handle(e));
@@ -75,6 +87,19 @@ class PatientsRepositoryImpl implements PatientsRepository {
         emergencyContact: emergencyContact,
       );
       return Right(patient);
+    } catch (e) {
+      return Left(ApiErrorHandler.handle(e));
+    }
+  }
+
+  @override
+  Future<Either<Failure, PatientEntity>> updateProfile(
+    PatientEntity patient,
+  ) async {
+    try {
+      final model = PatientModel.fromEntity(patient);
+      final updated = await remoteDataSource.updateProfile(model);
+      return Right(updated);
     } catch (e) {
       return Left(ApiErrorHandler.handle(e));
     }
