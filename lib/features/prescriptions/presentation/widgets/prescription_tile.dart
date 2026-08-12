@@ -1,10 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:enaya/core/theme/app_colors.dart';
+import 'package:enaya/features/prescriptions/domain/entities/prescription_entity.dart';
+import 'package:enaya/features/prescriptions/presentation/cubit/prescription_cubit.dart';
+import 'package:enaya/features/prescriptions/presentation/screens/prescription_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:enaya/features/prescriptions/domain/entities/prescription_entity.dart';
-import 'package:enaya/features/prescriptions/presentation/screens/prescription_detail_screen.dart';
-import 'package:enaya/features/prescriptions/presentation/cubit/prescription_cubit.dart';
-import 'package:enaya/core/theme/app_colors.dart';
-import 'package:easy_localization/easy_localization.dart';
 
 class PrescriptionTile extends StatelessWidget {
   final PrescriptionEntity prescription;
@@ -44,9 +44,12 @@ class PrescriptionTile extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (_) => PrescriptionDetailScreen(
+                    appointmentId: 0,
+                    sessionId: prescription.sessionId,
                     prescription: prescription,
                     prescriptionCubit: prescriptionCubit,
-                    doctorName: doctorName ?? 'doctor_name'.tr(), // تمرير الاسم هنا
+                    doctorName:
+                        doctorName ?? 'doctor_name'.tr(), // تمرير الاسم هنا
                   ),
                 ),
               );
@@ -75,21 +78,27 @@ class PrescriptionTile extends StatelessWidget {
                       children: [
                         Text(
                           prescription.medicationName,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : AppColors.gray900,
+                                color: isDark
+                                    ? Colors.white
+                                    : AppColors.gray900,
                               ),
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.access_time_rounded, size: 14, color: AppColors.gray500),
+                            const Icon(
+                              Icons.access_time_rounded,
+                              size: 14,
+                              color: AppColors.gray500,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               prescription.frequency,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: AppColors.gray500,
-                                  ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.gray500),
                             ),
                           ],
                         ),

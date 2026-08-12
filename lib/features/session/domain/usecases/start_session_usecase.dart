@@ -1,3 +1,5 @@
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
 import '../entities/session_entity.dart';
 import '../repositories/session_repository.dart';
 
@@ -6,7 +8,7 @@ class StartSessionUseCase {
 
   StartSessionUseCase(this.repository);
 
-  Future<SessionEntity> call(int appointmentId) {
+  Future<Either<Failure, SessionEntity>> call(int appointmentId) {
     return repository.startSession(appointmentId);
   }
 }

@@ -4,12 +4,12 @@ import '../../features/profile/data/datasources/profile_remote_data_source.dart'
 import '../../features/profile/data/repositories/profile_repository_impl.dart';
 import '../../features/profile/domain/repositories/profile_repository.dart';
 import '../../features/profile/domain/usecases/get_profile_usecase.dart';
-import '../../features/profile/presentaion/cubit/profile_cubit.dart';
-import '../../features/update_profile/data/datasources/update_profile_remote_data_source.dart';
-import '../../features/update_profile/data/repositories/update_profile_repository_impl.dart';
-import '../../features/update_profile/domain/repositories/update_profile_repository.dart';
-import '../../features/update_profile/domain/usecases/update_profile_usecase.dart';
-import '../../features/update_profile/presentation/cubit/update_profile_cubit.dart';
+import '../../features/profile/presentation/state/profile_cubit.dart';
+import '../../features/profile/data/datasources/update_profile_remote_data_source.dart';
+import '../../features/profile/data/repositories/update_profile_repository_impl.dart';
+import '../../features/profile/domain/repositories/update_profile_repository.dart';
+import '../../features/profile/domain/usecases/update_profile_usecase.dart';
+import '../../features/profile/presentation/state/update_profile_cubit.dart';
 
 final getIt = GetIt.instance;
 

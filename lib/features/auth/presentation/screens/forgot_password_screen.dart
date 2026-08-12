@@ -6,11 +6,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/loaders/app_loaders.dart';
-import '../widgets/auth_card_container.dart';
-import '../widgets/portrait_only_scope.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
+import '../widgets/auth_card_container.dart';
 import '../widgets/auth_text_field.dart';
+import '../widgets/portrait_only_scope.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -98,9 +98,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
               Text(
                 'enter_email_reset'.tr(),
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontSize: config.bodyFontSize,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
               ),
               const SizedBox(height: 32),
               _buildForm(config),
@@ -193,15 +193,18 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
                             vertical: 12,
                           ),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.error.withAlpha(
-                              Theme.of(context).brightness == Brightness.dark
-                                  ? 30
-                                  : 20,
-                            ),
+                            color: Theme.of(context).colorScheme.error
+                                .withAlpha(
+                                  Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? 30
+                                      : 20,
+                                ),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Theme.of(context).colorScheme.error
-                                  .withAlpha(50),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.error.withAlpha(50),
                             ),
                           ),
                           child: Row(

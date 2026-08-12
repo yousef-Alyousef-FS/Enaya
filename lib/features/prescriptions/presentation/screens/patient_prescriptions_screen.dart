@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:enaya/core/theme/app_colors.dart';
 import 'package:enaya/features/prescriptions/presentation/cubit/prescription_cubit.dart';
 import 'package:enaya/features/prescriptions/presentation/cubit/prescription_state.dart';
-import 'package:enaya/features/prescriptions/presentation/widgets/prescription_item_card.dart';
 import 'package:enaya/features/prescriptions/presentation/screens/prescription_detail_screen.dart';
-import 'package:enaya/core/theme/app_colors.dart';
-import 'package:easy_localization/easy_localization.dart';
+import 'package:enaya/features/prescriptions/presentation/widgets/prescription_item_card.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PatientPrescriptionsScreen extends StatefulWidget {
   final int sessionId;
@@ -18,10 +18,12 @@ class PatientPrescriptionsScreen extends StatefulWidget {
   });
 
   @override
-  State<PatientPrescriptionsScreen> createState() => _PatientPrescriptionsScreenState();
+  State<PatientPrescriptionsScreen> createState() =>
+      _PatientPrescriptionsScreenState();
 }
 
-class _PatientPrescriptionsScreenState extends State<PatientPrescriptionsScreen> {
+class _PatientPrescriptionsScreenState
+    extends State<PatientPrescriptionsScreen> {
   @override
   void initState() {
     super.initState();
@@ -44,10 +46,16 @@ class _PatientPrescriptionsScreenState extends State<PatientPrescriptionsScreen>
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
                 'prescriptions'.tr(),
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
               centerTitle: false,
-              titlePadding: const EdgeInsetsDirectional.only(start: 50, bottom: 16),
+              titlePadding: const EdgeInsetsDirectional.only(
+                start: 50,
+                bottom: 16,
+              ),
               background: Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
@@ -59,7 +67,11 @@ class _PatientPrescriptionsScreenState extends State<PatientPrescriptionsScreen>
                     Positioned(
                       right: -20,
                       top: -20,
-                      child: Icon(Icons.medication_rounded, size: 150, color: Colors.white.withOpacity(0.1)),
+                      child: Icon(
+                        Icons.medication_rounded,
+                        size: 150,
+                        color: Colors.white.withOpacity(0.1),
+                      ),
                     ),
                   ],
                 ),
@@ -70,10 +82,12 @@ class _PatientPrescriptionsScreenState extends State<PatientPrescriptionsScreen>
             child: BlocBuilder<PrescriptionCubit, PrescriptionState>(
               builder: (context, state) {
                 if (state is PrescriptionLoading) {
-                  return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                  return const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  );
                 } else if (state is PrescriptionLoaded) {
                   final filtered = state.prescriptions
-                      .where((p) => p.appointmentId == widget.sessionId)
+                      .where((p) => p.sessionId == widget.sessionId)
                       .toList();
 
                   if (filtered.isEmpty) {
@@ -81,11 +95,18 @@ class _PatientPrescriptionsScreenState extends State<PatientPrescriptionsScreen>
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.assignment_late_outlined, size: 80, color: AppColors.gray300),
+                          Icon(
+                            Icons.assignment_late_outlined,
+                            size: 80,
+                            color: AppColors.gray300,
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             'no_prescriptions'.tr(),
-                            style: TextStyle(color: AppColors.gray500, fontSize: 18),
+                            style: TextStyle(
+                              color: AppColors.gray500,
+                              fontSize: 18,
+                            ),
                           ),
                         ],
                       ),
@@ -100,11 +121,15 @@ class _PatientPrescriptionsScreenState extends State<PatientPrescriptionsScreen>
                       return PrescriptionItemCard(
                         prescription: prescription,
                         onTap: () {
-                          final prescriptionCubit = context.read<PrescriptionCubit>();
+                          final prescriptionCubit = context
+                              .read<PrescriptionCubit>();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
                               builder: (_) => PrescriptionDetailScreen(
+                                appointmentId:
+                                    0, // Not strictly used for patient view
+                                sessionId: widget.sessionId,
                                 prescription: prescription,
                                 prescriptionCubit: prescriptionCubit,
                                 doctorName: widget.doctorName,

@@ -1,20 +1,20 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:enaya/features/appointments/domain/entities/appointment_entity.dart';
+import 'package:enaya/features/appointments/presentation/widgets/receptionist/appointments_filter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../../../../core/routing/app_router.dart';
+import '../../../../../core/widgets/common/responsive_stats_grid.dart';
+import '../../../../../core/widgets/common/shimmer_loading.dart';
+import '../../../data/models/appointments_overview_view_mode.dart';
 import '../../cubit/list/receptionist_appointments_cubit.dart';
 import '../../cubit/list/receptionist_appointments_state.dart';
 import '../../widgets/receptionist/appointment_table_config.dart';
-import '../../widgets/tables/generic_table.dart';
-
-import '../../../data/models/appointments_overview_view_mode.dart';
-import 'package:enaya/features/appointments/domain/entities/appointment_entity.dart';
-import 'package:enaya/features/appointments/presentation/widgets/receptionist/appointments_filter.dart';
-import '../../widgets/shared/appointments_feedback_state.dart';
 import '../../widgets/receptionist/receptionist_stats_grid.dart';
-import '../../../../../core/widgets/common/shimmer_loading.dart';
-import '../../../../../core/widgets/common/responsive_stats_grid.dart';
+import '../../widgets/shared/appointments_feedback_state.dart';
+import '../../widgets/tables/generic_table.dart';
 
 /// [ARCH_FLAG]: Admin/Receptionist focal point for medical facility management.
 /// Integrates filtering, statistical grids, and a configurable data table.
@@ -33,13 +33,18 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ReceptionistAppointmentsCubit, ReceptionistAppointmentsState>(
+    return BlocBuilder<
+      ReceptionistAppointmentsCubit,
+      ReceptionistAppointmentsState
+    >(
       builder: (context, state) {
         final theme = Theme.of(context);
 
         final content = Center(
           child: Container(
-            constraints: isEmbedded ? null : const BoxConstraints(maxWidth: 1400),
+            constraints: isEmbedded
+                ? null
+                : const BoxConstraints(maxWidth: 1400),
             child: ListView(
               padding: isEmbedded
                   ? EdgeInsets.zero
@@ -91,14 +96,19 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
   }
 
   /// 2. Inline Error Section
-  Widget _buildErrorSection(BuildContext context, ReceptionistAppointmentsState state) {
+  Widget _buildErrorSection(
+    BuildContext context,
+    ReceptionistAppointmentsState state,
+  ) {
     if (state.errorMessage == null) return const SizedBox.shrink();
 
     return Column(
       children: [
         AppointmentsInlineError(
           message: state.errorMessage,
-          onRetry: () => context.read<ReceptionistAppointmentsCubit>().refreshCurrentView(),
+          onRetry: () => context
+              .read<ReceptionistAppointmentsCubit>()
+              .refreshCurrentView(),
         ),
         const SizedBox(height: 16),
       ],
@@ -122,8 +132,13 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
   }
 
   /// 4. Table / Empty State Section
-  Widget _buildTableSection(BuildContext context, ReceptionistAppointmentsState state) {
-    if (!state.isLoading && state.errorMessage == null && state.filteredAppointments.isEmpty) {
+  Widget _buildTableSection(
+    BuildContext context,
+    ReceptionistAppointmentsState state,
+  ) {
+    if (!state.isLoading &&
+        state.errorMessage == null &&
+        state.filteredAppointments.isEmpty) {
       return AppointmentsInlineEmpty(
         title: 'no_appointments_found'.tr(),
         subtitle: _getEmptySubtitle(state),
@@ -137,19 +152,17 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
       isPageLoading: state.isPageLoading, // [API_READY]: Pass pagination state
       onRowTap: (app) => _onViewAppointment(context, app),
       onRowLongPress: (app) => _onViewAppointment(context, app),
-      onLoadMore: () => context.read<ReceptionistAppointmentsCubit>().loadNextPage(),
+      onLoadMore: () =>
+          context.read<ReceptionistAppointmentsCubit>().loadNextPage(),
       // [CONFIG_FLAG]: Table schema is abstracted in AppointmentTableConfig to keep Screen file focused on layout.
       columns: AppointmentTableConfig.build(
         context: context,
         appointments: state.filteredAppointments,
         onView: (app) => _onViewAppointment(context, app),
         onEdit: (app) => _onEditAppointment(context, app),
-        onStatusChange: (app, status, reason) =>
-            context.read<ReceptionistAppointmentsCubit>().updateStatus(
-                  app.id,
-                  status,
-                  reason: reason,
-                ),
+        onStatusChange: (app, status, reason) => context
+            .read<ReceptionistAppointmentsCubit>()
+            .updateStatus(app.id, status, reason: reason),
       ),
     );
   }
@@ -157,7 +170,8 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
   String _getEmptySubtitle(ReceptionistAppointmentsState state) {
     final selected = state.filter.startDate;
     final now = DateTime.now();
-    final isToday = now.year == selected.year &&
+    final isToday =
+        now.year == selected.year &&
         now.month == selected.month &&
         now.day == selected.day;
 
@@ -171,12 +185,16 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
       extra: {
         'appointment': app,
         'role': AppointmentsOverviewMode.receptionist,
-        'onDataChanged': () => context.read<ReceptionistAppointmentsCubit>().refreshCurrentView(),
+        'onDataChanged': () =>
+            context.read<ReceptionistAppointmentsCubit>().refreshCurrentView(),
       },
     );
   }
 
-  Future<void> _onEditAppointment(BuildContext context, AppointmentEntity app) async {
+  Future<void> _onEditAppointment(
+    BuildContext context,
+    AppointmentEntity app,
+  ) async {
     final result = await context.push(
       AppRouter.editAppointment,
       extra: {'appointment': app},

@@ -1,14 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:enaya/core/theme/app_colors.dart';
 import 'package:enaya/features/prescriptions/domain/entities/prescription_entity.dart';
 import 'package:enaya/features/prescriptions/presentation/cubit/prescription_cubit.dart';
 import 'package:enaya/features/prescriptions/presentation/cubit/prescription_state.dart';
 import 'package:enaya/features/prescriptions/presentation/screens/add_prescription_screen.dart';
 import 'package:enaya/features/prescriptions/presentation/widgets/prescription_detail_card.dart';
-import 'package:easy_localization/easy_localization.dart';
-import 'package:enaya/core/theme/app_colors.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PrescriptionDetailScreen extends StatelessWidget {
+  final int appointmentId;
+  final int sessionId;
   final PrescriptionEntity prescription;
   final String? doctorName;
   final PrescriptionCubit prescriptionCubit;
@@ -19,6 +21,8 @@ class PrescriptionDetailScreen extends StatelessWidget {
 
   const PrescriptionDetailScreen({
     super.key,
+    required this.appointmentId,
+    required this.sessionId,
     required this.prescription,
     required this.prescriptionCubit,
     this.doctorName,
@@ -28,10 +32,7 @@ class PrescriptionDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('details'.tr()),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: Text('details'.tr()), centerTitle: true),
       body: SingleChildScrollView(
         // Reduce bottom padding if there is no action bar
         padding: EdgeInsets.fromLTRB(16.0, 16.0, 16.0, canEdit ? 120.0 : 16.0),
@@ -77,7 +78,9 @@ class PrescriptionDetailScreen extends StatelessWidget {
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppColors.primary,
-                    side: BorderSide(color: AppColors.primary.withOpacity(0.35)),
+                    side: BorderSide(
+                      color: AppColors.primary.withOpacity(0.35),
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
@@ -121,7 +124,8 @@ class PrescriptionDetailScreen extends StatelessWidget {
         builder: (routeContext) => BlocProvider.value(
           value: prescriptionCubit,
           child: AddPrescriptionScreen(
-            appointmentId: prescription.appointmentId,
+            appointmentId: appointmentId,
+            sessionId: sessionId,
             prescription: prescription,
           ),
         ),
@@ -136,7 +140,9 @@ class PrescriptionDetailScreen extends StatelessWidget {
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Delete prescription?'),
-          content: const Text('This action will remove the prescription permanently.'),
+          content: const Text(
+            'This action will remove the prescription permanently.',
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
@@ -144,8 +150,8 @@ class PrescriptionDetailScreen extends StatelessWidget {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.error,
-                  foregroundColor: Colors.white
+                backgroundColor: AppColors.error,
+                foregroundColor: Colors.white,
               ),
               onPressed: () => Navigator.pop(dialogContext, true),
               child: const Text('Delete'),
@@ -158,8 +164,9 @@ class PrescriptionDetailScreen extends StatelessWidget {
     if (shouldDelete != true || !context.mounted) return;
 
     await prescriptionCubit.deletePrescription(
-      prescription.id,
-      appointmentId: prescription.appointmentId,
+      sessionId: sessionId,
+      prescriptionId: prescription.id,
+      appointmentId: appointmentId,
     );
 
     if (!context.mounted) return;
@@ -167,7 +174,10 @@ class PrescriptionDetailScreen extends StatelessWidget {
     final state = prescriptionCubit.state;
     if (state is PrescriptionError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(state.message), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text(state.message),
+          backgroundColor: AppColors.error,
+        ),
       );
       return;
     }

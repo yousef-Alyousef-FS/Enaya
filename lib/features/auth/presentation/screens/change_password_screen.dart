@@ -6,9 +6,9 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/widgets/loaders/app_loaders.dart';
-import '../widgets/auth_card_container.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
+import '../widgets/auth_card_container.dart';
 import '../widgets/auth_text_field.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
@@ -101,9 +101,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen>
               Text(
                 'change_password_description'.tr(),
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontSize: config.bodyFontSize,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(fontSize: config.bodyFontSize),
               ),
               const SizedBox(height: 32),
               _buildForm(config),

@@ -15,15 +15,17 @@ class SessionModel extends SessionEntity {
   factory SessionModel.fromJson(Map<String, dynamic> json) {
     return SessionModel(
       id: json['id'],
-      appointmentId: json['appointment_id'],
+      appointmentId: (json['appointment_id'] ?? json['appointmentId']) as int,
       startedAt: json['started_at'] != null
           ? DateTime.parse(json['started_at'])
-          : null,
+          : (json['startedAt'] != null
+                ? DateTime.parse(json['startedAt'])
+                : null),
       endedAt: json['ended_at'] != null
           ? DateTime.parse(json['ended_at'])
-          : null,
+          : (json['endedAt'] != null ? DateTime.parse(json['endedAt']) : null),
       notes: json['notes'],
-      patientComplaint: json['patient_complaint'],
+      patientComplaint: json['patient_complaint'] ?? json['patientComplaint'],
       diagnosis: json['diagnosis'],
       status: json['status'],
     );

@@ -2,6 +2,7 @@ import 'base_profile_entity.dart';
 
 class PatientProfileEntity extends BaseProfileEntity {
   final String address;
+  final String? emergencyContact;
 
   PatientProfileEntity({
     required super.id,
@@ -10,5 +11,6 @@ class PatientProfileEntity extends BaseProfileEntity {
     required super.phone,
     required this.address,
     required super.role,
+    this.emergencyContact,
   });
 }

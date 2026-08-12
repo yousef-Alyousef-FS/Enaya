@@ -41,6 +41,20 @@ class ApiConstants {
   // Dashboards
   static const String receptionistDashboard = "receptionist/dashboard";
 
+  // Doctor Sessions (linked to appointments)
+  static String doctorSessionList(int appointmentId) =>
+      "doctor/appointments/$appointmentId/sessions/list";
+  static String doctorSessionStart(int appointmentId) =>
+      "doctor/appointments/$appointmentId/sessions/start";
+  static String doctorSessionEnd(int appointmentId) =>
+      "doctor/appointments/$appointmentId/sessions/end";
+
+  // Doctor Prescriptions (linked to sessions)
+  static String doctorPrescriptions(int sessionId) =>
+      "doctor/sessions/$sessionId/prescriptions";
+  static String doctorPrescriptionDetail(int sessionId, int prescriptionId) =>
+      "doctor/sessions/$sessionId/prescriptions/$prescriptionId";
+
   // Storage Keys
   static const String tokenKey = "user_token";
   static const String refreshTokenKey = "refresh_token";

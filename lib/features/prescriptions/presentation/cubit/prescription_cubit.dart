@@ -1,9 +1,10 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:enaya/features/prescriptions/domain/entities/prescription_entity.dart';
 import 'package:enaya/features/prescriptions/domain/usecases/add_prescription_usecase.dart';
+import 'package:enaya/features/prescriptions/domain/usecases/delete_prescription_usecase.dart';
 import 'package:enaya/features/prescriptions/domain/usecases/get_prescriptions_usecase.dart';
 import 'package:enaya/features/prescriptions/domain/usecases/update_prescription_usecase.dart';
-import 'package:enaya/features/prescriptions/domain/usecases/delete_prescription_usecase.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'prescription_state.dart';
 
 class PrescriptionCubit extends Cubit<PrescriptionState> {
@@ -21,46 +22,71 @@ class PrescriptionCubit extends Cubit<PrescriptionState> {
 
   Future<void> loadPrescriptions(int appointmentId) async {
     emit(PrescriptionLoading());
-    try {
-      final list = await getPrescriptionsUseCase(appointmentId);
-      emit(PrescriptionLoaded(list));
-    } catch (e) {
-      emit(PrescriptionError(e.toString()));
-    }
+    final result = await getPrescriptionsUseCase(appointmentId);
+
+    result.fold(
+      (failure) => emit(PrescriptionError(failure.message)),
+      (list) => emit(PrescriptionLoaded(list)),
+    );
   }
 
-  Future<void> addPrescription(PrescriptionEntity entity) async {
+  Future<void> addPrescription({
+    required int sessionId,
+    required PrescriptionEntity entity,
+  }) async {
     emit(PrescriptionLoading());
-    try {
-      final result = await addPrescriptionUseCase(entity);
-      emit(PrescriptionAdded(result));
-    } catch (e) {
-      emit(PrescriptionError(e.toString()));
-    }
+    final result = await addPrescriptionUseCase(
+      sessionId: sessionId,
+      entity: entity,
+    );
+
+    result.fold(
+      (failure) => emit(PrescriptionError(failure.message)),
+      (prescription) => emit(PrescriptionAdded(prescription)),
+    );
   }
 
-  Future<void> updatePrescription(int id, PrescriptionEntity entity) async {
+  Future<void> updatePrescription({
+    required int sessionId,
+    required int prescriptionId,
+    required PrescriptionEntity entity,
+  }) async {
     emit(PrescriptionLoading());
-    try {
-      final result = await updatePrescriptionUseCase(id, entity);
-      emit(PrescriptionUpdated(result));
-    } catch (e) {
-      emit(PrescriptionError(e.toString()));
-    }
+    final result = await updatePrescriptionUseCase(
+      sessionId: sessionId,
+      prescriptionId: prescriptionId,
+      entity: entity,
+    );
+
+    result.fold(
+      (failure) => emit(PrescriptionError(failure.message)),
+      (prescription) => emit(PrescriptionUpdated(prescription)),
+    );
   }
 
-  Future<void> deletePrescription(int id, {int? appointmentId}) async {
+  Future<void> deletePrescription({
+    required int sessionId,
+    required int prescriptionId,
+    int? appointmentId,
+  }) async {
     emit(PrescriptionLoading());
-    try {
-      await deletePrescriptionUseCase(id);
+    final result = await deletePrescriptionUseCase(
+      sessionId: sessionId,
+      prescriptionId: prescriptionId,
+    );
+
+    result.fold((failure) => emit(PrescriptionError(failure.message)), (
+      _,
+    ) async {
       if (appointmentId != null) {
-        final list = await getPrescriptionsUseCase(appointmentId);
-        emit(PrescriptionLoaded(list));
+        final listResult = await getPrescriptionsUseCase(appointmentId);
+        listResult.fold(
+          (failure) => emit(PrescriptionError(failure.message)),
+          (list) => emit(PrescriptionLoaded(list)),
+        );
       } else {
         emit(PrescriptionDeleted());
       }
-    } catch (e) {
-      emit(PrescriptionError(e.toString()));
-    }
+    });
   }
 }

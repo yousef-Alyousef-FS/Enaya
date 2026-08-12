@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/services/patient_session.dart';
 import '../../../../core/widgets/inputs/app_text_field.dart';
 import '../../../../core/widgets/loaders/app_loaders.dart';
 import '../../domain/usecases/complete_patient_profile_usecase.dart';
@@ -31,6 +32,16 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
 
   String _gender = 'male';
   DateTime? _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    // Pre-fill phone number from session if available
+    final sessionPhone = PatientSession().patientPhone;
+    if (sessionPhone != null && sessionPhone.isNotEmpty) {
+      _phoneController.text = sessionPhone;
+    }
+  }
 
   @override
   void dispose() {

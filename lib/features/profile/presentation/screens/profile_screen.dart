@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import '../cubit/profile_cubit.dart';
-import '../cubit/profile_state.dart';
+import '../state/profile_cubit.dart';
+import '../state/profile_state.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_info_section.dart';
 import '../widgets/profile_loading.dart';

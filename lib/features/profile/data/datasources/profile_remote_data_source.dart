@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
-import '../../../auth/domain/entities/user_role.dart';
 
+import '../../../auth/domain/entities/user_role.dart';
 import '../../domain/entities/base_profile_entity.dart';
-import '../models/user_api_response.dart';
 import '../models/doctor_profile_model.dart';
 import '../models/patient_profile_model.dart';
+import '../models/user_api_response.dart';
 
 abstract class ProfileRemoteDataSource {
   Future<BaseProfileEntity> getProfile();
@@ -41,27 +41,20 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
           final doctorJson = doctorResponse.data['data'] ?? {};
 
           return DoctorProfileModel.fromApi(
-            userJson: {
-              ...userApi.toUserJson(),
-              "role": roleString,
-            },
+            userJson: {...userApi.toUserJson(), "role": roleString},
             doctorJson: doctorJson,
           );
 
         case UserRole.patient:
-          final patientResponse = await dio.get('/patient/${userApi.id}');
+          final patientResponse = await dio.get('/patients/profile');
           final patientJson = patientResponse.data['data'] ?? {};
 
           return PatientProfileModel.fromApi(
-            userJson: {
-              ...userApi.toUserJson(),
-              "role": roleString,
-            },
+            userJson: {...userApi.toUserJson(), "role": roleString},
             patientJson: patientJson,
           );
 
         case UserRole.receptionist:
-        default:
           return baseEntity;
       }
     } catch (_) {

@@ -1,18 +1,16 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:easy_localization/easy_localization.dart';
 
-import '../cubit/update_profile_cubit.dart';
-import '../cubit/update_profile_state.dart';
-
-import '../widgets/user_profile_form_widget.dart';
+import '../../domain/entities/doctor_update_profile_entity.dart';
+import '../../domain/entities/patient_update_profile_entity.dart';
+import '../../domain/entities/user_update_profile_entity.dart';
+import '../state/update_profile_cubit.dart';
+import '../state/update_profile_state.dart';
 import '../widgets/doctor_profile_form_widget.dart';
 import '../widgets/patient_profile_form_widget.dart';
 import '../widgets/save_button_widget.dart';
-
-import '../../domain/entities/user_update_profile_entity.dart';
-import '../../domain/entities/doctor_update_profile_entity.dart';
-import '../../domain/entities/patient_update_profile_entity.dart';
+import '../widgets/user_profile_form_widget.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
   final String role; // doctor / patient / user
@@ -36,24 +34,32 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
   TextEditingController? specialtyController;
   TextEditingController? addressController;
+  TextEditingController? emergencyContactController;
 
   @override
   void initState() {
     super.initState();
 
-    nameController =
-        TextEditingController(text: widget.profileData["name"] ?? "");
-    phoneController =
-        TextEditingController(text: widget.profileData["phone"] ?? "");
+    nameController = TextEditingController(
+      text: widget.profileData["name"] ?? "",
+    );
+    phoneController = TextEditingController(
+      text: widget.profileData["phone"] ?? "",
+    );
 
     if (widget.role == "doctor") {
-      specialtyController =
-          TextEditingController(text: widget.profileData["specialty"] ?? "");
+      specialtyController = TextEditingController(
+        text: widget.profileData["specialty"] ?? "",
+      );
     }
 
     if (widget.role == "patient") {
-      addressController =
-          TextEditingController(text: widget.profileData["address"] ?? "");
+      addressController = TextEditingController(
+        text: widget.profileData["address"] ?? "",
+      );
+      emergencyContactController = TextEditingController(
+        text: widget.profileData["emergency_contact"] ?? "",
+      );
     }
   }
 
@@ -64,6 +70,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
     specialtyController?.dispose();
     addressController?.dispose();
+    emergencyContactController?.dispose();
 
     super.dispose();
   }
@@ -71,23 +78,21 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("edit_profile".tr()),
-      ),
+      appBar: AppBar(title: Text("edit_profile".tr())),
 
       body: BlocConsumer<UpdateProfileCubit, UpdateProfileState>(
         listener: (context, state) {
           if (state is UpdateProfileSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text("saved_successfully".tr())),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text("saved_successfully".tr())));
             Navigator.pop(context);
           }
 
           if (state is UpdateProfileError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.message)));
           }
         },
 
@@ -107,7 +112,9 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         final entity = _buildEntityByRole();
-                        context.read<UpdateProfileCubit>().updateProfile(entity);
+                        context.read<UpdateProfileCubit>().updateProfile(
+                          entity,
+                        );
                       }
                     },
                   ),
@@ -136,6 +143,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         nameController: nameController,
         phoneController: phoneController,
         addressController: addressController!,
+        emergencyContactController: emergencyContactController!,
       );
     }
 
@@ -161,6 +169,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         name: nameController.text,
         phone: phoneController.text,
         address: addressController!.text,
+        emergencyContact: emergencyContactController!.text,
       );
     }
 

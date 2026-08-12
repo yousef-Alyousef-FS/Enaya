@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 class PrescriptionEntity extends Equatable {
   final int id;
-  final int appointmentId;
+  final int sessionId;
   final String medicationName;
   final String dosage;
   final String frequency;
@@ -12,7 +12,7 @@ class PrescriptionEntity extends Equatable {
 
   const PrescriptionEntity({
     required this.id,
-    required this.appointmentId,
+    required this.sessionId,
     required this.medicationName,
     required this.dosage,
     required this.frequency,
@@ -23,13 +23,13 @@ class PrescriptionEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        appointmentId,
-        medicationName,
-        dosage,
-        frequency,
-        durationDays,
-        instructions,
-        createdAt,
-      ];
+    id,
+    sessionId,
+    medicationName,
+    dosage,
+    frequency,
+    durationDays,
+    instructions,
+    createdAt,
+  ];
 }

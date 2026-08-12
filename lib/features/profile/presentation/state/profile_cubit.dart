@@ -1,8 +1,9 @@
 import 'package:enaya/features/profile/domain/entities/doctor_profile_entity.dart';
 import 'package:enaya/features/profile/domain/entities/patient_profile_entity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../domain/usecases/get_profile_usecase.dart';
+
 import '../../domain/entities/base_profile_entity.dart';
+import '../../domain/usecases/get_profile_usecase.dart';
 import 'profile_state.dart';
 
 class ProfileCubit extends Cubit<ProfileState> {
@@ -30,7 +31,7 @@ class ProfileCubit extends Cubit<ProfileState> {
 
     result.fold(
       (failure) {
-        emit(ProfileError(failure.message ?? "Failed to load profile"));
+        emit(ProfileError(failure.message));
       },
       (profile) {
         // If the profile is missing or incomplete, emit a special state
@@ -53,7 +54,7 @@ class ProfileCubit extends Cubit<ProfileState> {
 
     result.fold(
       (failure) {
-        emit(ProfileError(failure.message ?? "Failed to refresh profile"));
+        emit(ProfileError(failure.message));
       },
       (profile) {
         if (profile.name.isEmpty) {
@@ -66,55 +67,63 @@ class ProfileCubit extends Cubit<ProfileState> {
     );
   }
 
-    /// Loads fake profile data for UI testing without API.
+  /// Loads fake profile data for UI testing without API.
   void loadFakeProfile() {
-    emit(ProfileLoaded(
-      BaseProfileEntity(
-        id: "123",
-        name: "Test User",
-        email: "test@example.com",
-        phone: "0999999999",
-        role: 'user',
+    emit(
+      ProfileLoaded(
+        BaseProfileEntity(
+          id: "123",
+          name: "Test User",
+          email: "test@example.com",
+          phone: "0999999999",
+          role: 'user',
+        ),
       ),
-    ));
+    );
   }
 
-    void loadFakeDoctor() {
-    emit(ProfileLoaded(
-      DoctorProfileEntity(
-        id: "10",
-        name: "Dr. Mustafa",
-        email: "doctor@test.com",
-        phone: "0999888777",
-        specialty: "Cardiology",
-        departmentId: 3, role: 'doctor',
+  void loadFakeDoctor() {
+    emit(
+      ProfileLoaded(
+        DoctorProfileEntity(
+          id: "10",
+          name: "Dr. Mustafa",
+          email: "doctor@test.com",
+          phone: "0999888777",
+          specialty: "Cardiology",
+          departmentId: 3,
+          role: 'doctor',
+        ),
       ),
-    ));
+    );
   }
 
-    void loadFakePatient() {
-    emit(ProfileLoaded(
-      PatientProfileEntity(
-        id: "20",
-        name: "Patient Ali",
-        email: "patient@test.com",
-        phone: "0988877665",
-        address: "Damascus - Mezzeh", role: 'patient',
+  void loadFakePatient() {
+    emit(
+      ProfileLoaded(
+        PatientProfileEntity(
+          id: "20",
+          name: "Patient Ali",
+          email: "patient@test.com",
+          phone: "0988877665",
+          address: "Damascus - Mezzeh",
+          role: 'patient',
+        ),
       ),
-    ));
+    );
   }
 
   void loadFakeReceptionist() {
-    emit(ProfileLoaded(
-      BaseProfileEntity(
-        id: "30",
-        name: "Receptionist Sara",
-        email: "sara@test.com",
-        phone: "0977766554", role: 'receptionist',
+    emit(
+      ProfileLoaded(
+        BaseProfileEntity(
+          id: "30",
+          name: "Receptionist Sara",
+          email: "sara@test.com",
+          phone: "0977766554",
+          role: 'receptionist',
+        ),
       ),
-    ));
+    );
   }
-
-
 }
-

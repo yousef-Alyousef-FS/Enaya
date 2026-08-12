@@ -8,7 +8,8 @@ import '../../../../../core/routing/app_router.dart';
 import '../../../../../core/widgets/cards/app_base_card.dart';
 import '../../../../../core/widgets/inputs/app_text_field.dart';
 import '../../../../patients/domain/entities/patient_entity.dart';
-import '../../cubit/appointments_cubit_imports.dart';
+import '../../cubit/form/appointment_schedule_cubit.dart';
+import '../../cubit/form/appointment_schedule_state.dart';
 import '../receptionist/doctor_selector_button.dart';
 import '../shared/calendar_horizontal.dart';
 import '../shared/patient_search_field.dart';
@@ -19,7 +20,11 @@ class StepParticipants extends StatelessWidget {
   final bool isPatientMode;
   final PatientEntity? initialPatient;
 
-  const StepParticipants({super.key, required this.isPatientMode, this.initialPatient});
+  const StepParticipants({
+    super.key,
+    required this.isPatientMode,
+    this.initialPatient,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +36,12 @@ class StepParticipants extends StatelessWidget {
                 initialPatient: initialPatient,
                 showLabel: false,
                 height: 56,
-                onPatientSelected: (p) =>
-                    context.read<AppointmentScheduleCubit>().updateSelectedPatient(p),
-                onClearPatient: () =>
-                    context.read<AppointmentScheduleCubit>().clearSelectedPatient(),
+                onPatientSelected: (p) => context
+                    .read<AppointmentScheduleCubit>()
+                    .updateSelectedPatient(p),
+                onClearPatient: () => context
+                    .read<AppointmentScheduleCubit>()
+                    .clearSelectedPatient(),
               );
 
         final doctorInputWidget = state.selectedDoctorId == null
@@ -42,11 +49,18 @@ class StepParticipants extends StatelessWidget {
                   ? const _DoctorSkeletonLoading()
                   : DoctorSelectorButton(
                       doctors: state.availableDoctors
-                          .map((d) => DoctorOption(id: d.id, name: d.name, specialty: d.specialty))
+                          .map(
+                            (d) => DoctorOption(
+                              id: d.id,
+                              name: d.name,
+                              specialty: d.specialty,
+                            ),
+                          )
                           .toList(),
                       selectedDoctorName: state.selectedDoctorName,
-                      onClearSelection: () =>
-                          context.read<AppointmentScheduleCubit>().clearSelectedDoctor(),
+                      onClearSelection: () => context
+                          .read<AppointmentScheduleCubit>()
+                          .clearSelectedDoctor(),
                       onSelected: (d) => context
                           .read<AppointmentScheduleCubit>()
                           .updateSelectedDoctor(d.id, d.name),
@@ -56,7 +70,9 @@ class StepParticipants extends StatelessWidget {
                 Icons.medical_services_rounded,
                 'doctor'.tr(),
                 state.selectedDoctorName ?? '',
-                onEdit: () => context.read<AppointmentScheduleCubit>().clearSelectedDoctor(),
+                onEdit: () => context
+                    .read<AppointmentScheduleCubit>()
+                    .clearSelectedDoctor(),
               );
 
         return Column(
@@ -72,12 +88,20 @@ class StepParticipants extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   if (!isPatientMode) ...[
-                    _buildInputLabel(context, 'select_patient'.tr(), Icons.person_search_rounded),
+                    _buildInputLabel(
+                      context,
+                      'select_patient'.tr(),
+                      Icons.person_search_rounded,
+                    ),
                     const SizedBox(height: 10),
                     patientWidget,
                     const SizedBox(height: 24),
                   ],
-                  _buildInputLabel(context, 'select_doctor'.tr(), Icons.medical_services_rounded),
+                  _buildInputLabel(
+                    context,
+                    'select_doctor'.tr(),
+                    Icons.medical_services_rounded,
+                  ),
                   const SizedBox(height: 10),
                   SizedBox(width: double.infinity, child: doctorInputWidget),
                 ],
@@ -141,7 +165,9 @@ class StepDateTime extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AppointmentScheduleCubit, AppointmentScheduleState>(
       builder: (context, state) {
-        final availableSlots = state.availableSlots.where((s) => s.isAvailable).toList();
+        final availableSlots = state.availableSlots
+            .where((s) => s.isAvailable)
+            .toList();
         final doctorId = state.selectedDoctorId;
 
         return Column(
@@ -174,7 +200,11 @@ class StepDateTime extends StatelessWidget {
                   ] else
                     _buildMissingDoctorState(context),
                   const Divider(height: 40),
-                  _buildInputLabel(context, 'select_time'.tr(), Icons.access_time_filled_rounded),
+                  _buildInputLabel(
+                    context,
+                    'select_time'.tr(),
+                    Icons.access_time_filled_rounded,
+                  ),
                   const SizedBox(height: 16),
                   if (state.isLoading)
                     const _SlotsSkeletonLoading()
@@ -205,11 +235,17 @@ class StepDateTime extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.primary.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.1)),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+        ),
       ),
       child: Row(
         children: [
-          Icon(Icons.event_available_rounded, size: 20, color: theme.colorScheme.primary),
+          Icon(
+            Icons.event_available_rounded,
+            size: 20,
+            color: theme.colorScheme.primary,
+          ),
           const SizedBox(width: 12),
           Text(
             DateFormat('EEEE, dd MMMM', locale).format(date),
@@ -271,7 +307,11 @@ class StepDateTime extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(Icons.event_busy_rounded, size: 52, color: Colors.red.withValues(alpha: 0.55)),
+          Icon(
+            Icons.event_busy_rounded,
+            size: 52,
+            color: Colors.red.withValues(alpha: 0.55),
+          ),
           const SizedBox(height: 16),
           Text(
             'doctor_no_available_slots'.tr(),
@@ -289,7 +329,9 @@ class StepDateTime extends StatelessWidget {
               onPressed: () => context.go(AppRouter.patientHome),
               style: FilledButton.styleFrom(
                 backgroundColor: theme.colorScheme.primary,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
               ),
               icon: const Icon(Icons.arrow_back_rounded),
               label: Text('back_to_dashboard'.tr()),
@@ -311,7 +353,11 @@ class StepDateTime extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Icon(Icons.event_busy_rounded, size: 48, color: Colors.red.withValues(alpha: 0.3)),
+          Icon(
+            Icons.event_busy_rounded,
+            size: 48,
+            color: Colors.red.withValues(alpha: 0.3),
+          ),
           const SizedBox(height: 16),
           Text(
             'no_slots_available'.tr(),
@@ -402,7 +448,11 @@ class StepDetails extends StatelessWidget {
   final TextEditingController reasonController;
   final TextEditingController notesController;
 
-  const StepDetails({super.key, required this.reasonController, required this.notesController});
+  const StepDetails({
+    super.key,
+    required this.reasonController,
+    required this.notesController,
+  });
 
   static final List<String> _quickReasons = [
     'general_checkup',
@@ -430,7 +480,10 @@ class StepDetails extends StatelessWidget {
                 children: [
                   Text(
                     'reason_for_visit'.tr(),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Wrap(
@@ -444,8 +497,12 @@ class StepDetails extends StatelessWidget {
                           label,
                           style: TextStyle(
                             fontSize: 12,
-                            color: isSelected ? Colors.white : theme.colorScheme.primary,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            color: isSelected
+                                ? Colors.white
+                                : theme.colorScheme.primary,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.normal,
                           ),
                         ),
                         selected: isSelected,
@@ -453,10 +510,16 @@ class StepDetails extends StatelessWidget {
                           if (selected) reasonController.text = label;
                         },
                         selectedColor: theme.colorScheme.primary,
-                        backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.05),
+                        backgroundColor: theme.colorScheme.primary.withValues(
+                          alpha: 0.05,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: theme.colorScheme.primary.withValues(alpha: 0.1)),
+                          side: BorderSide(
+                            color: theme.colorScheme.primary.withValues(
+                              alpha: 0.1,
+                            ),
+                          ),
                         ),
                         showCheckmark: false,
                       );
@@ -479,7 +542,10 @@ class StepDetails extends StatelessWidget {
                   const Divider(height: 40),
                   Text(
                     'additional_notes'.tr(),
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   AppTextField(
@@ -557,14 +623,20 @@ class StepReview extends StatelessWidget {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: theme.colorScheme.primary.withValues(alpha: 0.05),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
             ),
             child: Row(
               children: [
                 CircleAvatar(
                   radius: 30,
                   backgroundColor: theme.colorScheme.primary,
-                  child: const Icon(Icons.medical_services_rounded, color: Colors.white, size: 30),
+                  child: const Icon(
+                    Icons.medical_services_rounded,
+                    color: Colors.white,
+                    size: 30,
+                  ),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -573,11 +645,17 @@ class StepReview extends StatelessWidget {
                     children: [
                       Text(
                         state.selectedDoctorName ?? '',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       Text(
                         'medical_specialist'.tr(),
-                        style: TextStyle(color: theme.colorScheme.onSurfaceVariant, fontSize: 13),
+                        style: TextStyle(
+                          color: theme.colorScheme.onSurfaceVariant,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
@@ -602,7 +680,10 @@ class StepReview extends StatelessWidget {
                           'EEEE, dd MMMM yyyy',
                           locale,
                         ).format(state.selectedTimeSlot!.dateTime)
-                      : DateFormat('EEEE, dd MMMM yyyy', locale).format(state.selectedDate),
+                      : DateFormat(
+                          'EEEE, dd MMMM yyyy',
+                          locale,
+                        ).format(state.selectedDate),
                   theme,
                 ),
                 const SizedBox(height: 20),
@@ -610,7 +691,9 @@ class StepReview extends StatelessWidget {
                   Icons.access_time_filled_rounded,
                   'time'.tr(),
                   state.selectedTimeSlot != null
-                      ? DateFormat.jm(locale).format(state.selectedTimeSlot!.dateTime)
+                      ? DateFormat.jm(
+                          locale,
+                        ).format(state.selectedTimeSlot!.dateTime)
                       : '--:--',
                   theme,
                 ),
@@ -636,7 +719,12 @@ class StepReview extends StatelessWidget {
     );
   }
 
-  Widget _buildPassRow(IconData icon, String label, String value, ThemeData theme) {
+  Widget _buildPassRow(
+    IconData icon,
+    String label,
+    String value,
+    ThemeData theme,
+  ) {
     return Row(
       children: [
         Container(
@@ -659,7 +747,10 @@ class StepReview extends StatelessWidget {
                 fontWeight: FontWeight.w500,
               ),
             ),
-            Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+            Text(
+              value,
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            ),
           ],
         ),
       ],
@@ -714,7 +805,9 @@ class _DashedLine extends StatelessWidget {
                     width: 5,
                     height: 1,
                     child: DecoratedBox(
-                      decoration: BoxDecoration(color: Colors.grey.withValues(alpha: 0.3)),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.withValues(alpha: 0.3),
+                      ),
                     ),
                   ),
                 ),
@@ -738,7 +831,10 @@ class _HalfCircle extends StatelessWidget {
       height: 20,
       width: 10,
       child: CustomPaint(
-        painter: _HalfCirclePainter(isLeft: isLeft, color: Colors.grey.withValues(alpha: 0.1)),
+        painter: _HalfCirclePainter(
+          isLeft: isLeft,
+          color: Colors.grey.withValues(alpha: 0.1),
+        ),
       ),
     );
   }
@@ -753,7 +849,13 @@ class _HalfCirclePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..color = color;
     if (isLeft) {
-      canvas.drawArc(Rect.fromLTWH(0, 0, size.width * 2, size.height), 1.5, 3, true, paint);
+      canvas.drawArc(
+        Rect.fromLTWH(0, 0, size.width * 2, size.height),
+        1.5,
+        3,
+        true,
+        paint,
+      );
     } else {
       canvas.drawArc(
         Rect.fromLTWH(-size.width, 0, size.width * 2, size.height),
@@ -808,7 +910,9 @@ Widget _buildSelectedInfoRow(
     decoration: BoxDecoration(
       color: theme.colorScheme.primary.withValues(alpha: 0.05),
       borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.1)),
+      border: Border.all(
+        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+      ),
     ),
     child: Row(
       children: [
@@ -861,10 +965,16 @@ Widget _buildSelectedInfoRow(
               child: Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2)),
+                  border: Border.all(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.edit_rounded, size: 18, color: theme.colorScheme.primary),
+                child: Icon(
+                  Icons.edit_rounded,
+                  size: 18,
+                  color: theme.colorScheme.primary,
+                ),
               ),
             ),
           ),

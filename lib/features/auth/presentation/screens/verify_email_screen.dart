@@ -7,13 +7,13 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/loaders/app_loaders.dart';
-import '../widgets/auth_card_container.dart';
-import '../widgets/logo.dart';
-import '../widgets/portrait_only_scope.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
 import '../mixins/auth_form_mixin.dart';
+import '../widgets/auth_card_container.dart';
 import '../widgets/auth_text_field.dart';
+import '../widgets/logo.dart';
+import '../widgets/portrait_only_scope.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
   final String email;
