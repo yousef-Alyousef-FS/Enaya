@@ -276,8 +276,9 @@ class _PatientSearchFieldState extends State<PatientSearchField> {
                         _selectedPatient = null;
                         _localController.clear();
                       });
-                      if (widget.onClearPatient != null)
+                      if (widget.onClearPatient != null) {
                         widget.onClearPatient!();
+                      }
                     },
                     tooltip: 'clear'.tr(),
                   ),

@@ -348,19 +348,23 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: '$addPrescription/:appointmentId',
+        path: '$addPrescription/:appointmentId/:sessionId',
         builder: (context, state) {
           final appointmentId = int.tryParse(
             state.pathParameters['appointmentId'] ?? '',
           );
-          if (appointmentId == null) {
-            return const _InvalidRouteDataScreen(
-              title: 'Invalid appointment ID',
-            );
+          final sessionId = int.tryParse(
+            state.pathParameters['sessionId'] ?? '',
+          );
+          if (appointmentId == null || sessionId == null) {
+            return const _InvalidRouteDataScreen(title: 'Invalid IDs');
           }
           return BlocProvider(
             create: (context) => getIt<PrescriptionCubit>(),
-            child: AddPrescriptionScreen(appointmentId: appointmentId),
+            child: AddPrescriptionScreen(
+              appointmentId: appointmentId,
+              sessionId: sessionId,
+            ),
           );
         },
       ),

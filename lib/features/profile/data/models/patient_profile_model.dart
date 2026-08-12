@@ -8,6 +8,7 @@ class PatientProfileModel extends PatientProfileEntity {
     required super.phone,
     required super.role,
     required super.address,
+    super.emergencyContact,
   });
 
   factory PatientProfileModel.fromApi({
@@ -15,12 +16,13 @@ class PatientProfileModel extends PatientProfileEntity {
     required Map<String, dynamic> patientJson,
   }) {
     return PatientProfileModel(
-      id: userJson['id'] ?? 0,
+      id: userJson['id']?.toString() ?? '',
       name: userJson['name'] ?? '',
       email: userJson['email'] ?? '',
       phone: userJson['phone'] ?? '',
       role: userJson['role'] ?? '',
       address: patientJson['address'] ?? 'N/A',
+      emergencyContact: patientJson['emergency_contact'],
     );
   }
 }

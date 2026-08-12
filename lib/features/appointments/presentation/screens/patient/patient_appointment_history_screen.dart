@@ -76,8 +76,9 @@ class _PatientAppointmentHistoryScreenState
                     }
 
                     final patientId = PatientSession().patientId;
-                    if (patientId == null)
+                    if (patientId == null) {
                       return const Center(child: Text('Session Error'));
+                    }
 
                     return RefreshIndicator(
                       onRefresh: () => context

@@ -144,9 +144,13 @@ class SettingsScreen extends StatelessWidget {
       },
     );
 
-    if (selectedLocale != null) {
+    if (selectedLocale != null && context.mounted) {
       await context.setLocale(selectedLocale);
-      await getIt<SettingsService>().saveLanguage(selectedLocale.languageCode);
+      if (context.mounted) {
+        await getIt<SettingsService>().saveLanguage(
+          selectedLocale.languageCode,
+        );
+      }
     }
   }
 }

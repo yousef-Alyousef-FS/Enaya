@@ -37,7 +37,8 @@ class ScheduleAppointmentScreen extends StatefulWidget {
   });
 
   @override
-  State<ScheduleAppointmentScreen> createState() => _ScheduleAppointmentScreenState();
+  State<ScheduleAppointmentScreen> createState() =>
+      _ScheduleAppointmentScreenState();
 }
 
 class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
@@ -55,9 +56,11 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
     _cubit.loadAvailableDoctors();
 
     final session = PatientSession();
-    final resolvedPatient = widget.patient ?? session.patientEntity ?? _createDefaultPatient();
+    final resolvedPatient =
+        widget.patient ?? session.patientEntity ?? _createDefaultPatient();
 
-    if (widget.mode == AppointmentScreenMode.reschedule && widget.appointment != null) {
+    if (widget.mode == AppointmentScreenMode.reschedule &&
+        widget.appointment != null) {
       final appointment = widget.appointment!;
       _cubit.updateSelectedPatient(resolvedPatient);
       _cubit.updateSelectedDoctor(
@@ -88,7 +91,8 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
 
   void _handleNavigation(BuildContext context, AppointmentScheduleState state) {
     final cubit = context.read<AppointmentScheduleCubit>();
-    final isLastStep = state.currentStep == state.totalSteps(widget.isPatientMode) - 1;
+    final isLastStep =
+        state.currentStep == state.totalSteps(widget.isPatientMode) - 1;
 
     if (isLastStep) {
       _confirmAppointment(context);
@@ -108,7 +112,8 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
 
   void _confirmAppointment(BuildContext context) {
     final cubit = context.read<AppointmentScheduleCubit>();
-    if (widget.mode == AppointmentScreenMode.reschedule && widget.appointment != null) {
+    if (widget.mode == AppointmentScreenMode.reschedule &&
+        widget.appointment != null) {
       cubit.rescheduleAppointment(appointmentId: widget.appointment!.id);
     } else {
       cubit.createAppointment(
@@ -126,7 +131,8 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
       value: _cubit,
       child: BlocConsumer<AppointmentScheduleCubit, AppointmentScheduleState>(
         listenWhen: (previous, current) {
-          final successChanged = previous.isSuccess != current.isSuccess && current.isSuccess;
+          final successChanged =
+              previous.isSuccess != current.isSuccess && current.isSuccess;
           final errorChanged =
               previous.errorMessage != current.errorMessage &&
               current.errorMessage != null &&
@@ -138,7 +144,8 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
             context.pushReplacement(
               AppRouter.appointmentSuccess,
               extra: {
-                'dateTime': state.selectedTimeSlot?.dateTime ?? state.selectedDate,
+                'dateTime':
+                    state.selectedTimeSlot?.dateTime ?? state.selectedDate,
                 'doctorName': state.selectedDoctorName,
               },
             );
@@ -170,7 +177,9 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
               leading: Container(
                 margin: const EdgeInsets.only(left: 12),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.5,
+                  ),
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
@@ -189,18 +198,26 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
                       duration: const Duration(milliseconds: 240),
                       switchInCurve: Curves.easeOutCubic,
                       switchOutCurve: Curves.easeInCubic,
-                      transitionBuilder: (Widget child, Animation<double> animation) {
-                        return FadeTransition(
-                          opacity: animation,
-                          child: SlideTransition(
-                            position: Tween<Offset>(
-                              begin: const Offset(0.04, 0.0),
-                              end: Offset.zero,
-                            ).chain(CurveTween(curve: Curves.easeOutCubic)).animate(animation),
-                            child: child,
-                          ),
-                        );
-                      },
+                      transitionBuilder:
+                          (Widget child, Animation<double> animation) {
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SlideTransition(
+                                position:
+                                    Tween<Offset>(
+                                          begin: const Offset(0.04, 0.0),
+                                          end: Offset.zero,
+                                        )
+                                        .chain(
+                                          CurveTween(
+                                            curve: Curves.easeOutCubic,
+                                          ),
+                                        )
+                                        .animate(animation),
+                                child: child,
+                              ),
+                            );
+                          },
                       child: SingleChildScrollView(
                         key: ValueKey(state.currentStep),
                         padding: const EdgeInsets.fromLTRB(20, 12, 20, 136),
@@ -211,7 +228,8 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
                 ],
               ),
             ),
-            floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerDocked,
             floatingActionButton: _buildFloatingAction(context, state),
           );
         },
@@ -264,7 +282,9 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
+        ),
         boxShadow: [
           BoxShadow(
             color: theme.colorScheme.shadow.withValues(alpha: 0.04),
@@ -279,7 +299,9 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
         lineStyle: LineStyle(
           lineLength: 52,
           lineType: LineType.normal,
-          defaultLineColor: theme.colorScheme.outlineVariant.withValues(alpha: 0.7),
+          defaultLineColor: theme.colorScheme.outlineVariant.withValues(
+            alpha: 0.7,
+          ),
           finishedLineColor: theme.colorScheme.primary,
           lineThickness: 2,
         ),
@@ -305,7 +327,10 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
       case 1:
         return const StepDateTime();
       case 2:
-        return StepDetails(reasonController: _reasonController, notesController: _notesController);
+        return StepDetails(
+          reasonController: _reasonController,
+          notesController: _notesController,
+        );
       case 3:
         return StepReview(reason: _reasonController.text);
       default:
@@ -313,18 +338,27 @@ class _ScheduleAppointmentScreenState extends State<ScheduleAppointmentScreen> {
     }
   }
 
-  Widget _buildFloatingAction(BuildContext context, AppointmentScheduleState state) {
+  Widget _buildFloatingAction(
+    BuildContext context,
+    AppointmentScheduleState state,
+  ) {
     return AppointmentBookingFooter(
       isLoading: state.isLoading,
       isValid: state.canGoNext(widget.isPatientMode),
-      isLastStep: state.currentStep == state.totalSteps(widget.isPatientMode) - 1,
+      isLastStep:
+          state.currentStep == state.totalSteps(widget.isPatientMode) - 1,
       onPressed: () => _handleNavigation(context, state),
     );
   }
 
-  void _handleBookingError(BuildContext context, AppointmentScheduleState state, ThemeData theme) {
+  void _handleBookingError(
+    BuildContext context,
+    AppointmentScheduleState state,
+    ThemeData theme,
+  ) {
     final isConflict =
-        state.errorMessage!.contains('already') || state.errorMessage!.contains('active');
+        state.errorMessage!.contains('already') ||
+        state.errorMessage!.contains('active');
 
     AwesomeDialog(
       context: context,
@@ -381,14 +415,21 @@ class AppointmentStepIcon extends StatelessWidget {
             ? theme.colorScheme.primary
             : (isFinished
                   ? theme.colorScheme.primary.withValues(alpha: 0.12)
-                  : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.55)),
+                  : theme.colorScheme.surfaceContainerHighest.withValues(
+                      alpha: 0.55,
+                    )),
         shape: BoxShape.circle,
         border: isActive
             ? Border.all(color: theme.colorScheme.primaryContainer, width: 3)
             : (isFinished
-                  ? Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2), width: 1.2)
+                  ? Border.all(
+                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                      width: 1.2,
+                    )
                   : Border.all(
-                      color: theme.colorScheme.outlineVariant.withValues(alpha: 0.2),
+                      color: theme.colorScheme.outlineVariant.withValues(
+                        alpha: 0.2,
+                      ),
                       width: 1,
                     )),
         boxShadow: isActive
@@ -467,7 +508,9 @@ class AppointmentBookingFooter extends StatelessWidget {
             backgroundColor: theme.colorScheme.primary,
             foregroundColor: Colors.white,
             disabledBackgroundColor: theme.colorScheme.surfaceContainerHighest,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+            ),
             elevation: isValid ? 0 : 0,
             shadowColor: Colors.transparent,
           ),
@@ -486,7 +529,9 @@ class AppointmentBookingFooter extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Icon(
-                      isLastStep ? Icons.check_circle_rounded : Icons.arrow_forward_rounded,
+                      isLastStep
+                          ? Icons.check_circle_rounded
+                          : Icons.arrow_forward_rounded,
                       size: 20,
                     ),
                   ],

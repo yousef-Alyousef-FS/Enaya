@@ -1,8 +1,9 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:json_annotation/json_annotation.dart';
+// ignore_for_file: invalid_annotation_target
 
-import '../../../domain/entities/appointment_status.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
 import '../../../domain/entities/appointment_entity.dart';
+import '../../../domain/entities/appointment_status.dart';
 
 part 'appointment_model.freezed.dart';
 part 'appointment_model.g.dart';
@@ -17,10 +18,10 @@ class AppointmentModel with _$AppointmentModel {
     @JsonKey(name: 'status') required AppointmentStatus status,
     @JsonKey(name: 'visit_reason') String? visitReason,
     @JsonKey(name: 'notes') String? notes,
-    String? patientName,
-    String? doctorName,
-    String? patientPhone,
-    int? queueNumber,
+    @JsonKey(name: 'patient_name') String? patientName,
+    @JsonKey(name: 'doctor_name') String? doctorName,
+    @JsonKey(name: 'patient_phone') String? patientPhone,
+    @JsonKey(name: 'queue_number') int? queueNumber,
   }) = _AppointmentModel;
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) =>

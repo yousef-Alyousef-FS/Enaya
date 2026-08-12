@@ -97,7 +97,9 @@ class _NotificationTile extends StatelessWidget {
                         child: Text(
                           notification.title,
                           style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: notification.isRead ? FontWeight.w600 : FontWeight.w800,
+                            fontWeight: notification.isRead
+                                ? FontWeight.w600
+                                : FontWeight.w800,
                           ),
                         ),
                       ),
@@ -121,8 +123,12 @@ class _NotificationTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    DateFormat('dd MMM yyyy • hh:mm a').format(notification.createdAt),
-                    style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.outline),
+                    DateFormat(
+                      'dd MMM yyyy • hh:mm a',
+                    ).format(notification.createdAt),
+                    style: theme.textTheme.labelSmall?.copyWith(
+                      color: theme.colorScheme.outline,
+                    ),
                   ),
                 ],
               ),
@@ -147,7 +153,9 @@ class _NotificationsLoadingView extends StatelessWidget {
         return Container(
           height: 110,
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
             borderRadius: BorderRadius.circular(18),
           ),
         );
@@ -169,7 +177,11 @@ class _NotificationsErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.error_outline_rounded, size: 48, color: Theme.of(context).colorScheme.error),
+            Icon(
+              Icons.error_outline_rounded,
+              size: 48,
+              color: Theme.of(context).colorScheme.error,
+            ),
             const SizedBox(height: 16),
             Text(message, textAlign: TextAlign.center),
           ],
@@ -196,7 +208,10 @@ class _NotificationsEmptyView extends StatelessWidget {
               color: Theme.of(context).colorScheme.outline,
             ),
             const SizedBox(height: 18),
-            Text('No notifications yet', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'No notifications yet',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             Text(
               'You will see appointment reminders and updates here.',

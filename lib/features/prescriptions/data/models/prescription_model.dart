@@ -3,7 +3,7 @@ import 'package:enaya/features/prescriptions/domain/entities/prescription_entity
 class PrescriptionModel extends PrescriptionEntity {
   const PrescriptionModel({
     required super.id,
-    required super.appointmentId,
+    required super.sessionId,
     required super.medicationName,
     required super.dosage,
     required super.frequency,
@@ -16,12 +16,12 @@ class PrescriptionModel extends PrescriptionEntity {
   factory PrescriptionModel.fromJson(Map<String, dynamic> json) {
     return PrescriptionModel(
       id: json['id'] as int,
-      appointmentId: json['appointment_id'] as int,
+      sessionId: (json['appointment_session_id'] ?? json['session_id']) as int,
       medicationName: json['medication_name'] as String,
       dosage: json['dosage'] as String,
       frequency: json['frequency'] as String,
-      durationDays: json['duration_days'] as int,
-      instructions: json['instructions'] as String,
+      durationDays: (json['duration_days'] ?? json['duration']) as int,
+      instructions: (json['instructions'] ?? json['notes'] ?? '') as String,
       createdAt: DateTime.parse(json['created_at']),
     );
   }
@@ -29,7 +29,6 @@ class PrescriptionModel extends PrescriptionEntity {
   /// Model → JSON
   Map<String, dynamic> toJson() {
     return {
-      'appointment_id': appointmentId,
       'medication_name': medicationName,
       'dosage': dosage,
       'frequency': frequency,

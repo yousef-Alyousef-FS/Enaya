@@ -160,7 +160,7 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
                             onNextDate: () => context
                                 .read<DoctorAvailabilityCubit>()
                                 .nextDate(),
-                            onPickDate: () => _pickDate(context, state),
+                            onPickDate: () => _pickDate(state),
                             onViewModeChanged: (isWeek) {
                               context
                                   .read<DoctorAvailabilityCubit>()
@@ -188,10 +188,7 @@ class _DoctorWorkScheduleScreenState extends State<DoctorWorkScheduleScreen> {
     );
   }
 
-  Future<void> _pickDate(
-    BuildContext context,
-    DoctorAvailabilityState state,
-  ) async {
+  Future<void> _pickDate(DoctorAvailabilityState state) async {
     final picked = await showDatePicker(
       context: context,
       initialDate: state.selectedDate,

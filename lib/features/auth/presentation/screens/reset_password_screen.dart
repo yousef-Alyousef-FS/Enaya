@@ -7,11 +7,11 @@ import '../../../../core/di/injection.dart';
 import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/loaders/app_loaders.dart';
-import '../widgets/auth_card_container.dart';
-import '../widgets/portrait_only_scope.dart';
 import '../cubit/auth_cubit.dart';
 import '../cubit/auth_state.dart';
+import '../widgets/auth_card_container.dart';
 import '../widgets/auth_text_field.dart';
+import '../widgets/portrait_only_scope.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String? initialEmail;
@@ -231,7 +231,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen>
                 // Password reset succeeded.
                 _triggerMessage('password_reset_success'.tr(), true);
                 Future.delayed(const Duration(milliseconds: 800), () {
-                  context.go(AppRouter.login);
+                  if (context.mounted) {
+                    context.go(AppRouter.login);
+                  }
                 });
               }
             },

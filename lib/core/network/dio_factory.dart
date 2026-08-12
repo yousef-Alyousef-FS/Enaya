@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:enaya/core/constants/api_constants.dart';
 import 'package:enaya/core/services/settings_service.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+
 import '../di/injection.dart';
 import '../services/token_manager.dart';
 
@@ -24,10 +25,7 @@ class DioFactory {
       receiveTimeout: timeout,
       sendTimeout: timeout,
       connectTimeout: timeout,
-      headers: {
-        contentType: applicationJson,
-        accept: applicationJson,
-      },
+      headers: {contentType: applicationJson, accept: applicationJson},
     );
 
     addDioInterceptor(dio);
@@ -44,8 +42,9 @@ class DioFactory {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           // [API_REFINE]: Dynamically resolve language from settings or system on every request.
-          final languageCode = settingsService.getLanguage() ?? 
-                              PlatformDispatcher.instance.locale.languageCode;
+          final languageCode =
+              settingsService.getLanguage() ??
+              PlatformDispatcher.instance.locale.languageCode;
           options.headers[defaultLanguage] = languageCode;
 
           // Attach the latest access token when available.
@@ -77,8 +76,13 @@ class DioFactory {
                   );
                 }
 
-                final newToken = responseData["token"]?.toString();
-                final newRefresh = responseData["refresh_token"]?.toString();
+                final newToken =
+                    (responseData["token"] ?? responseData["data"]?["token"])
+                        ?.toString();
+                final newExpiry =
+                    (responseData["expiresAt"] ??
+                            responseData["data"]?["expiresAt"])
+                        ?.toString();
 
                 if (newToken == null || newToken.isEmpty) {
                   throw const FormatException(
@@ -86,10 +90,13 @@ class DioFactory {
                   );
                 }
 
-                // Persist the new token pair before retrying the original request.
+                // Persist the new token and its expiry.
                 await tokenManager.saveToken(newToken);
-                if (newRefresh != null && newRefresh.isNotEmpty) {
-                  await tokenManager.saveRefreshToken(newRefresh);
+                if (newExpiry != null) {
+                  final expiryDate = DateTime.tryParse(newExpiry);
+                  if (expiryDate != null) {
+                    await tokenManager.saveTokenExpiry(expiryDate);
+                  }
                 }
 
                 // Replay the original request with refreshed credentials.

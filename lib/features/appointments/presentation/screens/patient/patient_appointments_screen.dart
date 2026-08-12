@@ -294,11 +294,13 @@ class PatientAppointmentsScreen extends StatelessWidget {
             'isPatientMode': true,
           },
         )
-        .then(
-          (_) => context.read<PatientAppointmentsCubit>().loadAppointments(
-            patientId,
-          ),
-        );
+        .then((_) {
+          if (context.mounted) {
+            context.read<PatientAppointmentsCubit>().loadAppointments(
+              patientId,
+            );
+          }
+        });
   }
 
   void _rescheduleAppointment(
@@ -316,11 +318,13 @@ class PatientAppointmentsScreen extends StatelessWidget {
             'patient': PatientSession().patientEntity,
           },
         )
-        .then(
-          (_) => context.read<PatientAppointmentsCubit>().loadAppointments(
-            patientId,
-          ),
-        );
+        .then((_) {
+          if (context.mounted) {
+            context.read<PatientAppointmentsCubit>().loadAppointments(
+              patientId,
+            );
+          }
+        });
   }
 
   void _openDetails(

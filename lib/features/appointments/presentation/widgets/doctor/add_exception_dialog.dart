@@ -5,7 +5,10 @@ import '../../../data/models/doctor_availability_model.dart';
 import '../../../data/models/work_schedule_model.dart';
 import '../../cubit/form/doctor_availability_cubit.dart';
 
-Future<void> showAddExceptionDialog(BuildContext context, DoctorAvailabilityCubit cubit) async {
+Future<void> showAddExceptionDialog(
+  BuildContext context,
+  DoctorAvailabilityCubit cubit,
+) async {
   DateTime? selectedDate;
   bool isOff = true;
   TimeOfDay? startTime;
@@ -28,13 +31,17 @@ Future<void> showAddExceptionDialog(BuildContext context, DoctorAvailabilityCubi
                     subtitle: Text(
                       selectedDate == null
                           ? 'pick_a_date'.tr()
-                          : DateFormat.yMMMMd(context.locale.toString()).format(selectedDate!),
+                          : DateFormat.yMMMMd(
+                              context.locale.toString(),
+                            ).format(selectedDate!),
                     ),
                     trailing: const Icon(Icons.calendar_month),
                     onTap: () async {
                       final picked = await showDatePicker(
                         context: dialogContext,
-                        firstDate: DateTime.now().subtract(const Duration(days: 1)),
+                        firstDate: DateTime.now().subtract(
+                          const Duration(days: 1),
+                        ),
                         lastDate: DateTime.now().add(const Duration(days: 365)),
                         initialDate: selectedDate ?? DateTime.now(),
                       );
@@ -54,12 +61,15 @@ Future<void> showAddExceptionDialog(BuildContext context, DoctorAvailabilityCubi
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text('start_time'.tr()),
-                      subtitle: Text(startTime?.format(context) ?? 'pick_start_time'.tr()),
+                      subtitle: Text(
+                        startTime?.format(context) ?? 'pick_start_time'.tr(),
+                      ),
                       trailing: const Icon(Icons.schedule),
                       onTap: () async {
                         final picked = await showTimePicker(
                           context: dialogContext,
-                          initialTime: startTime ?? const TimeOfDay(hour: 9, minute: 0),
+                          initialTime:
+                              startTime ?? const TimeOfDay(hour: 9, minute: 0),
                         );
                         if (picked != null) {
                           setState(() => startTime = picked);
@@ -69,12 +79,15 @@ Future<void> showAddExceptionDialog(BuildContext context, DoctorAvailabilityCubi
                     ListTile(
                       contentPadding: EdgeInsets.zero,
                       title: Text('end_time'.tr()),
-                      subtitle: Text(endTime?.format(context) ?? 'pick_end_time'.tr()),
+                      subtitle: Text(
+                        endTime?.format(context) ?? 'pick_end_time'.tr(),
+                      ),
                       trailing: const Icon(Icons.schedule),
                       onTap: () async {
                         final picked = await showTimePicker(
                           context: dialogContext,
-                          initialTime: endTime ?? const TimeOfDay(hour: 17, minute: 0),
+                          initialTime:
+                              endTime ?? const TimeOfDay(hour: 17, minute: 0),
                         );
                         if (picked != null) {
                           setState(() => endTime = picked);
@@ -94,25 +107,35 @@ Future<void> showAddExceptionDialog(BuildContext context, DoctorAvailabilityCubi
                 onPressed: selectedDate == null
                     ? null
                     : () async {
-                        final existing = cubit.getExceptionForDate(selectedDate!);
+                        final existing = cubit.getExceptionForDate(
+                          selectedDate!,
+                        );
 
                         Future<void> doAdd() async {
                           if (isOff) {
                             cubit.addException(
-                              AvailabilityException(date: selectedDate!, isOff: true),
+                              AvailabilityException(
+                                date: selectedDate!,
+                                isOff: true,
+                              ),
                             );
                           } else if (startTime != null && endTime != null) {
-                            final startMinutes = startTime!.hour * 60 + startTime!.minute;
-                            final endMinutes = endTime!.hour * 60 + endTime!.minute;
+                            final startMinutes =
+                                startTime!.hour * 60 + startTime!.minute;
+                            final endMinutes =
+                                endTime!.hour * 60 + endTime!.minute;
                             if (endMinutes <= startMinutes) {
                               await showDialog<void>(
                                 context: dialogContext,
                                 builder: (_) => AlertDialog(
                                   title: Text('invalid_time_range_title'.tr()),
-                                  content: Text('invalid_time_range_message'.tr()),
+                                  content: Text(
+                                    'invalid_time_range_message'.tr(),
+                                  ),
                                   actions: [
                                     TextButton(
-                                      onPressed: () => Navigator.of(dialogContext).pop(),
+                                      onPressed: () =>
+                                          Navigator.of(dialogContext).pop(),
                                       child: Text('ok'.tr()),
                                     ),
                                   ],
@@ -126,10 +149,14 @@ Future<void> showAddExceptionDialog(BuildContext context, DoctorAvailabilityCubi
                                 date: selectedDate!,
                                 isOff: false,
                                 customHours: WorkScheduleEntry(
-                                  day: WeekDay.values[selectedDate!.weekday - 1],
+                                  day:
+                                      WeekDay.values[selectedDate!.weekday - 1],
                                   enabled: true,
                                   sessions: [
-                                    WorkSession(startTime: startTime!, endTime: endTime!),
+                                    WorkSession(
+                                      startTime: startTime!,
+                                      endTime: endTime!,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -141,28 +168,38 @@ Future<void> showAddExceptionDialog(BuildContext context, DoctorAvailabilityCubi
                           final replace = await showDialog<bool>(
                             context: dialogContext,
                             builder: (_) => AlertDialog(
-                              title: Text('confirm_replace_exception_title'.tr()),
-                              content: Text('confirm_replace_exception_message'.tr()),
+                              title: Text(
+                                'confirm_replace_exception_title'.tr(),
+                              ),
+                              content: Text(
+                                'confirm_replace_exception_message'.tr(),
+                              ),
                               actions: [
                                 TextButton(
-                                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                                  onPressed: () =>
+                                      Navigator.of(dialogContext).pop(false),
                                   child: Text('cancel'.tr()),
                                 ),
                                 TextButton(
-                                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                                  onPressed: () =>
+                                      Navigator.of(dialogContext).pop(true),
                                   child: Text('replace'.tr()),
                                 ),
                               ],
                             ),
                           );
 
-                          if (replace == true) {
+                          if (replace == true && dialogContext.mounted) {
                             await doAdd();
-                            Navigator.of(dialogContext).pop();
+                            if (dialogContext.mounted) {
+                              Navigator.of(dialogContext).pop();
+                            }
                           }
                         } else {
                           await doAdd();
-                          Navigator.of(dialogContext).pop();
+                          if (dialogContext.mounted) {
+                            Navigator.of(dialogContext).pop();
+                          }
                         }
                       },
                 child: Text('save'.tr()),

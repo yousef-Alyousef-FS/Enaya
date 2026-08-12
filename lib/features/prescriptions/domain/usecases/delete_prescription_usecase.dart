@@ -1,3 +1,5 @@
+import 'package:dartz/dartz.dart';
+import 'package:enaya/core/error/failures.dart';
 import 'package:enaya/features/prescriptions/domain/repositories/prescription_repository.dart';
 
 class DeletePrescriptionUseCase {
@@ -5,7 +7,13 @@ class DeletePrescriptionUseCase {
 
   DeletePrescriptionUseCase(this.repository);
 
-  Future<void> call(int id) {
-    return repository.deletePrescription(id);
+  Future<Either<Failure, void>> call({
+    required int sessionId,
+    required int prescriptionId,
+  }) {
+    return repository.deletePrescription(
+      sessionId: sessionId,
+      prescriptionId: prescriptionId,
+    );
   }
 }

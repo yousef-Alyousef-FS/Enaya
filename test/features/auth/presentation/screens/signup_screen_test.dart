@@ -1,6 +1,4 @@
-import 'package:dartz/dartz.dart';
 import 'package:enaya/core/di/injection.dart';
-import 'package:enaya/features/auth/domain/entities/user_entity.dart';
 import 'package:enaya/features/auth/domain/usecases/change_password_usecase.dart';
 import 'package:enaya/features/auth/domain/usecases/forgot_password_usecase.dart';
 import 'package:enaya/features/auth/domain/usecases/login_usecase.dart';

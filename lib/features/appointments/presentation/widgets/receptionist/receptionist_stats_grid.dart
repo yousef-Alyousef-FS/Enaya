@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../core/widgets/cards/stat_card.dart';
 import '../../../../../core/widgets/common/responsive_stats_grid.dart';
@@ -24,8 +23,9 @@ class ReceptionistStatsGrid extends StatelessWidget {
           value: data.totalAppointments.toString(),
           icon: Icons.calendar_today_rounded,
           color: Theme.of(context).colorScheme.primary,
-          onTap: () =>
-              context.read<ReceptionistAppointmentsCubit>().updateStatusFilter(null),
+          onTap: () => context
+              .read<ReceptionistAppointmentsCubit>()
+              .updateStatusFilter(null),
         ),
         StatCard(
           title: 'pending'.tr(),

@@ -1,19 +1,21 @@
-import 'package:enaya/features/prescriptions/presentation/forms/prescription_form.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:enaya/core/theme/app_colors.dart';
 import 'package:enaya/features/prescriptions/domain/entities/prescription_entity.dart';
 import 'package:enaya/features/prescriptions/presentation/cubit/prescription_cubit.dart';
 import 'package:enaya/features/prescriptions/presentation/cubit/prescription_state.dart';
+import 'package:enaya/features/prescriptions/presentation/forms/prescription_form.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddPrescriptionScreen extends StatefulWidget {
   final int appointmentId;
+  final int sessionId;
   final PrescriptionEntity? prescription;
 
   const AddPrescriptionScreen({
     super.key,
     required this.appointmentId,
+    required this.sessionId,
     this.prescription,
   });
 
@@ -37,9 +39,9 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     return BlocListener<PrescriptionCubit, PrescriptionState>(
       listener: (context, state) {
         if (state is PrescriptionAdded || state is PrescriptionUpdated) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('saved_successfully'.tr())),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('saved_successfully'.tr())));
           Navigator.pop(context);
         } else if (state is PrescriptionError) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -55,7 +57,9 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
 
         // ⭐ AppBar يستجيب للثيم تلقائيًا
         appBar: AppBar(
-          title: Text(widget.isEditMode ? 'edit'.tr() : "add_prescription".tr()),
+          title: Text(
+            widget.isEditMode ? 'edit'.tr() : "add_prescription".tr(),
+          ),
           centerTitle: true,
           elevation: 0,
 
@@ -72,10 +76,7 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFFF8FBFF),
-                        Color(0xFFEAF4FF),
-                      ],
+                      colors: [Color(0xFFF8FBFF), Color(0xFFEAF4FF)],
                     ),
                   ),
                 )
@@ -95,7 +96,8 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
                     initialDosage: widget.prescription?.dosage,
                     initialFrequency: widget.prescription?.frequency,
                     initialInstruction: widget.prescription?.instructions,
-                    initialDuration: widget.prescription?.durationDays.toString(),
+                    initialDuration: widget.prescription?.durationDays
+                        .toString(),
                     onDrugChanged: (v) => _drugName = v,
                     onDosageChanged: (v) => _dosage = v,
                     onFrequencyChanged: (v) => _frequency = v,
@@ -173,15 +175,15 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
 
   void _savePrescription() {
     if (_drugName.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('error_occurred'.tr())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('error_occurred'.tr())));
       return;
     }
 
     final entity = PrescriptionEntity(
       id: widget.prescription?.id ?? 0,
-      appointmentId: widget.appointmentId,
+      sessionId: widget.sessionId,
       medicationName: _drugName,
       dosage: _dosage,
       frequency: _frequency,
@@ -191,9 +193,16 @@ class _AddPrescriptionScreenState extends State<AddPrescriptionScreen> {
     );
 
     if (widget.isEditMode) {
-      context.read<PrescriptionCubit>().updatePrescription(entity.id, entity);
+      context.read<PrescriptionCubit>().updatePrescription(
+        sessionId: widget.sessionId,
+        prescriptionId: entity.id,
+        entity: entity,
+      );
     } else {
-      context.read<PrescriptionCubit>().addPrescription(entity);
+      context.read<PrescriptionCubit>().addPrescription(
+        sessionId: widget.sessionId,
+        entity: entity,
+      );
     }
   }
 }
