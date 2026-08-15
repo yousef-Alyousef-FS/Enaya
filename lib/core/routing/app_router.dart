@@ -23,6 +23,9 @@ import '../../features/auth/presentation/screens/verify_email_screen.dart';
 import '../../features/dashboard/doctor/presentation/pages/doctor_dashboard_page.dart';
 import '../../features/dashboard/patient/presentation/pages/patient_dashboard_page.dart';
 import '../../features/dashboard/receptionist/presentation/pages/receptionist_dashboard_page.dart';
+import '../../features/medical_history/presentation/cubit/medical_history_cubit.dart';
+import '../../features/medical_history/presentation/screens/medical_history_screen.dart';
+import '../../features/medical_history/presentation/screens/medical_session_detail_screen.dart';
 import '../../features/notifications/data/repositories/notifications_repository.dart';
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
@@ -36,6 +39,7 @@ import '../../features/patients/presentation/state/patient_profile_cubit.dart';
 import '../../features/patients/presentation/state/patients_cubit.dart';
 import '../../features/prescriptions/presentation/cubit/prescription_cubit.dart';
 import '../../features/prescriptions/presentation/screens/add_prescription_screen.dart';
+import '../../features/session/domain/entities/session_entity.dart';
 import '../../features/session/presentation/cubit/session_cubit.dart';
 import '../../features/session/presentation/screens/session_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
@@ -84,6 +88,10 @@ class AppRouter {
   // Doctor Session & Prescriptions
   static const String doctorSession = '/doctor/session';
   static const String addPrescription = '/doctor/prescription/add';
+
+  // Medical History
+  static const String medicalHistory = '/medical-history';
+  static const String medicalSessionDetail = '/medical-history/detail';
 
   static final router = GoRouter(
     initialLocation: DevConfig.isDevMode ? devMenu : splash,
@@ -366,6 +374,20 @@ class AppRouter {
               sessionId: sessionId,
             ),
           );
+        },
+      ),
+      GoRoute(
+        path: medicalHistory,
+        builder: (context, state) => BlocProvider(
+          create: (context) => getIt<MedicalHistoryCubit>(),
+          child: const MedicalHistoryScreen(),
+        ),
+      ),
+      GoRoute(
+        path: medicalSessionDetail,
+        builder: (context, state) {
+          final session = state.extra as SessionEntity;
+          return MedicalSessionDetailScreen(session: session);
         },
       ),
     ],

@@ -1,3 +1,4 @@
+import '../../../prescriptions/data/models/prescription_model.dart';
 import '../../domain/entities/session_entity.dart';
 
 class SessionModel extends SessionEntity {
@@ -10,9 +11,12 @@ class SessionModel extends SessionEntity {
     super.patientComplaint,
     super.diagnosis,
     required super.status,
+    super.prescriptions,
   });
 
   factory SessionModel.fromJson(Map<String, dynamic> json) {
+    final prescriptionsJson = json['prescriptions'] as List? ?? [];
+
     return SessionModel(
       id: json['id'],
       appointmentId: (json['appointment_id'] ?? json['appointmentId']) as int,
@@ -28,6 +32,9 @@ class SessionModel extends SessionEntity {
       patientComplaint: json['patient_complaint'] ?? json['patientComplaint'],
       diagnosis: json['diagnosis'],
       status: json['status'],
+      prescriptions: prescriptionsJson
+          .map((p) => PrescriptionModel.fromJson(p as Map<String, dynamic>))
+          .toList(),
     );
   }
 

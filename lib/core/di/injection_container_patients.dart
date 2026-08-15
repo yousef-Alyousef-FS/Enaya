@@ -55,6 +55,7 @@ Future<void> initPatientsInjection() async {
       getProfileUseCase: getIt(),
       completeProfileUseCase: getIt(),
       updateProfileUseCase: getIt(),
+      sessionManager: getIt(),
     ),
   );
 }

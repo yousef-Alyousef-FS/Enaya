@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/services/session_manager.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../domain/entities/patient_entity.dart';
 import '../../domain/usecases/complete_patient_profile_usecase.dart';
@@ -11,11 +12,13 @@ class PatientProfileCubit extends Cubit<PatientProfileState> {
   final GetPatientProfileUseCase getProfileUseCase;
   final CompletePatientProfileUseCase completeProfileUseCase;
   final UpdateProfileUseCase updateProfileUseCase;
+  final SessionManager sessionManager;
 
   PatientProfileCubit({
     required this.getProfileUseCase,
     required this.completeProfileUseCase,
     required this.updateProfileUseCase,
+    required this.sessionManager,
   }) : super(PatientProfileState.initial());
 
   Future<void> loadProfile() async {
@@ -38,11 +41,21 @@ class PatientProfileCubit extends Cubit<PatientProfileState> {
     final result = await completeProfileUseCase(params);
 
     result.fold(
-      (failure) =>
-          emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
-      (patient) => emit(
-        state.copyWith(isLoading: false, profile: patient, isSuccess: true),
-      ),
+      (failure) {
+        emit(state.copyWith(isLoading: false, errorMessage: failure.message));
+      },
+      (patient) async {
+        // Sync local session data
+        await sessionManager.updateUserData({
+          'name': patient.name,
+          'phone': patient.phone,
+          'profile_completed': true,
+        });
+
+        emit(
+          state.copyWith(isLoading: false, profile: patient, isSuccess: true),
+        );
+      },
     );
   }
 
@@ -52,11 +65,20 @@ class PatientProfileCubit extends Cubit<PatientProfileState> {
     final result = await updateProfileUseCase(patient);
 
     result.fold(
-      (failure) =>
-          emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
-      (updated) => emit(
-        state.copyWith(isLoading: false, profile: updated, isSuccess: true),
-      ),
+      (failure) {
+        emit(state.copyWith(isLoading: false, errorMessage: failure.message));
+      },
+      (updated) async {
+        // Sync local session data
+        await sessionManager.updateUserData({
+          'name': updated.name,
+          'phone': updated.phone,
+        });
+
+        emit(
+          state.copyWith(isLoading: false, profile: updated, isSuccess: true),
+        );
+      },
     );
   }
 }

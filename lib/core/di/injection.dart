@@ -7,6 +7,7 @@ import 'injection_container_dashboards.dart';
 import 'injection_container_doctor_session.dart';
 import 'injection_container_patients.dart';
 import 'injection_container_profile.dart';
+import 'injection_container_medical_history.dart';
 
 final getIt = GetIt.instance;
 
@@ -20,4 +21,5 @@ Future<void> initGetIt() async {
   await initDashboardsInjection();
   await initDoctorSessionInjection();
   await initProfileInjection();
+  await initMedicalHistoryInjection();
 }

@@ -85,6 +85,13 @@ class SessionManager {
     }
   }
 
+  /// Updates existing user data with new values.
+  Future<void> updateUserData(Map<String, dynamic> newData) async {
+    final current = getUserData() ?? {};
+    final updated = {...current, ...newData};
+    await saveUserData(updated);
+  }
+
   /// Clears the user session data.
   Future<void> clearSession() async {
     try {

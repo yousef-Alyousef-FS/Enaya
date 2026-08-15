@@ -18,6 +18,8 @@ import '../../../../appointments/presentation/appointments_page.dart';
 import '../../../../appointments/presentation/cubit/list/patient_appointments_cubit.dart';
 import '../../../../appointments/presentation/cubit/list/patient_appointments_state.dart';
 import '../../../../appointments/presentation/widgets/shared/appointment_card.dart';
+import '../../../../medical_history/presentation/cubit/medical_history_cubit.dart';
+import '../../../../medical_history/presentation/screens/medical_history_screen.dart';
 import '../../../../patients/presentation/screens/patient_profile_screen.dart';
 import '../../../../patients/presentation/state/patient_profile_cubit.dart';
 import '../../../../settings/presentation/screens/settings_screen.dart';
@@ -43,7 +45,10 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => getIt<PatientAppointmentsCubit>()..loadAppointments(patientId)),
+        BlocProvider(
+          create: (_) =>
+              getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
+        ),
         BlocProvider(create: (_) => getIt<PatientProfileCubit>()),
       ],
       child: Builder(
@@ -60,7 +65,11 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
     );
   }
 
-  Widget _getSectionBody(BuildContext context, int index, PatientSession session) {
+  Widget _getSectionBody(
+    BuildContext context,
+    int index,
+    PatientSession session,
+  ) {
     switch (index) {
       case 0:
         return _buildOverviewSection(session);
@@ -71,10 +80,9 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
           isEmbedded: true,
         );
       case 2:
-        return FeatureComingSoonState(
-          titleKey: 'nav_records',
-          icon: Icons.description_outlined,
-          onBack: () => _onNavigationSelected(context, 0),
+        return BlocProvider(
+          create: (context) => getIt<MedicalHistoryCubit>(),
+          child: MedicalHistoryScreen(),
         );
       case 3:
         return FeatureComingSoonState(
@@ -95,10 +103,14 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
     return BlocBuilder<PatientAppointmentsCubit, PatientAppointmentsState>(
       builder: (context, state) {
         final isLoading =
-            state.status == PatientAppointmentsStatus.loading && state.appointments.isEmpty;
+            state.status == PatientAppointmentsStatus.loading &&
+            state.appointments.isEmpty;
 
-        if (state.status == PatientAppointmentsStatus.failure && state.appointments.isEmpty) {
-          return Center(child: Text(state.errorMessage ?? 'Failed to load appointments'));
+        if (state.status == PatientAppointmentsStatus.failure &&
+            state.appointments.isEmpty) {
+          return Center(
+            child: Text(state.errorMessage ?? 'Failed to load appointments'),
+          );
         }
 
         final nextApp = state.upcomingAppointments.isNotEmpty
@@ -107,7 +119,9 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
 
         return DashboardOverviewBuilder(
           header: _buildGreeting(session),
-          stats: isLoading ? _buildShimmerStats() : _buildStatsGrid(context, state),
+          stats: isLoading
+              ? _buildShimmerStats()
+              : _buildStatsGrid(context, state),
           actions: _buildQuickActions(context, session),
           body: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -157,7 +171,10 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
   }
 
   Widget _buildStatsGrid(BuildContext context, PatientAppointmentsState state) {
-    final allAppointments = [...state.upcomingAppointments, ...state.pastAppointments];
+    final allAppointments = [
+      ...state.upcomingAppointments,
+      ...state.pastAppointments,
+    ];
     final completedCount = allAppointments
         .where((a) => a.status == AppointmentStatus.completed)
         .length;
@@ -207,7 +224,9 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
 
     // Only force reload if data is missing
     final cubit = context.read<PatientAppointmentsCubit>();
-    if (index == 0 && cubit.state.appointments.isEmpty && _activePatientId != null) {
+    if (index == 0 &&
+        cubit.state.appointments.isEmpty &&
+        _activePatientId != null) {
       cubit.loadAppointments(_activePatientId.toString());
     }
   }
@@ -256,8 +275,15 @@ class PatientDashboardGreetingCard extends StatelessWidget {
             Container(
               width: 56,
               height: 56,
-              decoration: BoxDecoration(color: whiteColor.withAlpha(28), shape: BoxShape.circle),
-              child: const Icon(Icons.person_rounded, color: whiteColor, size: 30),
+              decoration: BoxDecoration(
+                color: whiteColor.withAlpha(28),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.person_rounded,
+                color: whiteColor,
+                size: 30,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -280,7 +306,10 @@ class PatientDashboardGreetingCard extends StatelessWidget {
                       ),
                       if (session.isGuest)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: whiteColor.withAlpha(32),
                             borderRadius: BorderRadius.circular(999),
@@ -295,7 +324,10 @@ class PatientDashboardGreetingCard extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     'patient_overview_subtitle'.tr(),
-                    style: TextStyle(color: whiteColor.withAlpha(220), fontSize: 13),
+                    style: TextStyle(
+                      color: whiteColor.withAlpha(220),
+                      fontSize: 13,
+                    ),
                   ),
                 ],
               ),
@@ -314,7 +346,10 @@ class DashboardSectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold));
+    return Text(
+      title,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    );
   }
 }
 
@@ -344,7 +379,10 @@ class DashboardEmptyStateCard extends StatelessWidget {
       child: Column(
         children: [
           Center(
-            child: Text(title, style: TextStyle(color: theme.colorScheme.onSurfaceVariant)),
+            child: Text(
+              title,
+              style: TextStyle(color: theme.colorScheme.onSurfaceVariant),
+            ),
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
@@ -374,7 +412,11 @@ class DashboardShimmerStatsRow extends StatelessWidget {
 }
 
 class DashboardShimmerTile extends StatelessWidget {
-  const DashboardShimmerTile({super.key, required this.height, this.radius = 24});
+  const DashboardShimmerTile({
+    super.key,
+    required this.height,
+    this.radius = 24,
+  });
 
   final double height;
   final double radius;
@@ -387,7 +429,10 @@ class DashboardShimmerTile extends StatelessWidget {
       highlightColor: isDark ? Colors.grey.shade700 : Colors.grey.shade100,
       child: Container(
         height: height,
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(radius)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(radius),
+        ),
       ),
     );
   }
