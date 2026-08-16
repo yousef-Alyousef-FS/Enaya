@@ -27,7 +27,12 @@ class NotificationsCubit extends Cubit<NotificationsState> {
         ),
       );
     } catch (error) {
-      emit(state.copyWith(status: NotificationsStatus.error, message: error.toString()));
+      emit(
+        state.copyWith(
+          status: NotificationsStatus.error,
+          message: error.toString(),
+        ),
+      );
     }
   }
 
@@ -43,9 +48,29 @@ class NotificationsCubit extends Cubit<NotificationsState> {
         return item;
       }).toList();
 
-      emit(state.copyWith(notifications: updated, unreadCount: math.max(0, state.unreadCount - 1)));
+      emit(
+        state.copyWith(
+          notifications: updated,
+          unreadCount: math.max(0, state.unreadCount - 1),
+        ),
+      );
     } catch (_) {
       // The UI can ignore this for the starter foundation.
+    }
+  }
+
+  Future<void> markAllAsRead() async {
+    if (state.unreadCount == 0) return;
+
+    try {
+      await _repository.markAllAsRead();
+      final updated = state.notifications.map((item) {
+        return item.copyWith(isRead: true);
+      }).toList();
+
+      emit(state.copyWith(notifications: updated, unreadCount: 0));
+    } catch (_) {
+      // Ignore for now
     }
   }
 }

@@ -2,7 +2,10 @@ import 'base_profile_entity.dart';
 
 class DoctorProfileEntity extends BaseProfileEntity {
   final String specialty;
-  final int departmentId;
+  final String? workingHoursStart;
+  final String? workingHoursEnd;
+  final String? departmentName;
+  final int? departmentId;
 
   DoctorProfileEntity({
     required super.id,
@@ -11,6 +14,12 @@ class DoctorProfileEntity extends BaseProfileEntity {
     required super.phone,
     required super.role,
     required this.specialty,
-    required this.departmentId,
+    this.departmentId,
+    this.departmentName,
+    this.workingHoursStart,
+    this.workingHoursEnd,
+    super.dateOfBirth,
+    super.gender,
+    super.imageUrl,
   });
 }

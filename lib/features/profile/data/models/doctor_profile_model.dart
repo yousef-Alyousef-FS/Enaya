@@ -8,21 +8,35 @@ class DoctorProfileModel extends DoctorProfileEntity {
     required super.phone,
     required super.role,
     required super.specialty,
-    required super.departmentId,
+    super.departmentId,
+    super.departmentName,
+    super.workingHoursStart,
+    super.workingHoursEnd,
+    super.dateOfBirth,
+    super.gender,
+    super.imageUrl,
   });
 
-  factory DoctorProfileModel.fromApi({
-    required Map<String, dynamic> userJson,
-    required Map<String, dynamic> doctorJson,
-  }) {
+  factory DoctorProfileModel.fromJson(Map<String, dynamic> json) {
+    final userJson = json['user'] as Map<String, dynamic>? ?? {};
+    final departmentJson = json['department'] as Map<String, dynamic>? ?? {};
+
     return DoctorProfileModel(
-      id: userJson['id'] ?? 0,
-      name: userJson['name'] ?? '',
+      id: json['id']?.toString() ?? '',
+      name: json['full_name'] ?? userJson['name'] ?? '',
       email: userJson['email'] ?? '',
-      phone: userJson['phone'] ?? '',
-      role: userJson['role'] ?? '',
-      specialty: doctorJson['specialty'] ?? 'Unknown',
-      departmentId: doctorJson['department_id'] ?? 0,
+      phone: json['phone'] ?? '',
+      role: 'doctor',
+      specialty: json['specialty'] ?? 'Unknown',
+      departmentId: departmentJson['id'],
+      departmentName: departmentJson['name'],
+      workingHoursStart: json['working_hours_start'],
+      workingHoursEnd: json['working_hours_end'],
+      dateOfBirth: json['date_of_birth'] != null
+          ? DateTime.tryParse(json['date_of_birth'].toString())
+          : null,
+      gender: json['gender'],
+      imageUrl: json['image_url'] ?? json['avatar'],
     );
   }
 }

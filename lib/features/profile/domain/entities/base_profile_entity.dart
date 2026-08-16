@@ -4,6 +4,9 @@ class BaseProfileEntity {
   final String email;
   final String phone;
   final String role;
+  final DateTime? dateOfBirth;
+  final String? gender;
+  final String? imageUrl;
 
   BaseProfileEntity({
     required this.id,
@@ -11,6 +14,9 @@ class BaseProfileEntity {
     required this.email,
     required this.phone,
     required this.role,
+    this.dateOfBirth,
+    this.gender,
+    this.imageUrl,
   });
 
   Map<String, dynamic> toJson() {
@@ -20,6 +26,9 @@ class BaseProfileEntity {
       "email": email,
       "phone": phone,
       "role": role,
+      "date_of_birth": dateOfBirth?.toIso8601String(),
+      "gender": gender,
+      "image_url": imageUrl,
     };
   }
 }

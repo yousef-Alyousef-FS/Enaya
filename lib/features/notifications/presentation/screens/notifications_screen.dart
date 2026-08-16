@@ -1,6 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 
 import '../../domain/entities/notification_entity.dart';
 import '../../domain/enums/notification_type.dart';
@@ -10,10 +10,52 @@ import '../cubit/notifications_state.dart';
 class NotificationsScreen extends StatelessWidget {
   const NotificationsScreen({super.key});
 
+  void _handleNotificationTap(
+    BuildContext context,
+    NotificationEntity notification,
+  ) {
+    context.read<NotificationsCubit>().markAsRead(notification);
+
+    final String? id = notification.relatedAppointmentId;
+    if (id == null) return;
+
+    switch (notification.type) {
+      case NotificationType.appointment:
+      case NotificationType.appointment_cancelled:
+      case NotificationType.appointment_rescheduled:
+        // Future logic: get appointment role or navigate to generic details
+        break;
+      case NotificationType.prescription:
+        // context.push(AppRouter.medicalHistory);
+        break;
+      case NotificationType.session_in_progress:
+      case NotificationType.session_completed:
+      case NotificationType.session_cancelled:
+        // context.push('${AppRouter.doctorSession}/$id');
+        break;
+      default:
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Notifications')),
+      appBar: AppBar(
+        title: Text('notifications'.tr()),
+        actions: [
+          BlocBuilder<NotificationsCubit, NotificationsState>(
+            builder: (context, state) {
+              if (state.unreadCount == 0) return const SizedBox.shrink();
+              return TextButton(
+                onPressed: () =>
+                    context.read<NotificationsCubit>().markAllAsRead(),
+                child: Text('mark_all_read'.tr()),
+              );
+            },
+          ),
+        ],
+      ),
       body: BlocBuilder<NotificationsCubit, NotificationsState>(
         builder: (context, state) {
           if (state.status == NotificationsStatus.loading) {
@@ -22,7 +64,7 @@ class NotificationsScreen extends StatelessWidget {
 
           if (state.status == NotificationsStatus.error) {
             return _NotificationsErrorView(
-              message: state.message ?? 'Unable to load notifications',
+              message: state.message ?? 'error_occurred'.tr(),
             );
           }
 
@@ -30,14 +72,20 @@ class NotificationsScreen extends StatelessWidget {
             return const _NotificationsEmptyView();
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: state.notifications.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final item = state.notifications[index];
-              return _NotificationTile(notification: item);
-            },
+          return RefreshIndicator(
+            onRefresh: () => context.read<NotificationsCubit>().load(),
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: state.notifications.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final item = state.notifications[index];
+                return _NotificationTile(
+                  notification: item,
+                  onTap: () => _handleNotificationTap(context, item),
+                );
+              },
+            ),
           );
         },
       ),
@@ -46,9 +94,10 @@ class NotificationsScreen extends StatelessWidget {
 }
 
 class _NotificationTile extends StatelessWidget {
-  const _NotificationTile({required this.notification});
+  const _NotificationTile({required this.notification, required this.onTap});
 
   final NotificationEntity notification;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -56,9 +105,7 @@ class _NotificationTile extends StatelessWidget {
     final typeColor = notification.type.color;
 
     return InkWell(
-      onTap: () {
-        context.read<NotificationsCubit>().markAsRead(notification);
-      },
+      onTap: onTap,
       borderRadius: BorderRadius.circular(18),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -105,8 +152,8 @@ class _NotificationTile extends StatelessWidget {
                       ),
                       if (!notification.isRead)
                         Container(
-                          width: 10,
-                          height: 10,
+                          width: 8,
+                          height: 8,
                           decoration: const BoxDecoration(
                             color: Colors.red,
                             shape: BoxShape.circle,
@@ -209,12 +256,12 @@ class _NotificationsEmptyView extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             Text(
-              'No notifications yet',
+              'no_notifications_yet'.tr(),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'You will see appointment reminders and updates here.',
+              'notifications_empty_hint'.tr(),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,

@@ -35,6 +35,9 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   TextEditingController? specialtyController;
   TextEditingController? addressController;
   TextEditingController? emergencyContactController;
+  TextEditingController? jobController;
+  TextEditingController? workingHoursStartController;
+  TextEditingController? workingHoursEndController;
 
   @override
   void initState() {
@@ -51,11 +54,20 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       specialtyController = TextEditingController(
         text: widget.profileData["specialty"] ?? "",
       );
+      workingHoursStartController = TextEditingController(
+        text: widget.profileData["working_hours_start"] ?? "",
+      );
+      workingHoursEndController = TextEditingController(
+        text: widget.profileData["working_hours_end"] ?? "",
+      );
     }
 
     if (widget.role == "patient") {
       addressController = TextEditingController(
         text: widget.profileData["address"] ?? "",
+      );
+      jobController = TextEditingController(
+        text: widget.profileData["job"] ?? "",
       );
       emergencyContactController = TextEditingController(
         text: widget.profileData["emergency_contact"] ?? "",
@@ -71,6 +83,9 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
     specialtyController?.dispose();
     addressController?.dispose();
     emergencyContactController?.dispose();
+    jobController?.dispose();
+    workingHoursStartController?.dispose();
+    workingHoursEndController?.dispose();
 
     super.dispose();
   }
@@ -135,6 +150,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         phoneController: phoneController,
         specialtyController: specialtyController!,
         departmentName: widget.profileData["department_name"] ?? "",
+        workingHoursStartController: workingHoursStartController!,
+        workingHoursEndController: workingHoursEndController!,
       );
     }
 
@@ -143,6 +160,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         nameController: nameController,
         phoneController: phoneController,
         addressController: addressController!,
+        jobController: jobController!,
         emergencyContactController: emergencyContactController!,
       );
     }
@@ -161,6 +179,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         phone: phoneController.text,
         specialty: specialtyController!.text,
         departmentId: widget.profileData["department_id"] ?? "",
+        workingHoursStart: workingHoursStartController!.text,
+        workingHoursEnd: workingHoursEndController!.text,
       );
     }
 
@@ -169,6 +189,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         name: nameController.text,
         phone: phoneController.text,
         address: addressController!.text,
+        job: jobController!.text,
         emergencyContact: emergencyContactController!.text,
       );
     }

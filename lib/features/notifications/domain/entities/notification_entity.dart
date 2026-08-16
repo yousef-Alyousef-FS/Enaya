@@ -44,34 +44,58 @@ class NotificationEntity {
   }
 
   factory NotificationEntity.fromJson(Map<String, dynamic> json) {
-    final rawType = (json['type'] ?? 'general').toString();
-    final type = NotificationType.values.firstWhere(
-      (item) => item.name == rawType,
-      orElse: () => NotificationType.general,
-    );
+    final data = json['data'] as Map<String, dynamic>? ?? {};
+    final rawType = (json['type'] ?? data['type'] ?? 'general').toString();
+
+    // Extract type from Laravel's FQN if needed (e.g., "App\Notifications\AppointmentCancelledNotification")
+    NotificationType type = NotificationType.general;
+    if (rawType.contains('AppointmentCancelled')) {
+      type = NotificationType.appointment_cancelled;
+    } else if (rawType.contains('AppointmentRescheduled')) {
+      type = NotificationType.appointment_rescheduled;
+    } else if (rawType.contains('NewAppointment')) {
+      type = NotificationType.appointment;
+    } else if (rawType.contains('Prescription')) {
+      type = NotificationType.prescription;
+    } else if (rawType.contains('SessionStarted')) {
+      type = NotificationType.session_in_progress;
+    } else if (rawType.contains('SessionCompleted')) {
+      type = NotificationType.session_completed;
+    } else {
+      type = NotificationType.values.firstWhere(
+        (item) => item.name == rawType,
+        orElse: () => NotificationType.general,
+      );
+    }
 
     return NotificationEntity(
       id: (json['id'] ?? '').toString(),
-      title: (json['title'] ?? 'Notification').toString(),
-      body: (json['body'] ?? '').toString(),
+      title: (data['title'] ?? type.label).toString(),
+      body: (data['message'] ?? data['body'] ?? '').toString(),
       type: type,
-      createdAt: DateTime.tryParse(json['createdAt']?.toString() ?? '') ?? DateTime.now(),
-      isRead: json['isRead'] == true,
-      relatedAppointmentId: json['relatedAppointmentId']?.toString(),
-      payload: Map<String, dynamic>.from(json['payload'] ?? const {}),
+      createdAt:
+          DateTime.tryParse(json['created_at']?.toString() ?? '') ??
+          DateTime.now(),
+      isRead: json['read_at'] != null,
+      relatedAppointmentId:
+          data['id']?.toString() ?? data['appointment_id']?.toString(),
+      payload: data,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'title': title,
-      'body': body,
       'type': type.name,
-      'createdAt': createdAt.toIso8601String(),
-      'isRead': isRead,
-      'relatedAppointmentId': relatedAppointmentId,
-      'payload': payload,
+      'read_at': isRead ? DateTime.now().toIso8601String() : null,
+      'created_at': createdAt.toIso8601String(),
+      'data': {
+        'title': title,
+        'message': body,
+        'type': type.name,
+        'appointment_id': relatedAppointmentId,
+        ...payload,
+      },
     };
   }
 }

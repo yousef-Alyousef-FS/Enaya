@@ -7,6 +7,7 @@ import '../cache/cache_helper.dart';
 import '../network/dio_factory.dart';
 import '../network/network_info.dart';
 import '../services/auth_status_service.dart';
+import '../services/notification_service.dart';
 import '../services/session_manager.dart';
 import '../services/settings_service.dart';
 import '../services/token_manager.dart';
@@ -39,6 +40,10 @@ Future<void> initCoreInjection() async {
     () => SettingsService(cacheHelper: getIt()),
   );
   getIt.registerLazySingleton<AuthStatusService>(() => AuthStatusService());
+
+  getIt.registerLazySingleton<NotificationService>(
+    () => NotificationService(getIt(), getIt()),
+  );
 
   // Theme
   getIt.registerLazySingleton(

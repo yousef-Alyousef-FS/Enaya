@@ -10,12 +10,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:enaya/core/services/notification_service.dart';
+// import 'package:firebase_messaging/firebase_messaging.dart';
+// import 'firebase_options.dart'; // ⭐ Uncomment this after running 'flutterfire configure'
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
 
   // Initialize Dependency Injection
   await initGetIt();
+
+  // ⭐ Firebase Initialization (Requires 'firebase_options.dart')
+  /* 
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+  await getIt<NotificationService>().initialize();
+  */
 
   final settingsService = getIt<SettingsService>();
   final savedLanguage = settingsService.getLanguage();

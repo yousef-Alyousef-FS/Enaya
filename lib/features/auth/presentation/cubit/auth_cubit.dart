@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/services/auth_status_service.dart';
+import '../../../../core/services/notification_service.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../../patients/domain/usecases/get_patient_profile_usecase.dart';
 import '../../domain/entities/user_entity.dart';
@@ -27,6 +28,7 @@ class AuthCubit extends Cubit<AuthState> {
   final LogoutUseCase _logoutUseCase;
   final GetPatientProfileUseCase _getPatientProfileUseCase;
   final AuthStatusService _authStatusService;
+  final NotificationService _notificationService;
 
   AuthCubit({
     required LoginUseCase loginUseCase,
@@ -39,6 +41,7 @@ class AuthCubit extends Cubit<AuthState> {
     required LogoutUseCase logoutUseCase,
     required GetPatientProfileUseCase getPatientProfileUseCase,
     required AuthStatusService authStatusService,
+    required NotificationService notificationService,
   }) : _loginUseCase = loginUseCase,
        _signupUseCase = signupUseCase,
        _forgotPasswordUseCase = forgotPasswordUseCase,
@@ -49,6 +52,7 @@ class AuthCubit extends Cubit<AuthState> {
        _logoutUseCase = logoutUseCase,
        _getPatientProfileUseCase = getPatientProfileUseCase,
        _authStatusService = authStatusService,
+       _notificationService = notificationService,
        super(const AuthState.initial());
 
   Future<void> login(String usernameOrEmail, String password) async {
@@ -70,6 +74,9 @@ class AuthCubit extends Cubit<AuthState> {
       },
       (user) async {
         _authStatusService.setAuthenticated();
+        // ⭐ Register Device Token
+        await _notificationService.uploadDeviceToken();
+
         if (user.roleId == 3) {
           final profileResult = await _getPatientProfileUseCase(NoParams());
           profileResult.fold(
@@ -123,8 +130,10 @@ class AuthCubit extends Cubit<AuthState> {
           phone: phone,
         ),
       ),
-      onSuccess: (user) {
+      onSuccess: (user) async {
         _authStatusService.setAuthenticated();
+        // ⭐ Register Device Token
+        await _notificationService.uploadDeviceToken();
         emit(
           state.copyWith(
             isLoading: false,
@@ -228,7 +237,9 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> logout() async {
     await _handleResult<void>(
       _logoutUseCase(NoParams()),
-      onSuccess: (_) {
+      onSuccess: (_) async {
+        // ⭐ Remove Device Token
+        await _notificationService.removeDeviceTokenOnLogout();
         _authStatusService.setUnauthenticated();
         emit(
           state.copyWith(

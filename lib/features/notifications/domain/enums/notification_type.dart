@@ -1,56 +1,77 @@
 import 'package:flutter/material.dart';
 
-enum NotificationType { reminder, bookingSuccess, bookingFailed, rescheduled, cancelled, general }
+enum NotificationType {
+  appointment,
+  appointment_cancelled,
+  appointment_rescheduled,
+  prescription,
+  session_in_progress,
+  session_completed,
+  session_cancelled,
+  general,
+}
 
 extension NotificationTypeX on NotificationType {
   String get label {
     switch (this) {
-      case NotificationType.reminder:
-        return 'Reminder';
-      case NotificationType.bookingSuccess:
-        return 'Appointment booked';
-      case NotificationType.bookingFailed:
-        return 'Booking failed';
-      case NotificationType.rescheduled:
-        return 'Rescheduled';
-      case NotificationType.cancelled:
-        return 'Cancelled';
+      case NotificationType.appointment:
+        return 'New Appointment';
+      case NotificationType.appointment_cancelled:
+        return 'Appointment Cancelled';
+      case NotificationType.appointment_rescheduled:
+        return 'Appointment Rescheduled';
+      case NotificationType.prescription:
+        return 'New Prescription';
+      case NotificationType.session_in_progress:
+        return 'Session Started';
+      case NotificationType.session_completed:
+        return 'Session Completed';
+      case NotificationType.session_cancelled:
+        return 'Session Cancelled';
       case NotificationType.general:
-        return 'General';
+        return 'Notification';
     }
   }
 
   IconData get icon {
     switch (this) {
-      case NotificationType.reminder:
-        return Icons.notifications_active_rounded;
-      case NotificationType.bookingSuccess:
-        return Icons.check_circle_rounded;
-      case NotificationType.bookingFailed:
-        return Icons.error_outline_rounded;
-      case NotificationType.rescheduled:
-        return Icons.event_repeat_rounded;
-      case NotificationType.cancelled:
+      case NotificationType.appointment:
+        return Icons.calendar_today_rounded;
+      case NotificationType.appointment_cancelled:
         return Icons.event_busy_rounded;
+      case NotificationType.appointment_rescheduled:
+        return Icons.event_repeat_rounded;
+      case NotificationType.prescription:
+        return Icons.medication_rounded;
+      case NotificationType.session_in_progress:
+        return Icons.play_circle_filled_rounded;
+      case NotificationType.session_completed:
+        return Icons.check_circle_rounded;
+      case NotificationType.session_cancelled:
+        return Icons.stop_circle_rounded;
       case NotificationType.general:
-        return Icons.info_outline_rounded;
+        return Icons.notifications_active_rounded;
     }
   }
 
   Color get color {
     switch (this) {
-      case NotificationType.reminder:
+      case NotificationType.appointment:
         return const Color(0xFF3B82F6);
-      case NotificationType.bookingSuccess:
-        return const Color(0xFF10B981);
-      case NotificationType.bookingFailed:
+      case NotificationType.appointment_cancelled:
         return const Color(0xFFEF4444);
-      case NotificationType.rescheduled:
+      case NotificationType.appointment_rescheduled:
         return const Color(0xFFF59E0B);
-      case NotificationType.cancelled:
+      case NotificationType.prescription:
+        return const Color(0xFF10B981);
+      case NotificationType.session_in_progress:
         return const Color(0xFF8B5CF6);
-      case NotificationType.general:
+      case NotificationType.session_completed:
+        return const Color(0xFF10B981);
+      case NotificationType.session_cancelled:
         return const Color(0xFF6B7280);
+      case NotificationType.general:
+        return const Color(0xFF6366F1);
     }
   }
 }

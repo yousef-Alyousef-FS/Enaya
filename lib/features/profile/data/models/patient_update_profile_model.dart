@@ -6,6 +6,7 @@ class PatientUpdateProfileModel extends PatientUpdateProfileEntity {
     required super.phone,
     required super.address,
     super.emergencyContact,
+    super.job,
   });
 
   Map<String, dynamic> toJson() {
@@ -13,6 +14,7 @@ class PatientUpdateProfileModel extends PatientUpdateProfileEntity {
       "name": name,
       "phone": phone,
       "address": address,
+      "job": job,
       "emergency_contact": emergencyContact,
     };
   }

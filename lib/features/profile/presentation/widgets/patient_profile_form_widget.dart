@@ -5,6 +5,7 @@ class PatientProfileFormWidget extends StatelessWidget {
   final TextEditingController nameController;
   final TextEditingController phoneController;
   final TextEditingController addressController;
+  final TextEditingController jobController;
   final TextEditingController emergencyContactController;
 
   const PatientProfileFormWidget({
@@ -12,6 +13,7 @@ class PatientProfileFormWidget extends StatelessWidget {
     required this.nameController,
     required this.phoneController,
     required this.addressController,
+    required this.jobController,
     required this.emergencyContactController,
   });
 
@@ -21,11 +23,10 @@ class PatientProfileFormWidget extends StatelessWidget {
       children: [
         TextField(
           controller: nameController,
-          decoration: InputDecoration(labelText: "patient_name".tr()),
+          decoration: InputDecoration(labelText: "full_name".tr()),
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 16),
-
         TextField(
           controller: phoneController,
           decoration: InputDecoration(labelText: "phone_number".tr()),
@@ -33,14 +34,18 @@ class PatientProfileFormWidget extends StatelessWidget {
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 16),
-
         TextField(
           controller: addressController,
           decoration: InputDecoration(labelText: "address".tr()),
           style: Theme.of(context).textTheme.bodyMedium,
         ),
         const SizedBox(height: 16),
-
+        TextField(
+          controller: jobController,
+          decoration: InputDecoration(labelText: "job".tr()),
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+        const SizedBox(height: 16),
         TextField(
           controller: emergencyContactController,
           decoration: InputDecoration(labelText: "emergency_contact".tr()),

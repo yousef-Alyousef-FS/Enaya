@@ -24,12 +24,32 @@ class UpdateProfileRemoteDataSourceImpl
 
   @override
   Future<void> updateUserProfile(UserUpdateProfileModel model) async {
-    await dio.put('/users/update-profile', data: model.toJson());
+    // V1.5 doesn't specify a generic user update, using /me or similar if available
+    await dio.put('/auth/me', data: model.toJson());
   }
 
   @override
   Future<void> updateDoctorProfile(DoctorUpdateProfileModel model) async {
-    await dio.put('/doctor/update-profile', data: model.toJson());
+    // 1. Update working hours (V1.5 specific)
+    if (model.workingHoursStart != null && model.workingHoursEnd != null) {
+      await dio.put(
+        '/doctor/profile/working-hours',
+        data: {
+          'working_hours_start': model.workingHoursStart,
+          'working_hours_end': model.workingHoursEnd,
+        },
+      );
+    }
+
+    // 2. Update other info (assumption: PUT /doctor/profile or similar)
+    await dio.put(
+      '/doctor/profile',
+      data: {
+        'full_name': model.name,
+        'phone': model.phone,
+        'specialty': model.specialty,
+      },
+    );
   }
 
   @override

@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:enaya/core/di/injection.dart';
 import 'package:enaya/core/services/auth_status_service.dart';
+import 'package:enaya/core/services/notification_service.dart';
 import 'package:enaya/features/auth/domain/entities/user_entity.dart';
 import 'package:enaya/features/auth/domain/usecases/change_password_usecase.dart';
 import 'package:enaya/features/auth/domain/usecases/forgot_password_usecase.dart';
@@ -41,6 +42,8 @@ class MockGetPatientProfileUseCase extends Mock
     implements GetPatientProfileUseCase {}
 
 class MockAuthStatusService extends Mock implements AuthStatusService {}
+
+class MockNotificationService extends Mock implements NotificationService {}
 
 class FakeLoginParams extends Fake implements LoginParams {}
 
@@ -96,6 +99,9 @@ void main() {
       () => mockGetPatientProfileUseCase,
     );
     getIt.registerLazySingleton<AuthStatusService>(() => mockAuthStatusService);
+    getIt.registerLazySingleton<NotificationService>(
+      () => MockNotificationService(),
+    );
 
     getIt.registerFactory(
       () => AuthCubit(
@@ -109,6 +115,7 @@ void main() {
         logoutUseCase: getIt(),
         getPatientProfileUseCase: getIt(),
         authStatusService: getIt(),
+        notificationService: getIt(),
       ),
     );
   });

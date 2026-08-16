@@ -2,12 +2,15 @@ import 'package:dio/dio.dart';
 
 import '../../../auth/domain/entities/user_role.dart';
 import '../../domain/entities/base_profile_entity.dart';
+import '../../domain/entities/doctor_update_profile_entity.dart';
+import '../../domain/entities/patient_update_profile_entity.dart';
+import '../../domain/entities/user_update_profile_entity.dart';
 import '../models/doctor_profile_model.dart';
 import '../models/patient_profile_model.dart';
-import '../models/user_api_response.dart';
 
 abstract class ProfileRemoteDataSource {
   Future<BaseProfileEntity> getProfile();
+  Future<BaseProfileEntity> updateProfile(UserUpdateProfileEntity entity);
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -17,48 +20,81 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
 
   @override
   Future<BaseProfileEntity> getProfile() async {
-    // 1) call /me to get user data
-    final meResponse = await dio.get('/me');
-    final userApi = UserApiResponse.fromApi(meResponse.data);
+    final meResponse = await dio.get('/auth/me');
+    final data = meResponse.data['data'] as Map<String, dynamic>;
+    final userJson = data['user'] as Map<String, dynamic>;
 
-    // convert roleId → UserRole enum → string name
-    final roleEnum = UserRole.fromId(userApi.roleId);
-    final roleString = roleEnum.name;
-
-    // 2) default entity
-    final baseEntity = BaseProfileEntity(
-      id: userApi.id,
-      name: userApi.name,
-      email: userApi.email,
-      phone: userApi.phone,
-      role: roleString,
-    );
+    final int roleId =
+        int.tryParse(
+          userJson['roleId']?.toString() ??
+              userJson['role_id']?.toString() ??
+              '3',
+        ) ??
+        3;
+    final roleEnum = UserRole.fromId(roleId);
 
     try {
-      switch (roleEnum) {
-        case UserRole.doctor:
-          final doctorResponse = await dio.get('/doctor/${userApi.id}');
-          final doctorJson = doctorResponse.data['data'] ?? {};
-
-          return DoctorProfileModel.fromApi(
-            userJson: {...userApi.toUserJson(), "role": roleString},
-            doctorJson: doctorJson,
-          );
-
-        case UserRole.patient:
-          final patientResponse = await dio.get('/patients/profile');
-          final patientJson = patientResponse.data['data'] ?? {};
-
-          return PatientProfileModel.fromApi(
-            userJson: {...userApi.toUserJson(), "role": roleString},
-            patientJson: patientJson,
-          );
-
-        case UserRole.receptionist:
-          return baseEntity;
+      if (roleEnum == UserRole.doctor) {
+        final response = await dio.get('/doctor/profile');
+        return DoctorProfileModel.fromJson(response.data['data']);
+      } else if (roleEnum == UserRole.patient) {
+        final response = await dio.get('/patients/profile');
+        return PatientProfileModel.fromJson(response.data['data']);
+      } else {
+        return BaseProfileEntity(
+          id: userJson['id']?.toString() ?? '',
+          name: userJson['name'] ?? userJson['username'] ?? '',
+          email: userJson['email'] ?? '',
+          phone: userJson['phone'] ?? '',
+          role: roleEnum.name,
+        );
       }
     } catch (_) {
-      return baseEntity;
+      return BaseProfileEntity(
+        id: userJson['id']?.toString() ?? '',
+        name: userJson['name'] ?? userJson['username'] ?? '',
+        email: userJson['email'] ?? '',
+        phone: userJson['phone'] ?? '',
+        role: roleEnum.name,
+      );
+    }
+  }
+
+  @override
+  Future<BaseProfileEntity> updateProfile(
+    UserUpdateProfileEntity entity,
+  ) async {
+    if (entity is DoctorUpdateProfileEntity) {
+      await dio.put(
+        '/doctor/profile',
+        data: {'full_name': entity.name, 'phone': entity.phone},
+      );
+
+      if (entity.workingHoursStart != null && entity.workingHoursEnd != null) {
+        await dio.put(
+          '/doctor/profile/working-hours',
+          data: {
+            'working_hours_start': entity.workingHoursStart,
+            'working_hours_end': entity.workingHoursEnd,
+          },
+        );
+      }
+
+      final response = await dio.get('/doctor/profile');
+      return DoctorProfileModel.fromJson(response.data['data']);
+    } else if (entity is PatientUpdateProfileEntity) {
+      final response = await dio.put(
+        '/patients/profile',
+        data: {
+          'name': entity.name,
+          'phone': entity.phone,
+          'address': entity.address,
+          'emergency_contact': entity.emergencyContact,
+        },
+      );
+      return PatientProfileModel.fromJson(response.data['data']);
+    } else {
+      throw UnimplementedError('General user update not supported in V1.5');
     }
   }
 }

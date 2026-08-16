@@ -43,6 +43,7 @@ Future<void> initAuthInjection() async {
       logoutUseCase: getIt(),
       getPatientProfileUseCase: getIt<GetPatientProfileUseCase>(),
       authStatusService: getIt(),
+      notificationService: getIt(),
     ),
   );
 }
