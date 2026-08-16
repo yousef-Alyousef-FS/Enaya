@@ -8,11 +8,11 @@ All responses follow this standard envelope format:
 
 ```json
 {
-  "success": true,
-  "data": {},
-  "message": "Optional message",
-  "error": null,
-  "errorCode": null
+    "success": true,
+    "data": {},
+    "message": "Optional message",
+    "error": null,
+    "errorCode": null
 }
 ```
 
@@ -61,11 +61,11 @@ account is automatically linked.
 
 ```json
 {
-  "username": "newuser123",
-  "email": "newuser@enaya.com",
-  "phone": "+963912345678",
-  "password": "password123",
-  "password_confirmation": "password123"
+    "username": "newuser123",
+    "email": "newuser@enaya.com",
+    "phone": "+963912345678",
+    "password": "password123",
+    "password_confirmation": "password123"
 }
 ```
 
@@ -73,20 +73,20 @@ account is automatically linked.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "user": {
-      "id": 1,
-      "email": "newuser@enaya.com",
-      "username": "newuser123",
-      "roleId": 3
+    "success": true,
+    "data": {
+        "user": {
+            "id": 1,
+            "email": "newuser@enaya.com",
+            "username": "newuser123",
+            "roleId": 3
+        },
+        "profileCompleted": false,
+        "token": "plain-text-sanctum-token",
+        "expiresAt": "2026-07-07T12:00:00.000000Z"
     },
-    "profileCompleted": false,
-    "token": "plain-text-sanctum-token",
-    "expiresAt": "2026-07-07T12:00:00.000000Z"
-  },
-  "error": null,
-  "errorCode": null
+    "error": null,
+    "errorCode": null
 }
 ```
 
@@ -117,8 +117,8 @@ Authenticate with username/email and password.
 
 ```json
 {
-  "usernameOrEmail": "newuser@enaya.com",
-  "password": "password123"
+    "usernameOrEmail": "newuser@enaya.com",
+    "password": "password123"
 }
 ```
 
@@ -144,17 +144,17 @@ Get the authenticated user's profile.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "user": {
-      "id": 1,
-      "email": "newuser@enaya.com",
-      "username": "newuser123",
-      "roleId": 3
-    }
-  },
-  "error": null,
-  "errorCode": null
+    "success": true,
+    "data": {
+        "user": {
+            "id": 1,
+            "email": "newuser@enaya.com",
+            "username": "newuser123",
+            "roleId": 3
+        }
+    },
+    "error": null,
+    "errorCode": null
 }
 ```
 
@@ -170,10 +170,10 @@ Get a new access token. Invalidates the current token immediately.
 
 ```json
 {
-  "success": true,
-  "token": "new-plain-text-sanctum-token",
-  "expiresAt": "2026-07-10T12:00:00.000000Z",
-  "error": null
+    "success": true,
+    "token": "new-plain-text-sanctum-token",
+    "expiresAt": "2026-07-10T12:00:00.000000Z",
+    "error": null
 }
 ```
 
@@ -189,9 +189,103 @@ Invalidate the current access token.
 
 ```json
 {
-  "success": true,
-  "message": "Logged out successfully",
-  "error": null
+    "success": true,
+    "message": "Logged out successfully",
+    "error": null
+}
+```
+
+---
+
+## Notification Endpoints
+
+Base path: `/api`
+
+### List Notifications
+
+`GET /api/notifications`
+
+Fetch the authenticated user's paginated notifications.
+
+**Response `200`:**
+
+```json
+{
+    "success": true,
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id": "1",
+                "type": "App\\Notifications\\AppointmentCancelledNotification",
+                "notifiable_type": "App\\Models\\User",
+                "notifiable_id": 2,
+                "data": {
+                    "message": "Your appointment was cancelled."
+                },
+                "read_at": null,
+                "created_at": "2026-08-15T12:00:00.000000Z",
+                "updated_at": "2026-08-15T12:00:00.000000Z"
+            }
+        ],
+        "per_page": 20,
+        "total": 1
+    },
+    "error": null,
+    "errorCode": null
+}
+```
+
+### Get Unread Notifications Count
+
+`GET /api/notifications/unread-count`
+
+Return the count of unread notifications for the authenticated user.
+
+**Response `200`:**
+
+```json
+{
+    "success": true,
+    "data": {
+        "count": 3
+    },
+    "error": null,
+    "errorCode": null
+}
+```
+
+### Mark Notification as Read
+
+`POST /api/notifications/{id}/read`
+
+Mark one notification as read.
+
+**Response `200`:**
+
+```json
+{
+    "success": true,
+    "data": null,
+    "error": null,
+    "errorCode": null
+}
+```
+
+### Mark All Notifications as Read
+
+`POST /api/notifications/read-all`
+
+Mark all unread notifications as read for the authenticated user.
+
+**Response `200`:**
+
+```json
+{
+    "success": true,
+    "data": null,
+    "error": null,
+    "errorCode": null
 }
 ```
 
@@ -213,22 +307,22 @@ Retrieve the authenticated patient's profile.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "id": 1,
-    "user_id": 1,
-    "email": "newuser@enaya.com",
-    "account_name": "newuser123",
-    "full_name": "New User",
-    "phone": "+963912345678",
-    "date_of_birth": "1995-05-20",
-    "gender": "female",
-    "address": "Damascus",
-    "job": "Teacher",
-    "emergency_contact": null,
-    "profile_completed": false,
-    "created_at": "2026-06-11T12:00:00.000000Z"
-  }
+    "success": true,
+    "data": {
+        "id": 1,
+        "user_id": 1,
+        "email": "newuser@enaya.com",
+        "account_name": "newuser123",
+        "full_name": "New User",
+        "phone": "+963912345678",
+        "date_of_birth": "1995-05-20",
+        "gender": "female",
+        "address": "Damascus",
+        "job": "Teacher",
+        "emergency_contact": null,
+        "profile_completed": false,
+        "created_at": "2026-06-11T12:00:00.000000Z"
+    }
 }
 ```
 
@@ -244,13 +338,13 @@ Complete the patient profile after signup. Only callable when `profile_completed
 
 ```json
 {
-  "full_name": "Jane Doe",
-  "phone": "+963912345678",
-  "date_of_birth": "1995-05-20",
-  "gender": "female",
-  "address": "Damascus",
-  "job": "Teacher",
-  "emergency_contact": "0963611111"
+    "full_name": "Jane Doe",
+    "phone": "+963912345678",
+    "date_of_birth": "1995-05-20",
+    "gender": "female",
+    "address": "Damascus",
+    "job": "Teacher",
+    "emergency_contact": "0963611111"
 }
 ```
 
@@ -258,21 +352,21 @@ Complete the patient profile after signup. Only callable when `profile_completed
 
 ```json
 {
-  "success": true,
-  "message": "Profile completed successfully",
-  "data": {
-    "id": 1,
-    "user_id": 1,
-    "full_name": "Jane Doe",
-    "phone": "+963912345678",
-    "date_of_birth": "1995-05-20",
-    "gender": "female",
-    "address": "Damascus",
-    "job": "Teacher",
-    "emergency_contact": "0963611111",
-    "profile_completed": true,
-    "created_at": "2026-06-11T12:00:00.000000Z"
-  }
+    "success": true,
+    "message": "Profile completed successfully",
+    "data": {
+        "id": 1,
+        "user_id": 1,
+        "full_name": "Jane Doe",
+        "phone": "+963912345678",
+        "date_of_birth": "1995-05-20",
+        "gender": "female",
+        "address": "Damascus",
+        "job": "Teacher",
+        "emergency_contact": "0963611111",
+        "profile_completed": true,
+        "created_at": "2026-06-11T12:00:00.000000Z"
+    }
 }
 ```
 
@@ -288,26 +382,6 @@ Update patient profile fields. All fields optional.
 
 ```json
 {
-  "name": "Updated Username",
-  "email": "updated@example.com",
-  "phone": "+963933333333",
-  "date_of_birth": "1990-01-01",
-  "gender": "male",
-  "address": "Homs",
-  "job": "Engineer",
-  "emergency_contact": "0963611111"
-}
-```
-
-**Response `200`:**
-
-```json
-{
-  "success": true,
-  "message": "Profile updated successfully",
-  "data": {
-    "id": 1,
-    "user_id": 1,
     "name": "Updated Username",
     "email": "updated@example.com",
     "phone": "+963933333333",
@@ -315,10 +389,30 @@ Update patient profile fields. All fields optional.
     "gender": "male",
     "address": "Homs",
     "job": "Engineer",
-    "emergency_contact": "0963611111",
-    "profile_completed": true,
-    "created_at": "2026-06-11T12:00:00.000000Z"
-  }
+    "emergency_contact": "0963611111"
+}
+```
+
+**Response `200`:**
+
+```json
+{
+    "success": true,
+    "message": "Profile updated successfully",
+    "data": {
+        "id": 1,
+        "user_id": 1,
+        "name": "Updated Username",
+        "email": "updated@example.com",
+        "phone": "+963933333333",
+        "date_of_birth": "1990-01-01",
+        "gender": "male",
+        "address": "Homs",
+        "job": "Engineer",
+        "emergency_contact": "0963611111",
+        "profile_completed": true,
+        "created_at": "2026-06-11T12:00:00.000000Z"
+    }
 }
 ```
 
@@ -455,7 +549,13 @@ Get patient's appointments with optional filtering.
             "notes": "First time",
             "created_at": "2026-06-11T12:00:00.000000Z"
         }
-    ]
+    ],
+    "meta": {
+        "current_page": 1,
+        "last_page": 2,
+        "per_page": 20,
+        "total": 31
+    }
 }
 ```
 
@@ -478,7 +578,7 @@ Get detailed appointment information.
         "status": "scheduled",
         "visit_reason": "Regular Checkup",
         "notes": "First time",
-        "created_at": "2026-06-11T12:00:00.000000Z"
+            "created_at": "2026-06-11T12:00:00.000000Z"
     }
 }
 ```
@@ -514,7 +614,7 @@ Create a new appointment. The system checks doctor availability using pessimisti
         "status": "scheduled",
         "visit_reason": "Regular Checkup",
         "notes": "First time",
-        "created_at": "2026-06-11T12:00:00.000000Z"
+            "created_at": "2026-06-11T12:00:00.000000Z"
     }
 }
 ```
@@ -659,7 +759,13 @@ Get all prescriptions for patient's sessions.
             "created_at": "2026-06-11T12:00:00.000000Z",
             "updated_at": "2026-06-11T12:00:00.000000Z"
         }
-    ]
+    ],
+    "meta": {
+        "current_page": 1,
+        "last_page": 2,
+        "per_page": 20,
+        "total": 24
+    }
 }
 ```
 
@@ -723,7 +829,13 @@ Get all appointment sessions for patient.
             "created_at": "2026-06-20T10:00:00.000000Z",
             "updated_at": "2026-06-20T10:30:00.000000Z"
         }
-    ]
+    ],
+    "meta": {
+        "current_page": 1,
+        "last_page": 1,
+        "per_page": 20,
+        "total": 7
+    }
 }
 ```
 
@@ -747,7 +859,7 @@ Get detailed session information including prescriptions.
         "patient_complaint": "Chest pain",
         "diagnosis": "Heartburn",
         "status": "completed",
-        "prescriptions": [
+            "prescriptions": [
             {
                 "id": 1,
                 "appointment_session_id": 1,
@@ -796,20 +908,33 @@ List all patients with optional filtering.
 ```json
 {
     "success": true,
-    "data": [
-        {
-            "id": 1,
-            "user_id": null,
-            "full_name": "Jane Doe",
-            "phone": "+963912345678",
-            "date_of_birth": "1995-05-20",
-            "gender": "female",
-            "address": "Damascus",
-            "job": "Teacher",
-            "emergency_contact": null,
-            "created_at": "2026-06-11T12:00:00.000000Z"
-        }
-    ]
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id": 1,
+                "user_id": null,
+                "full_name": "Jane Doe",
+                "phone": "+963912345678",
+                "date_of_birth": "1995-05-20",
+                "gender": "female",
+                "address": "Damascus",
+                "job": "Teacher",
+                "emergency_contact": null,
+                "created_at": "2026-06-11T12:00:00.000000Z"
+            }
+        ],
+        "first_page_url": "http://localhost/api/reception/patients?page=1",
+        "from": 1,
+        "last_page": 2,
+        "last_page_url": "http://localhost/api/reception/patients?page=2",
+        "next_page_url": "http://localhost/api/reception/patients?page=2",
+        "path": "http://localhost/api/reception/patients",
+        "per_page": 20,
+        "prev_page_url": null,
+        "to": 1,
+        "total": 23
+    }
 }
 ```
 
@@ -1062,17 +1187,18 @@ List appointments with filtering. Defaults to today's appointments.
 
 ```json
 {
-  "success": true,
-  "data": [
-    {
-      "id": 1,
-      "patient_id": 1,
-      "doctor_id": 1,
-      "scheduled_at": "2026-06-20T10:00:00.000000Z",
-      "status": "arrived",
-      "visit_reason": "Regular Checkup"
-    }
-  ]
+    "success": true,
+    "data": [
+        {
+            "id": 1,
+            "patient_id": 1,
+            "doctor_id": 1,
+            "scheduled_at": "2026-06-20T10:00:00.000000Z",
+            "status": "arrived",
+            "visit_reason": "Regular Checkup",
+            "session": null
+        }
+    ]
 }
 ```
 
@@ -1086,11 +1212,11 @@ Create appointment on behalf of a patient (walk-in or app user).
 
 ```json
 {
-  "patient_id": 1,
-  "doctor_id": 1,
-  "scheduled_at": "2026-06-20 10:00:00",
-  "visit_reason": "Regular Checkup",
-  "notes": "Walk-in"
+    "patient_id": 1,
+    "doctor_id": 1,
+    "scheduled_at": "2026-06-20 10:00:00",
+    "visit_reason": "Regular Checkup",
+    "notes": "Walk-in"
 }
 ```
 
@@ -1098,11 +1224,11 @@ Create appointment on behalf of a patient (walk-in or app user).
 
 ```json
 {
-  "success": true,
-  "message": "Appointment booked successfully",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Appointment booked successfully",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -1124,11 +1250,11 @@ Confirm a scheduled appointment.
 
 ```json
 {
-  "success": true,
-  "message": "Appointment confirmed.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Appointment confirmed.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -1142,11 +1268,11 @@ Mark patient as arrived.
 
 ```json
 {
-  "success": true,
-  "message": "Patient marked as arrived.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Patient marked as arrived.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -1160,7 +1286,7 @@ Change appointment time.
 
 ```json
 {
-  "scheduled_at": "2026-06-21 14:00:00"
+    "scheduled_at": "2026-06-21 14:00:00"
 }
 ```
 
@@ -1168,11 +1294,11 @@ Change appointment time.
 
 ```json
 {
-  "success": true,
-  "message": "Appointment rescheduled.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Appointment rescheduled.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -1186,7 +1312,7 @@ Cancel appointment.
 
 ```json
 {
-  "reason": "Patient requested cancellation"
+    "reason": "Patient requested cancellation"
 }
 ```
 
@@ -1194,11 +1320,11 @@ Cancel appointment.
 
 ```json
 {
-  "success": true,
-  "message": "Appointment cancelled.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Appointment cancelled.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -1212,11 +1338,11 @@ Mark patient as no-show.
 
 ```json
 {
-  "success": true,
-  "message": "Marked as no-show.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Marked as no-show.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -1236,14 +1362,96 @@ Get days with available slots for a doctor for the next month starting from toda
 
 ```json
 {
-  "success": true,
-  "data": [
-    "2026-06-20",
-    "2026-06-21",
-    "2026-06-25"
-  ]
+    "success": true,
+    "data": [
+        "2026-06-20",
+        "2026-06-21",
+        "2026-06-25"
+    ]
 }
 ```
+
+---
+
+## Doctor Profile
+
+**Authorization:** `auth:sanctum` + `role:doctor`
+
+### Get Doctor Profile
+
+`GET /api/doctor/profile`
+
+Retrieve the authenticated doctor's profile information, including personal details and working hours.
+
+**Response `200`:**
+
+```json
+{
+    "success": true,
+    "data": {
+        "id": 1,
+        "user": {
+            "id": 2,
+            "name": "Dr. Ahmed",
+            "email": "doctor@enaya.com"
+        },
+        "full_name": "Dr. Ahmed Al-Hassan",
+        "phone": "+963912345678",
+        "date_of_birth": "1985-05-14",
+        "gender": "male",
+        "specialty": "Cardiology",
+        "working_hours_start": "09:00",
+        "working_hours_end": "17:00",
+        "department": {
+            "id": 1,
+            "name": "Cardiology"
+        }
+    }
+}
+```
+
+### Update Working Hours
+
+`PUT /api/doctor/profile/working-hours`
+
+Update the authenticated doctor's working hours.
+
+**Request:**
+
+```json
+{
+    "working_hours_start": "09:00",
+    "working_hours_end": "17:00"
+}
+```
+
+**Response `200`:**
+
+```json
+{
+    "success": true,
+    "message": "Working hours updated successfully",
+    "data": {
+        "id": 1,
+        "user": {
+            "id": 2,
+            "name": "Dr. Ahmed",
+            "email": "doctor@enaya.com"
+        },
+        "full_name": "Dr. Ahmed Al-Hassan",
+        "phone": "+963912345678",
+        "specialty": "Cardiology",
+        "working_hours_start": "09:00",
+        "working_hours_end": "17:00",
+        "department": {
+            "id": 1,
+            "name": "Cardiology"
+        }
+    }
+}
+```
+
+**Response `422`:** if the provided time range is invalid.
 
 ---
 
@@ -1271,20 +1479,26 @@ List doctor's appointments. Defaults to today's appointments.
 
 ```json
 {
-  "success": true,
-  "data": [
-    {
-      "id": 1,
-      "patient_id": 1,
-      "doctor_id": 1,
-      "scheduled_at": "2026-06-20T10:00:00.000000Z",
-      "status": "arrived",
-      "visit_reason": "Regular Checkup",
-      "patient": {
-        ...
-      }
+    "success": true,
+    "data": [
+        {
+            "id": 1,
+            "patient_id": 1,
+            "doctor_id": 1,
+            "scheduled_at": "2026-06-20T10:00:00.000000Z",
+            "status": "arrived",
+            "visit_reason": "Regular Checkup",
+            "patient": {
+                ...
+            }
+        }
+    ],
+    "meta": {
+        "current_page": 1,
+        "last_page": 2,
+        "per_page": 20,
+        "total": 24
     }
-  ]
 }
 ```
 
@@ -1308,11 +1522,11 @@ Confirm a scheduled appointment.
 
 ```json
 {
-  "success": true,
-  "message": "Appointment confirmed.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Appointment confirmed.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -1326,11 +1540,11 @@ Cancel appointment.
 
 ```json
 {
-  "success": true,
-  "message": "Appointment cancelled.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Appointment cancelled.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -1344,11 +1558,11 @@ Mark patient as no-show.
 
 ```json
 {
-  "success": true,
-  "message": "Marked as no-show.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Marked as no-show.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -1369,13 +1583,13 @@ Get available time slots for a doctor on a specific date.
 
 ```json
 {
-  "success": true,
-  "data": [
-    "09:00",
-    "09:30",
-    "10:00",
-    "10:30"
-  ]
+    "success": true,
+    "data": [
+        "09:00",
+        "09:30",
+        "10:00",
+        "10:30"
+    ]
 }
 ```
 
@@ -1395,12 +1609,12 @@ Get days with available slots for a doctor for the next month starting from toda
 
 ```json
 {
-  "success": true,
-  "data": [
-    "2026-06-20",
-    "2026-06-21",
-    "2026-06-25"
-  ]
+    "success": true,
+    "data": [
+        "2026-06-20",
+        "2026-06-21",
+        "2026-06-25"
+    ]
 }
 ```
 
@@ -1422,22 +1636,28 @@ List all sessions for an appointment.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "sessions": [
-      {
-        "id": 1,
-        "appointment_id": 1,
-        "started_at": "2026-06-20T10:00:00.000000Z",
-        "ended_at": "2026-06-20T10:30:00.000000Z",
-        "status": "completed",
-        "patient_complaint": "Chest pain",
-        "diagnosis": "Heartburn",
-        "notes": "Follow up in 2 weeks",
-        "prescriptions": []
-      }
-    ]
-  }
+    "success": true,
+    "data": {
+        "sessions": [
+            {
+                "id": 1,
+                "appointment_id": 1,
+                "started_at": "2026-06-20T10:00:00.000000Z",
+                "ended_at": "2026-06-20T10:30:00.000000Z",
+                "status": "completed",
+                "patient_complaint": "Chest pain",
+                "diagnosis": "Heartburn",
+                "notes": "Follow up in 2 weeks",
+                "prescriptions": []
+            }
+        ]
+    },
+    "meta": {
+        "current_page": 1,
+        "last_page": 1,
+        "per_page": 20,
+        "total": 3
+    }
 }
 ```
 
@@ -1451,8 +1671,8 @@ Start a new appointment session. Appointment must be in `arrived`, `confirmed`, 
 
 ```json
 {
-  "patient_complaint": "Chest pain",
-  "notes": "Patient looks healthy"
+    "patient_complaint": "Chest pain",
+    "notes": "Patient looks healthy"
 }
 ```
 
@@ -1460,17 +1680,17 @@ Start a new appointment session. Appointment must be in `arrived`, `confirmed`, 
 
 ```json
 {
-  "success": true,
-  "data": {
-    "session": {
-      "id": 1,
-      "appointment_id": 1,
-      "started_at": "2026-06-20T10:00:00.000000Z",
-      "status": "active",
-      "patient_complaint": "Chest pain",
-      "notes": "Patient looks healthy"
+    "success": true,
+    "data": {
+        "session": {
+            "id": 1,
+            "appointment_id": 1,
+            "started_at": "2026-06-20T10:00:00.000000Z",
+            "status": "active",
+            "patient_complaint": "Chest pain",
+            "notes": "Patient looks healthy"
+        }
     }
-  }
 }
 ```
 
@@ -1486,8 +1706,8 @@ Complete the appointment session.
 
 ```json
 {
-  "diagnosis": "Heartburn",
-  "notes": "Follow up in 2 weeks"
+    "diagnosis": "Heartburn",
+    "notes": "Follow up in 2 weeks"
 }
 ```
 
@@ -1495,16 +1715,16 @@ Complete the appointment session.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "session": {
-      "id": 1,
-      "status": "completed",
-      "ended_at": "2026-06-20T10:30:00.000000Z",
-      "diagnosis": "Heartburn",
-      "notes": "Follow up in 2 weeks"
+    "success": true,
+    "data": {
+        "session": {
+            "id": 1,
+            "status": "completed",
+            "ended_at": "2026-06-20T10:30:00.000000Z",
+            "diagnosis": "Heartburn",
+            "notes": "Follow up in 2 weeks"
+        }
     }
-  }
 }
 ```
 
@@ -1518,12 +1738,12 @@ Get session details.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "session": {
-      ...
+    "success": true,
+    "data": {
+        "session": {
+            ...
+        }
     }
-  }
 }
 ```
 
@@ -1537,10 +1757,10 @@ Update session notes or status. Cannot modify completed sessions.
 
 ```json
 {
-  "diagnosis": "Updated diagnosis",
-  "patient_complaint": "Updated complaint",
-  "notes": "Updated notes",
-  "status": "active"
+    "diagnosis": "Updated diagnosis",
+    "patient_complaint": "Updated complaint",
+    "notes": "Updated notes",
+    "status": "active"
 }
 ```
 
@@ -1548,12 +1768,12 @@ Update session notes or status. Cannot modify completed sessions.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "session": {
-      ...
+    "success": true,
+    "data": {
+        "session": {
+            ...
+        }
     }
-  }
 }
 ```
 
@@ -1575,11 +1795,11 @@ Add prescription to session (only during active session).
 
 ```json
 {
-  "medication_name": "Aspirin",
-  "dosage": "500mg",
-  "frequency": "Twice daily",
-  "duration_days": 7,
-  "instructions": "Take with food"
+    "medication_name": "Aspirin",
+    "dosage": "500mg",
+    "frequency": "Twice daily",
+    "duration_days": 7,
+    "instructions": "Take with food"
 }
 ```
 
@@ -1587,18 +1807,18 @@ Add prescription to session (only during active session).
 
 ```json
 {
-  "success": true,
-  "data": {
-    "prescription": {
-      "id": 1,
-      "appointment_session_id": 1,
-      "medication_name": "Aspirin",
-      "dosage": "500mg",
-      "frequency": "Twice daily",
-      "duration_days": 7,
-      "instructions": "Take with food"
+    "success": true,
+    "data": {
+        "prescription": {
+            "id": 1,
+            "appointment_session_id": 1,
+            "medication_name": "Aspirin",
+            "dosage": "500mg",
+            "frequency": "Twice daily",
+            "duration_days": 7,
+            "instructions": "Take with food"
+        }
     }
-  }
 }
 ```
 
@@ -1614,11 +1834,11 @@ Update an existing prescription.
 
 ```json
 {
-  "medication_name": "Updated Medication",
-  "dosage": "1000mg",
-  "frequency": "Once daily",
-  "duration_days": 14,
-  "instructions": "Take with water"
+    "medication_name": "Updated Medication",
+    "dosage": "1000mg",
+    "frequency": "Once daily",
+    "duration_days": 14,
+    "instructions": "Take with water"
 }
 ```
 
@@ -1626,20 +1846,20 @@ Update an existing prescription.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "prescription": {
-      "id": 1,
-      "appointment_session_id": 1,
-      "medication_name": "Updated Medication",
-      "dosage": "1000mg",
-      "frequency": "Once daily",
-      "duration_days": 14,
-      "instructions": "Take with water",
-      "created_at": "2026-06-11T12:00:00.000000Z",
-      "updated_at": "2026-06-11T12:00:00.000000Z"
+    "success": true,
+    "data": {
+        "prescription": {
+            "id": 1,
+            "appointment_session_id": 1,
+            "medication_name": "Updated Medication",
+            "dosage": "1000mg",
+            "frequency": "Once daily",
+            "duration_days": 14,
+            "instructions": "Take with water",
+            "created_at": "2026-06-11T12:00:00.000000Z",
+            "updated_at": "2026-06-11T12:00:00.000000Z"
+        }
     }
-  }
 }
 ```
 
@@ -1653,8 +1873,8 @@ Remove prescription from session (only during active session).
 
 ```json
 {
-  "success": true,
-  "data": null
+    "success": true,
+    "data": null
 }
 ```
 
@@ -1691,28 +1911,28 @@ Get all patients who have appointments with this doctor.
 
 ```json
 {
-  "success": true,
-  "message": "Patients fetched successfully",
-  "data": [
-    {
-      "id": 1,
-      "user_id": null,
-      "full_name": "Jane Doe",
-      "phone": "+963912345678",
-      "date_of_birth": "1995-05-20",
-      "gender": "female",
-      "address": "Damascus",
-      "job": "Teacher",
-      "profile_completed": true,
-      "created_at": "2026-06-07 12:00:00"
+    "success": true,
+    "message": "Patients fetched successfully",
+    "data": [
+        {
+            "id": 1,
+            "user_id": null,
+            "full_name": "Jane Doe",
+            "phone": "+963912345678",
+            "date_of_birth": "1995-05-20",
+            "gender": "female",
+            "address": "Damascus",
+            "job": "Teacher",
+            "profile_completed": true,
+            "created_at": "2026-06-07 12:00:00"
+        }
+    ],
+    "meta": {
+        "current_page": 1,
+        "last_page": 1,
+        "per_page": 15,
+        "total": 1
     }
-  ],
-  "meta": {
-    "current_page": 1,
-    "last_page": 1,
-    "per_page": 15,
-    "total": 1
-  }
 }
 ```
 
@@ -1726,26 +1946,26 @@ Get patient profile with all appointments from this doctor.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "id": 1,
-    "user_id": null,
-    "full_name": "Jane Doe",
-    "phone": "+963912345678",
-    "appointments": [
-      {
+    "success": true,
+    "data": {
         "id": 1,
-        "scheduled_at": "2026-06-20T10:00:00.000000Z",
-        "status": "completed",
-        "appointmentSession": {
-          "id": 1,
-          "prescriptions": [
-            ...
-          ]
-        }
-      }
-    ]
-  }
+        "user_id": null,
+        "full_name": "Jane Doe",
+        "phone": "+963912345678",
+        "appointments": [
+            {
+                "id": 1,
+                "scheduled_at": "2026-06-20T10:00:00.000000Z",
+                "status": "completed",
+                "appointmentSession": {
+                    "id": 1,
+                    "prescriptions": [
+                        ...
+                    ]
+                }
+            }
+        ]
+    }
 }
 ```
 
@@ -1777,21 +1997,21 @@ List all system users.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "current_page": 1,
-    "data": [
-      {
-        "id": 1,
-        "name": "Dr. House",
-        "email": "house@enaya.com",
-        "roles": [
-          "doctor"
-        ]
-      }
-    ],
-    "last_page": 1
-  }
+    "success": true,
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id": 1,
+                "name": "Dr. House",
+                "email": "house@enaya.com",
+                "roles": [
+                    "doctor"
+                ]
+            }
+        ],
+        "last_page": 1
+    }
 }
 ```
 
@@ -1805,17 +2025,17 @@ Create new user (doctor or receptionist).
 
 ```json
 {
-  "name": "Dr. Sam",
-  "email": "sam@enaya.com",
-  "password": "password123",
-  "role": "doctor",
-  "phone": "0963611111",
-  "date_of_birth": "1980-01-15",
-  "gender": "male",
-  "specialty": "Cardiology",
-  "department_id": 2,
-  "working_hours_start": "08:00",
-  "working_hours_end": "14:00"
+    "name": "Dr. Sam",
+    "email": "sam@enaya.com",
+    "password": "password123",
+    "role": "doctor",
+    "phone": "0963611111",
+    "date_of_birth": "1980-01-15",
+    "gender": "male",
+    "specialty": "Cardiology",
+    "department_id": 2,
+    "working_hours_start": "08:00",
+    "working_hours_end": "14:00"
 }
 ```
 
@@ -1823,10 +2043,10 @@ Create new user (doctor or receptionist).
 
 ```json
 {
-  "name": "Nadia",
-  "email": "nadia@enaya.com",
-  "password": "password123",
-  "role": "receptionist"
+    "name": "Nadia",
+    "email": "nadia@enaya.com",
+    "password": "password123",
+    "role": "receptionist"
 }
 ```
 
@@ -1834,16 +2054,16 @@ Create new user (doctor or receptionist).
 
 ```json
 {
-  "success": true,
-  "message": "User created successfully.",
-  "data": {
-    "id": 5,
-    "name": "Nadia",
-    "email": "nadia@enaya.com",
-    "roles": [
-      "receptionist"
-    ]
-  }
+    "success": true,
+    "message": "User created successfully.",
+    "data": {
+        "id": 5,
+        "name": "Nadia",
+        "email": "nadia@enaya.com",
+        "roles": [
+            "receptionist"
+        ]
+    }
 }
 ```
 
@@ -1872,11 +2092,11 @@ Update user information.
 
 ```json
 {
-  "success": true,
-  "message": "User updated successfully.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "User updated successfully.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -1890,8 +2110,8 @@ Delete user account.
 
 ```json
 {
-  "success": true,
-  "message": "User deleted successfully."
+    "success": true,
+    "message": "User deleted successfully."
 }
 ```
 
@@ -1907,11 +2127,11 @@ Activate a user account.
 
 ```json
 {
-  "success": true,
-  "message": "User activated successfully.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "User activated successfully.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -1925,11 +2145,11 @@ Deactivate a user account.
 
 ```json
 {
-  "success": true,
-  "message": "User deactivated successfully.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "User deactivated successfully.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -1968,19 +2188,19 @@ List all patients.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "current_page": 1,
-    "data": [
-      {
-        "id": 1,
-        "full_name": "Jane Doe",
-        "phone": "+963912345678",
-        "profile_completed": true
-      }
-    ],
-    "last_page": 1
-  }
+    "success": true,
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id": 1,
+                "full_name": "Jane Doe",
+                "phone": "+963912345678",
+                "profile_completed": true
+            }
+        ],
+        "last_page": 1
+    }
 }
 ```
 
@@ -1994,13 +2214,13 @@ Create new patient record.
 
 ```json
 {
-  "full_name": "Jane Doe",
-  "phone": "+963912345678",
-  "date_of_birth": "1995-05-20",
-  "gender": "female",
-  "address": "Damascus",
-  "job": "Teacher",
-  "emergency_contact": "0963611111"
+    "full_name": "Jane Doe",
+    "phone": "+963912345678",
+    "date_of_birth": "1995-05-20",
+    "gender": "female",
+    "address": "Damascus",
+    "job": "Teacher",
+    "emergency_contact": "0963611111"
 }
 ```
 
@@ -2008,11 +2228,11 @@ Create new patient record.
 
 ```json
 {
-  "success": true,
-  "message": "Patient created successfully.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Patient created successfully.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -2038,11 +2258,11 @@ Update patient information. Admins can edit any patient.
 
 ```json
 {
-  "success": true,
-  "message": "Patient updated successfully.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Patient updated successfully.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -2056,8 +2276,8 @@ Soft-delete patient (can be restored).
 
 ```json
 {
-  "success": true,
-  "message": "Patient deleted successfully."
+    "success": true,
+    "message": "Patient deleted successfully."
 }
 ```
 
@@ -2071,11 +2291,11 @@ Restore soft-deleted patient.
 
 ```json
 {
-  "success": true,
-  "message": "Patient restored successfully.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Patient restored successfully.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -2089,8 +2309,8 @@ Permanently delete patient (cannot be restored).
 
 ```json
 {
-  "success": true,
-  "message": "Patient permanently deleted successfully."
+    "success": true,
+    "message": "Patient permanently deleted successfully."
 }
 ```
 
@@ -2122,22 +2342,22 @@ List all doctors.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "current_page": 1,
-    "data": [
-      {
-        "id": 1,
-        "user_id": 1,
-        "full_name": "Dr. Sam",
-        "specialty": "Cardiology",
-        "department": {
-          ...
-        }
-      }
-    ],
-    "last_page": 1
-  }
+    "success": true,
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id": 1,
+                "user_id": 1,
+                "full_name": "Dr. Sam",
+                "specialty": "Cardiology",
+                "department": {
+                    ...
+                }
+            }
+        ],
+        "last_page": 1
+    }
 }
 ```
 
@@ -2151,16 +2371,16 @@ Create new doctor with user account.
 
 ```json
 {
-  "name": "Dr. Sam",
-  "email": "sam@enaya.com",
-  "password": "password123",
-  "phone": "0963611111",
-  "date_of_birth": "1980-01-15",
-  "gender": "male",
-  "specialty": "Cardiology",
-  "department_id": 2,
-  "working_hours_start": "08:00",
-  "working_hours_end": "14:00"
+    "name": "Dr. Sam",
+    "email": "sam@enaya.com",
+    "password": "password123",
+    "phone": "0963611111",
+    "date_of_birth": "1980-01-15",
+    "gender": "male",
+    "specialty": "Cardiology",
+    "department_id": 2,
+    "working_hours_start": "08:00",
+    "working_hours_end": "14:00"
 }
 ```
 
@@ -2168,11 +2388,11 @@ Create new doctor with user account.
 
 ```json
 {
-  "success": true,
-  "data": {
-    ...
-  },
-  "error": null
+    "success": true,
+    "data": {
+        ...
+    },
+    "error": null
 }
 ```
 
@@ -2186,11 +2406,11 @@ Get doctor details.
 
 ```json
 {
-  "success": true,
-  "data": {
-    ...
-  },
-  "error": null
+    "success": true,
+    "data": {
+        ...
+    },
+    "error": null
 }
 ```
 
@@ -2204,11 +2424,11 @@ Update doctor information.
 
 ```json
 {
-  "success": true,
-  "data": {
-    ...
-  },
-  "error": null
+    "success": true,
+    "data": {
+        ...
+    },
+    "error": null
 }
 ```
 
@@ -2222,10 +2442,10 @@ Soft-delete doctor and deactivate user.
 
 ```json
 {
-  "success": true,
-  "message": "Doctor deleted successfully",
-  "data": null,
-  "error": null
+    "success": true,
+    "message": "Doctor deleted successfully",
+    "data": null,
+    "error": null
 }
 ```
 
@@ -2239,12 +2459,12 @@ Restore soft-deleted doctor and reactivate user.
 
 ```json
 {
-  "success": true,
-  "message": "Doctor restored successfully",
-  "data": {
-    ...
-  },
-  "error": null
+    "success": true,
+    "message": "Doctor restored successfully",
+    "data": {
+        ...
+    },
+    "error": null
 }
 ```
 
@@ -2258,8 +2478,8 @@ Reset doctor's password.
 
 ```json
 {
-  "password": "newpassword123",
-  "password_confirmation": "newpassword123"
+    "password": "newpassword123",
+    "password_confirmation": "newpassword123"
 }
 ```
 
@@ -2267,9 +2487,9 @@ Reset doctor's password.
 
 ```json
 {
-  "success": true,
-  "data": null,
-  "error": null
+    "success": true,
+    "data": null,
+    "error": null
 }
 ```
 
@@ -2297,20 +2517,20 @@ List all departments.
 
 ```json
 {
-  "success": true,
-  "message": "Departments fetched successfully",
-  "data": [
-    {
-      "id": 1,
-      "name": "Cardiology"
+    "success": true,
+    "message": "Departments fetched successfully",
+    "data": [
+        {
+            "id": 1,
+            "name": "Cardiology"
+        }
+    ],
+    "meta": {
+        "current_page": 1,
+        "last_page": 1,
+        "per_page": 10,
+        "total": 1
     }
-  ],
-  "meta": {
-    "current_page": 1,
-    "last_page": 1,
-    "per_page": 10,
-    "total": 1
-  }
 }
 ```
 
@@ -2324,7 +2544,7 @@ Create new department.
 
 ```json
 {
-  "name": "Cardiology"
+    "name": "Cardiology"
 }
 ```
 
@@ -2332,12 +2552,12 @@ Create new department.
 
 ```json
 {
-  "success": true,
-  "message": "Department created successfully",
-  "data": {
-    "id": 1,
-    "name": "Cardiology"
-  }
+    "success": true,
+    "message": "Department created successfully",
+    "data": {
+        "id": 1,
+        "name": "Cardiology"
+    }
 }
 ```
 
@@ -2351,10 +2571,10 @@ Get department details.
 
 ```json
 {
-  "success": true,
-  "data": {
-    ...
-  }
+    "success": true,
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -2368,7 +2588,7 @@ Update department.
 
 ```json
 {
-  "name": "Updated Name"
+    "name": "Updated Name"
 }
 ```
 
@@ -2376,11 +2596,11 @@ Update department.
 
 ```json
 {
-  "success": true,
-  "message": "Department updated successfully",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Department updated successfully",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -2394,8 +2614,8 @@ Delete department. Fails if doctors are assigned.
 
 ```json
 {
-  "success": true,
-  "message": "Department deleted successfully"
+    "success": true,
+    "message": "Department deleted successfully"
 }
 ```
 
@@ -2431,29 +2651,29 @@ List clinic's appointments with pagination, ordered by latest scheduled time.
 
 ```json
 {
-  "success": true,
-  "data": [
-    {
-      "id": 1,
-      "patient_id": 1,
-      "doctor_id": 1,
-      "scheduled_at": "2026-06-20T10:00:00.000000Z",
-      "status": "scheduled",
-      "visit_reason": "Regular Checkup",
-      "patient": {
-        ...
-      },
-      "doctor": {
-        ...
-      }
+    "success": true,
+    "data": [
+        {
+            "id": 1,
+            "patient_id": 1,
+            "doctor_id": 1,
+            "scheduled_at": "2026-06-20T10:00:00.000000Z",
+            "status": "scheduled",
+            "visit_reason": "Regular Checkup",
+            "patient": {
+                ...
+            },
+            "doctor": {
+                ...
+            }
+        }
+    ],
+    "meta": {
+        "current_page": 1,
+        "last_page": 1,
+        "per_page": 15,
+        "total": 1
     }
-  ],
-  "meta": {
-    "current_page": 1,
-    "last_page": 1,
-    "per_page": 15,
-    "total": 1
-  }
 }
 ```
 
@@ -2467,11 +2687,11 @@ Create appointment on behalf of a patient (walk-in or app user).
 
 ```json
 {
-  "patient_id": 1,
-  "doctor_id": 1,
-  "scheduled_at": "2026-06-20 10:00:00",
-  "visit_reason": "Regular Checkup",
-  "notes": "Admin booked"
+    "patient_id": 1,
+    "doctor_id": 1,
+    "scheduled_at": "2026-06-20 10:00:00",
+    "visit_reason": "Regular Checkup",
+    "notes": "Admin booked"
 }
 ```
 
@@ -2479,23 +2699,23 @@ Create appointment on behalf of a patient (walk-in or app user).
 
 ```json
 {
-  "success": true,
-  "message": "Appointment booked successfully",
-  "data": {
-    "id": 1,
-    "patient_id": 1,
-    "doctor_id": 1,
-    "scheduled_at": "2026-06-20T10:00:00.000000Z",
-    "status": "scheduled",
-    "visit_reason": "Regular Checkup",
-    "notes": "Admin booked",
-    "patient": {
-      ...
-    },
-    "doctor": {
-      ...
+    "success": true,
+    "message": "Appointment booked successfully",
+    "data": {
+        "id": 1,
+        "patient_id": 1,
+        "doctor_id": 1,
+        "scheduled_at": "2026-06-20T10:00:00.000000Z",
+        "status": "scheduled",
+        "visit_reason": "Regular Checkup",
+        "notes": "Admin booked",
+        "patient": {
+            ...
+        },
+        "doctor": {
+            ...
+        }
     }
-  }
 }
 ```
 
@@ -2517,18 +2737,18 @@ Get appointment statistics and breakdown by status.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "total": 50,
-    "scheduled": 10,
-    "confirmed": 15,
-    "arrived": 5,
-    "in_progress": 2,
-    "completed": 15,
-    "cancelled": 2,
-    "no_show": 1,
-    "completion_rate": 0.30
-  }
+    "success": true,
+    "data": {
+        "total": 50,
+        "scheduled": 10,
+        "confirmed": 15,
+        "arrived": 5,
+        "in_progress": 2,
+        "completed": 15,
+        "cancelled": 2,
+        "no_show": 1,
+        "completion_rate": 0.30
+    }
 }
 ```
 
@@ -2550,11 +2770,11 @@ Confirm a scheduled appointment.
 
 ```json
 {
-  "success": true,
-  "message": "Appointment confirmed.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Appointment confirmed.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -2568,11 +2788,11 @@ Mark patient as arrived.
 
 ```json
 {
-  "success": true,
-  "message": "Patient marked as arrived.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Patient marked as arrived.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -2586,7 +2806,7 @@ Cancel any appointment.
 
 ```json
 {
-  "reason": "Admin cancellation"
+    "reason": "Admin cancellation"
 }
 ```
 
@@ -2594,11 +2814,11 @@ Cancel any appointment.
 
 ```json
 {
-  "success": true,
-  "message": "Appointment cancelled.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Appointment cancelled.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -2612,11 +2832,11 @@ Mark appointment as no-show.
 
 ```json
 {
-  "success": true,
-  "message": "Marked as no-show.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Marked as no-show.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -2630,7 +2850,7 @@ Reschedule appointment.
 
 ```json
 {
-  "scheduled_at": "2026-06-21 14:00:00"
+    "scheduled_at": "2026-06-21 14:00:00"
 }
 ```
 
@@ -2638,11 +2858,11 @@ Reschedule appointment.
 
 ```json
 {
-  "success": true,
-  "message": "Appointment rescheduled.",
-  "data": {
-    ...
-  }
+    "success": true,
+    "message": "Appointment rescheduled.",
+    "data": {
+        ...
+    }
 }
 ```
 
@@ -2663,13 +2883,13 @@ Get available time slots for a doctor on a specific date.
 
 ```json
 {
-  "success": true,
-  "data": [
-    "09:00",
-    "09:30",
-    "10:00",
-    "10:30"
-  ]
+    "success": true,
+    "data": [
+        "09:00",
+        "09:30",
+        "10:00",
+        "10:30"
+    ]
 }
 ```
 
@@ -2689,44 +2909,44 @@ Get comprehensive dashboard data including KPIs, recent activity, and charts.
 
 ```json
 {
-  "success": true,
-  "data": {
-    "total_patients": 150,
-    "total_doctors": 12,
-    "total_receptionists": 5,
-    "appointments_today": 8,
-    "appointments_this_week": 45,
-    "pending_appointments": 3,
-    "completed_today": 5,
-    "recent_patients": [
-      {
-        "id": 5,
-        "full_name": "Jane Doe",
-        "phone": "+963912345678",
-        "created_at": "2026-06-11T12:00:00.000000Z"
-      }
-    ],
-    "recent_appointments": [
-      {
-        "id": 10,
-        "doctor_id": 2,
-        "patient_id": 5,
-        "scheduled_at": "2026-06-11T14:00:00.000000Z",
-        "status": "scheduled",
-        "visit_reason": "Regular Checkup"
-      }
-    ],
-    "appointments_last_7_days": [
-      {
-        "date": "2026-06-05",
-        "total": 5
-      },
-      {
-        "date": "2026-06-06",
-        "total": 7
-      }
-    ]
-  }
+    "success": true,
+    "data": {
+        "total_patients": 150,
+        "total_doctors": 12,
+        "total_receptionists": 5,
+        "appointments_today": 8,
+        "appointments_this_week": 45,
+        "pending_appointments": 3,
+        "completed_today": 5,
+        "recent_patients": [
+            {
+                "id": 5,
+                "full_name": "Jane Doe",
+                "phone": "+963912345678",
+                "created_at": "2026-06-11T12:00:00.000000Z"
+            }
+        ],
+        "recent_appointments": [
+            {
+                "id": 10,
+                "doctor_id": 2,
+                "patient_id": 5,
+                "scheduled_at": "2026-06-11T14:00:00.000000Z",
+                "status": "scheduled",
+                "visit_reason": "Regular Checkup"
+            }
+        ],
+        "appointments_last_7_days": [
+            {
+                "date": "2026-06-05",
+                "total": 5
+            },
+            {
+                "date": "2026-06-06",
+                "total": 7
+            }
+        ]
+    }
 }
 ```
 
@@ -2772,16 +2992,16 @@ List endpoints return paginated results:
 
 ```json
 {
-  "success": true,
-  "data": {
-    "current_page": 1,
-    "data": [
-      ...
-    ],
-    "last_page": 5,
-    "per_page": 15,
-    "total": 67
-  }
+    "success": true,
+    "data": {
+        "current_page": 1,
+        "data": [
+            ...
+        ],
+        "last_page": 5,
+        "per_page": 15,
+        "total": 67
+    }
 }
 ```
 
@@ -2807,10 +3027,10 @@ All error responses follow this format:
 
 ```json
 {
-  "success": false,
-  "data": null,
-  "error": "Error message describing what went wrong",
-  "errorCode": "ERROR_CODE_or_http_status"
+    "success": false,
+    "data": null,
+    "error": "Error message describing what went wrong",
+    "errorCode": "ERROR_CODE_or_http_status"
 }
 ```
 
