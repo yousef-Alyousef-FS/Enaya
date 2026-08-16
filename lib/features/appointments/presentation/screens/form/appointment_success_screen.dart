@@ -26,11 +26,15 @@ class AppointmentSuccessScreen extends StatelessWidget {
             // 1. Animated Success Icon
             _buildAnimatedCheck(theme),
             const SizedBox(height: 32),
-            
+
             // 2. Success Header
             Text(
               'appointment_confirmed'.tr(),
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: -0.5),
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -0.5,
+              ),
             ),
             const SizedBox(height: 12),
             Padding(
@@ -38,14 +42,16 @@ class AppointmentSuccessScreen extends StatelessWidget {
               child: Text(
                 'appointment_success_desc'.tr(),
                 textAlign: TextAlign.center,
-                style: TextStyle(color: theme.colorScheme.onSurfaceVariant, height: 1.5),
+                style: TextStyle(
+                  color: theme.colorScheme.onSurfaceVariant,
+                  height: 1.5,
+                ),
               ),
             ),
             const SizedBox(height: 40),
 
             // 3. Quick Summary Box
-            if (dateTime != null)
-              _buildSummaryCard(theme, locale),
+            if (dateTime != null) _buildSummaryCard(theme, locale),
 
             const Spacer(),
 
@@ -72,7 +78,11 @@ class AppointmentSuccessScreen extends StatelessWidget {
               color: theme.colorScheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(Icons.check_circle_rounded, color: theme.colorScheme.primary, size: 100),
+            child: Icon(
+              Icons.check_circle_rounded,
+              color: theme.colorScheme.primary,
+              size: 100,
+            ),
           ),
         );
       },
@@ -86,7 +96,10 @@ class AppointmentSuccessScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.1), width: 2),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.03),
@@ -98,23 +111,52 @@ class AppointmentSuccessScreen extends StatelessWidget {
       child: Column(
         children: [
           if (doctorName != null) ...[
-            _summaryRow(Icons.person_rounded, 'doctor'.tr(), doctorName!, theme),
-            const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Divider(height: 1, indent: 32)),
+            _summaryRow(
+              Icons.person_rounded,
+              'doctor'.tr(),
+              doctorName!,
+              theme,
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: Divider(height: 1, indent: 32),
+            ),
           ],
-          _summaryRow(Icons.calendar_today_rounded, 'date'.tr(), DateFormat('EEEE, dd MMMM yyyy', locale).format(dateTime!), theme),
-          const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Divider(height: 1, indent: 32)),
-          _summaryRow(Icons.access_time_filled_rounded, 'time'.tr(), DateFormat.jm(locale).format(dateTime!), theme),
+          _summaryRow(
+            Icons.calendar_today_rounded,
+            'date'.tr(),
+            DateFormat('EEEE, dd MMMM yyyy', locale).format(dateTime!),
+            theme,
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, indent: 32),
+          ),
+          _summaryRow(
+            Icons.access_time_filled_rounded,
+            'time'.tr(),
+            DateFormat.jm(locale).format(dateTime!),
+            theme,
+          ),
         ],
       ),
     );
   }
 
-  Widget _summaryRow(IconData icon, String label, String value, ThemeData theme) {
+  Widget _summaryRow(
+    IconData icon,
+    String label,
+    String value,
+    ThemeData theme,
+  ) {
     return Row(
       children: [
         Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(color: theme.colorScheme.primary.withValues(alpha: 0.1), shape: BoxShape.circle),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
           child: Icon(icon, size: 18, color: theme.colorScheme.primary),
         ),
         const SizedBox(width: 16),
@@ -122,8 +164,21 @@ class AppointmentSuccessScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurfaceVariant, fontWeight: FontWeight.w500)),
-              Text(value, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: theme.colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
+              ),
             ],
           ),
         ),
@@ -148,24 +203,14 @@ class AppointmentSuccessScreen extends StatelessWidget {
             },
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(double.infinity, 56),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
             ),
-            child: Text('back_to_dashboard'.tr(), style: const TextStyle(fontWeight: FontWeight.bold)),
-          ),
-          const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: () {}, // Download Pass logic
-            icon: const Icon(Icons.file_download_outlined, size: 18),
-            label: Text('download_pass'.tr()),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 54),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Text(
+              'back_to_dashboard'.tr(),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-          ),
-          const SizedBox(height: 12),
-          TextButton(
-            onPressed: () {}, // Add to Calendar logic
-            child: Text('add_to_calendar'.tr()),
           ),
         ],
       ),

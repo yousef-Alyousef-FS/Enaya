@@ -40,15 +40,24 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
       builder: (context, state) {
         final theme = Theme.of(context);
 
-        final content = Center(
+        final content = Align(
+          alignment: Alignment
+              .topCenter, // [UI_FIX]: Prevents vertical jumping during loading
           child: Container(
             constraints: isEmbedded
                 ? null
-                : const BoxConstraints(maxWidth: 1400),
+                : const BoxConstraints(
+                    maxWidth: 1300,
+                  ), // [UI_FIX]: Consistent max-width with Builder
             child: ListView(
               padding: isEmbedded
-                  ? EdgeInsets.zero
-                  : const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                  ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4)
+                  : const EdgeInsets.fromLTRB(
+                      20,
+                      8,
+                      20,
+                      16,
+                    ), // [UI_FIX]: Consistent padding
               shrinkWrap: isEmbedded,
               physics: isEmbedded
                   ? const NeverScrollableScrollPhysics()
@@ -77,8 +86,6 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
 
   /// 1. Stats Section (Shimmer while loading)
   Widget _buildStatsSection(ReceptionistAppointmentsState state) {
-    if (isEmbedded) return const SizedBox.shrink();
-
     return Column(
       children: [
         if (state.stats != null)
@@ -90,7 +97,7 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
               (_) => const SkeletonLoader(width: double.infinity, height: 100),
             ),
           ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
       ],
     );
   }
@@ -117,14 +124,12 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
 
   /// 3. Filter Section
   Widget _buildFilterSection(ReceptionistAppointmentsState state) {
-    if (isEmbedded && !showFiltersWhenEmbedded) return const SizedBox.shrink();
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: AppointmentsFilterWidget(
         appointments: state.appointments,
-        showDateRange: !isEmbedded,
-        showStatusChips: !isEmbedded,
+        showDateRange: true,
+        showStatusChips: true,
         showSearch: true,
         showDoctorSelector: true,
       ),

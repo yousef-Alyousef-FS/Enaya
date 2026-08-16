@@ -28,16 +28,20 @@ mixin _$AppointmentModel {
   @JsonKey(name: 'doctor_id')
   dynamic get doctorId => throw _privateConstructorUsedError;
   @JsonKey(name: 'scheduled_at')
-  DateTime get scheduledAt => throw _privateConstructorUsedError;
+  DateTime? get scheduledAt => throw _privateConstructorUsedError;
   @JsonKey(name: 'status')
   AppointmentStatus get status => throw _privateConstructorUsedError;
   @JsonKey(name: 'visit_reason')
   String? get visitReason => throw _privateConstructorUsedError;
   @JsonKey(name: 'notes')
   String? get notes => throw _privateConstructorUsedError;
+  @JsonKey(name: 'patient_name')
   String? get patientName => throw _privateConstructorUsedError;
+  @JsonKey(name: 'doctor_name')
   String? get doctorName => throw _privateConstructorUsedError;
+  @JsonKey(name: 'patient_phone')
   String? get patientPhone => throw _privateConstructorUsedError;
+  @JsonKey(name: 'queue_number')
   int? get queueNumber => throw _privateConstructorUsedError;
 
   /// Serializes this AppointmentModel to a JSON map.
@@ -61,14 +65,14 @@ abstract class $AppointmentModelCopyWith<$Res> {
     @JsonKey(name: 'id') dynamic id,
     @JsonKey(name: 'patient_id') dynamic patientId,
     @JsonKey(name: 'doctor_id') dynamic doctorId,
-    @JsonKey(name: 'scheduled_at') DateTime scheduledAt,
+    @JsonKey(name: 'scheduled_at') DateTime? scheduledAt,
     @JsonKey(name: 'status') AppointmentStatus status,
     @JsonKey(name: 'visit_reason') String? visitReason,
     @JsonKey(name: 'notes') String? notes,
-    String? patientName,
-    String? doctorName,
-    String? patientPhone,
-    int? queueNumber,
+    @JsonKey(name: 'patient_name') String? patientName,
+    @JsonKey(name: 'doctor_name') String? doctorName,
+    @JsonKey(name: 'patient_phone') String? patientPhone,
+    @JsonKey(name: 'queue_number') int? queueNumber,
   });
 }
 
@@ -90,7 +94,7 @@ class _$AppointmentModelCopyWithImpl<$Res, $Val extends AppointmentModel>
     Object? id = freezed,
     Object? patientId = freezed,
     Object? doctorId = freezed,
-    Object? scheduledAt = null,
+    Object? scheduledAt = freezed,
     Object? status = null,
     Object? visitReason = freezed,
     Object? notes = freezed,
@@ -113,10 +117,10 @@ class _$AppointmentModelCopyWithImpl<$Res, $Val extends AppointmentModel>
                 ? _value.doctorId
                 : doctorId // ignore: cast_nullable_to_non_nullable
                       as dynamic,
-            scheduledAt: null == scheduledAt
+            scheduledAt: freezed == scheduledAt
                 ? _value.scheduledAt
                 : scheduledAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
+                      as DateTime?,
             status: null == status
                 ? _value.status
                 : status // ignore: cast_nullable_to_non_nullable
@@ -164,14 +168,14 @@ abstract class _$$AppointmentModelImplCopyWith<$Res>
     @JsonKey(name: 'id') dynamic id,
     @JsonKey(name: 'patient_id') dynamic patientId,
     @JsonKey(name: 'doctor_id') dynamic doctorId,
-    @JsonKey(name: 'scheduled_at') DateTime scheduledAt,
+    @JsonKey(name: 'scheduled_at') DateTime? scheduledAt,
     @JsonKey(name: 'status') AppointmentStatus status,
     @JsonKey(name: 'visit_reason') String? visitReason,
     @JsonKey(name: 'notes') String? notes,
-    String? patientName,
-    String? doctorName,
-    String? patientPhone,
-    int? queueNumber,
+    @JsonKey(name: 'patient_name') String? patientName,
+    @JsonKey(name: 'doctor_name') String? doctorName,
+    @JsonKey(name: 'patient_phone') String? patientPhone,
+    @JsonKey(name: 'queue_number') int? queueNumber,
   });
 }
 
@@ -192,7 +196,7 @@ class __$$AppointmentModelImplCopyWithImpl<$Res>
     Object? id = freezed,
     Object? patientId = freezed,
     Object? doctorId = freezed,
-    Object? scheduledAt = null,
+    Object? scheduledAt = freezed,
     Object? status = null,
     Object? visitReason = freezed,
     Object? notes = freezed,
@@ -215,10 +219,10 @@ class __$$AppointmentModelImplCopyWithImpl<$Res>
             ? _value.doctorId
             : doctorId // ignore: cast_nullable_to_non_nullable
                   as dynamic,
-        scheduledAt: null == scheduledAt
+        scheduledAt: freezed == scheduledAt
             ? _value.scheduledAt
             : scheduledAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
+                  as DateTime?,
         status: null == status
             ? _value.status
             : status // ignore: cast_nullable_to_non_nullable
@@ -259,14 +263,14 @@ class _$AppointmentModelImpl implements _AppointmentModel {
     @JsonKey(name: 'id') required this.id,
     @JsonKey(name: 'patient_id') required this.patientId,
     @JsonKey(name: 'doctor_id') required this.doctorId,
-    @JsonKey(name: 'scheduled_at') required this.scheduledAt,
+    @JsonKey(name: 'scheduled_at') this.scheduledAt,
     @JsonKey(name: 'status') required this.status,
     @JsonKey(name: 'visit_reason') this.visitReason,
     @JsonKey(name: 'notes') this.notes,
-    this.patientName,
-    this.doctorName,
-    this.patientPhone,
-    this.queueNumber,
+    @JsonKey(name: 'patient_name') this.patientName,
+    @JsonKey(name: 'doctor_name') this.doctorName,
+    @JsonKey(name: 'patient_phone') this.patientPhone,
+    @JsonKey(name: 'queue_number') this.queueNumber,
   });
 
   factory _$AppointmentModelImpl.fromJson(Map<String, dynamic> json) =>
@@ -283,7 +287,7 @@ class _$AppointmentModelImpl implements _AppointmentModel {
   final dynamic doctorId;
   @override
   @JsonKey(name: 'scheduled_at')
-  final DateTime scheduledAt;
+  final DateTime? scheduledAt;
   @override
   @JsonKey(name: 'status')
   final AppointmentStatus status;
@@ -294,12 +298,16 @@ class _$AppointmentModelImpl implements _AppointmentModel {
   @JsonKey(name: 'notes')
   final String? notes;
   @override
+  @JsonKey(name: 'patient_name')
   final String? patientName;
   @override
+  @JsonKey(name: 'doctor_name')
   final String? doctorName;
   @override
+  @JsonKey(name: 'patient_phone')
   final String? patientPhone;
   @override
+  @JsonKey(name: 'queue_number')
   final int? queueNumber;
 
   @override
@@ -370,14 +378,14 @@ abstract class _AppointmentModel implements AppointmentModel {
     @JsonKey(name: 'id') required final dynamic id,
     @JsonKey(name: 'patient_id') required final dynamic patientId,
     @JsonKey(name: 'doctor_id') required final dynamic doctorId,
-    @JsonKey(name: 'scheduled_at') required final DateTime scheduledAt,
+    @JsonKey(name: 'scheduled_at') final DateTime? scheduledAt,
     @JsonKey(name: 'status') required final AppointmentStatus status,
     @JsonKey(name: 'visit_reason') final String? visitReason,
     @JsonKey(name: 'notes') final String? notes,
-    final String? patientName,
-    final String? doctorName,
-    final String? patientPhone,
-    final int? queueNumber,
+    @JsonKey(name: 'patient_name') final String? patientName,
+    @JsonKey(name: 'doctor_name') final String? doctorName,
+    @JsonKey(name: 'patient_phone') final String? patientPhone,
+    @JsonKey(name: 'queue_number') final int? queueNumber,
   }) = _$AppointmentModelImpl;
 
   factory _AppointmentModel.fromJson(Map<String, dynamic> json) =
@@ -394,7 +402,7 @@ abstract class _AppointmentModel implements AppointmentModel {
   dynamic get doctorId;
   @override
   @JsonKey(name: 'scheduled_at')
-  DateTime get scheduledAt;
+  DateTime? get scheduledAt;
   @override
   @JsonKey(name: 'status')
   AppointmentStatus get status;
@@ -405,12 +413,16 @@ abstract class _AppointmentModel implements AppointmentModel {
   @JsonKey(name: 'notes')
   String? get notes;
   @override
+  @JsonKey(name: 'patient_name')
   String? get patientName;
   @override
+  @JsonKey(name: 'doctor_name')
   String? get doctorName;
   @override
+  @JsonKey(name: 'patient_phone')
   String? get patientPhone;
   @override
+  @JsonKey(name: 'queue_number')
   int? get queueNumber;
 
   /// Create a copy of AppointmentModel

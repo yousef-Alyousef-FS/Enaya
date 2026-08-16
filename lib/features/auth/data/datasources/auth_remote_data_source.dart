@@ -115,6 +115,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
     final user = UserModel.fromJson({
       ...userJson,
+      'phone':
+          userJson['phone'] ??
+          phone, // Fallback to provided phone if missing in response
       'profileCompleted': data['profileCompleted'],
     });
 

@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:enaya/features/prescriptions/domain/entities/prescription_entity.dart';
-import 'package:enaya/core/theme/app_colors.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:enaya/core/theme/app_colors.dart';
+import 'package:enaya/features/prescriptions/domain/entities/prescription_entity.dart';
+import 'package:flutter/material.dart';
 
 class PrescriptionDetailCard extends StatelessWidget {
   final PrescriptionEntity prescription;
@@ -38,7 +38,7 @@ class PrescriptionDetailCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withOpacity(0.3),
+            color: AppColors.primary.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -49,10 +49,14 @@ class PrescriptionDetailCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.medication_liquid_rounded, color: Colors.white, size: 32),
+            child: const Icon(
+              Icons.medication_liquid_rounded,
+              color: Colors.white,
+              size: 32,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -85,10 +89,10 @@ class PrescriptionDetailCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.1)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -97,8 +101,11 @@ class PrescriptionDetailCard extends StatelessWidget {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: AppColors.primary.withOpacity(0.1),
-            child: const Icon(Icons.person_outline_rounded, color: AppColors.primary),
+            backgroundColor: AppColors.primary.withValues(alpha: 0.1),
+            child: const Icon(
+              Icons.person_outline_rounded,
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(width: 12),
           Column(
@@ -110,7 +117,10 @@ class PrescriptionDetailCard extends StatelessWidget {
               ),
               Text(
                 doctorName ?? 'doctor_name'.tr(),
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                ),
               ),
             ],
           ),
@@ -125,26 +135,64 @@ class PrescriptionDetailCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurface : Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: isDark ? AppColors.gray800 : AppColors.gray100),
+        border: Border.all(
+          color: isDark ? AppColors.gray800 : AppColors.gray100,
+        ),
       ),
       child: Column(
         children: [
           Row(
             children: [
-              Expanded(child: _buildInfoItem(context, Icons.scale_rounded, 'dosage'.tr(), prescription.dosage)),
-              Container(width: 1, height: 40, color: AppColors.gray200.withOpacity(0.5)),
-              Expanded(child: _buildInfoItem(context, Icons.repeat_rounded, 'frequency'.tr(), prescription.frequency)),
+              Expanded(
+                child: _buildInfoItem(
+                  context,
+                  Icons.scale_rounded,
+                  'dosage'.tr(),
+                  prescription.dosage,
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                color: AppColors.gray200.withValues(alpha: 0.5),
+              ),
+              Expanded(
+                child: _buildInfoItem(
+                  context,
+                  Icons.repeat_rounded,
+                  'frequency'.tr(),
+                  prescription.frequency,
+                ),
+              ),
             ],
           ),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 16),
-            child: Divider(color: AppColors.gray200.withOpacity(0.5)),
+            child: Divider(color: AppColors.gray200.withValues(alpha: 0.5)),
           ),
           Row(
             children: [
-              Expanded(child: _buildInfoItem(context, Icons.calendar_today_rounded, 'duration'.tr(), '${prescription.durationDays} ${'days'.tr()}')),
-              Container(width: 1, height: 40, color: AppColors.gray200.withOpacity(0.5)),
-              Expanded(child: _buildInfoItem(context, Icons.event_available_rounded, 'date'.tr(), DateFormat('yyyy-MM-dd').format(prescription.createdAt))),
+              Expanded(
+                child: _buildInfoItem(
+                  context,
+                  Icons.calendar_today_rounded,
+                  'duration'.tr(),
+                  '${prescription.durationDays} ${'days'.tr()}',
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                color: AppColors.gray200.withValues(alpha: 0.5),
+              ),
+              Expanded(
+                child: _buildInfoItem(
+                  context,
+                  Icons.event_available_rounded,
+                  'date'.tr(),
+                  DateFormat('yyyy-MM-dd').format(prescription.createdAt),
+                ),
+              ),
             ],
           ),
         ],
@@ -152,15 +200,17 @@ class PrescriptionDetailCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoItem(BuildContext context, IconData icon, String label, String value) {
+  Widget _buildInfoItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    String value,
+  ) {
     return Column(
       children: [
         Icon(icon, color: AppColors.primary, size: 20),
         const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(color: AppColors.gray500, fontSize: 12),
-        ),
+        Text(label, style: TextStyle(color: AppColors.gray500, fontSize: 12)),
         const SizedBox(height: 4),
         Text(
           value,
@@ -176,16 +226,20 @@ class PrescriptionDetailCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.accentMint.withOpacity(0.1),
+        color: AppColors.accentMint.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.accentMint.withOpacity(0.2)),
+        border: Border.all(color: AppColors.accentMint.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.info_outline_rounded, color: AppColors.accentMint, size: 22),
+              const Icon(
+                Icons.info_outline_rounded,
+                color: AppColors.accentMint,
+                size: 22,
+              ),
               const SizedBox(width: 8),
               Text(
                 'instructions'.tr(),

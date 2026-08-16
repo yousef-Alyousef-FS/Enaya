@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/widgets/dialogs/app_dialogs.dart';
+import '../../../medical_history/presentation/cubit/medical_history_cubit.dart';
+import '../../../medical_history/presentation/cubit/medical_history_state.dart';
 import '../../domain/entities/patient_entity.dart';
 import '../state/patients_cubit.dart';
 import '../state/patients_state.dart';
@@ -13,11 +15,7 @@ class PatientDetailsScreen extends StatefulWidget {
   final PatientEntity patient;
   final bool readOnly;
 
-  const PatientDetailsScreen({
-    super.key,
-    required this.patient,
-    this.readOnly = false,
-  });
+  const PatientDetailsScreen({super.key, required this.patient, this.readOnly = false});
 
   @override
   State<PatientDetailsScreen> createState() => _PatientDetailsScreenState();
@@ -30,13 +28,11 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
   void initState() {
     super.initState();
     _patient = widget.patient;
+    context.read<MedicalHistoryCubit>().loadMedicalHistory(patientId: _patient.id);
   }
 
   void _openEdit() async {
-    final updated = await context.push<PatientEntity>(
-      AppRouter.editPatient,
-      extra: _patient,
-    );
+    final updated = await context.push<PatientEntity>(AppRouter.editPatient, extra: _patient);
     if (updated != null && mounted) {
       setState(() => _patient = updated);
       context.read<PatientsCubit>().loadPatients();
@@ -63,8 +59,7 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
 
     return BlocListener<PatientsCubit, PatientsState>(
       listener: (context, state) {
-        if (state.isSuccess &&
-            state.successMessage == 'patient_deleted_success') {
+        if (state.isSuccess && state.successMessage == 'patient_deleted_success') {
           context.pop();
         }
       },
@@ -98,25 +93,16 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                 title: 'personal_information'.tr(),
                 icon: Icons.person_outline,
                 children: [
-                  _buildInfoRow(
-                    'email'.tr(),
-                    _patient.email ?? 'not_available'.tr(),
-                  ),
+                  _buildInfoRow('email'.tr(), _patient.email ?? 'not_available'.tr()),
                   _buildInfoRow('phone_number'.tr(), _patient.phone),
-                  _buildInfoRow(
-                    'address'.tr(),
-                    _patient.address ?? 'not_available'.tr(),
-                  ),
+                  _buildInfoRow('address'.tr(), _patient.address ?? 'not_available'.tr()),
                   _buildInfoRow(
                     'date_of_birth'.tr(),
                     _patient.dateOfBirth != null
                         ? DateFormat('yyyy-MM-dd').format(_patient.dateOfBirth!)
                         : 'not_available'.tr(),
                   ),
-                  _buildInfoRow(
-                    'gender'.tr(),
-                    _patient.gender?.tr() ?? 'not_available'.tr(),
-                  ),
+                  _buildInfoRow('gender'.tr(), _patient.gender?.tr() ?? 'not_available'.tr()),
                 ],
               ),
               const SizedBox(height: 16),
@@ -132,10 +118,70 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
+              _buildMedicalHistorySection(theme, scheme),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildMedicalHistorySection(ThemeData theme, ColorScheme scheme) {
+    return BlocBuilder<MedicalHistoryCubit, MedicalHistoryState>(
+      builder: (context, state) {
+        final sessions = state is MedicalHistoryLoaded ? state.sessions : const [];
+
+        return _buildInfoSection(
+          theme,
+          scheme,
+          title: 'medical_history'.tr(),
+          icon: Icons.history_edu_rounded,
+          children: [
+            if (state is MedicalHistoryLoading)
+              const Center(child: CircularProgressIndicator(strokeWidth: 2))
+            else if (state is MedicalHistoryError)
+              Text(state.message, style: TextStyle(color: scheme.error))
+            else if (sessions.isEmpty)
+              Text('no_medical_records'.tr(), style: TextStyle(color: scheme.onSurfaceVariant))
+            else ...[
+              for (final session in sessions.take(3))
+                Container(
+                  margin: const EdgeInsets.only(bottom: 12),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: scheme.surfaceContainerHighest.withAlpha(80),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        session.diagnosis ?? 'no_diagnosis'.tr(),
+                        style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        session.patientComplaint ?? 'patient_complaint'.tr(),
+                        style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        session.startedAt != null
+                            ? DateFormat('dd MMM yyyy').format(session.startedAt!)
+                            : 'not_available'.tr(),
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ],
+        );
+      },
     );
   }
 
@@ -156,16 +202,11 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
         const SizedBox(height: 16),
         Text(
           _patient.name,
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         if (_patient.job != null && _patient.job!.isNotEmpty) ...[
           const SizedBox(height: 4),
-          Text(
-            _patient.job!,
-            style: theme.textTheme.bodyMedium?.copyWith(color: scheme.outline),
-          ),
+          Text(_patient.job!, style: theme.textTheme.bodyMedium?.copyWith(color: scheme.outline)),
         ],
       ],
     );
@@ -220,17 +261,11 @@ class _PatientDetailsScreenState extends State<PatientDetailsScreen> {
             width: 120,
             child: Text(
               label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w500,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.w500, color: Colors.grey),
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(fontWeight: FontWeight.w500),
-            ),
+            child: Text(value, style: const TextStyle(fontWeight: FontWeight.w500)),
           ),
         ],
       ),

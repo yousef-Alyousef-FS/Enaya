@@ -204,7 +204,7 @@ class _EditPatientScreenState extends State<EditPatientScreen> {
 
   Widget _buildGenderDropdown() {
     return DropdownButtonFormField<String>(
-      value: _gender,
+      initialValue: _gender,
       decoration: InputDecoration(
         labelText: 'gender'.tr(),
         prefixIcon: const Icon(Icons.person_outline),

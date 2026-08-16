@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:enaya/core/theme/app_colors.dart';
 import 'package:enaya/features/prescriptions/presentation/forms/logic/drug_model.dart';
 import 'package:flutter/material.dart';
-import 'package:enaya/core/theme/app_colors.dart';
 
 /// Panel that displays drug suggestions under the drug input field.
 ///
@@ -44,18 +44,21 @@ class DrugSuggestionsPanel extends StatelessWidget {
               shrinkWrap: true,
               padding: EdgeInsets.zero,
               itemCount: suggestions.length,
-              separatorBuilder: (_, __) => Divider(
+              separatorBuilder: (context, index) => Divider(
                 height: 1,
                 color: isDark ? AppColors.gray800 : AppColors.gray100,
               ),
               itemBuilder: (context, index) {
                 final drug = suggestions[index];
-                return ListTile(
-                  dense: true,
-                  title: Text(drug.name),
-                  // drug_type_<type> keys, e.g. drug_type_tablet, drug_type_syrup
-                  subtitle: Text('drug_type_${drug.type}'.tr()),
-                  onTap: () => onSelect(drug),
+                return Material(
+                  color: Colors.transparent,
+                  child: ListTile(
+                    dense: true,
+                    title: Text(drug.name),
+                    // drug_type_<type> keys, e.g. drug_type_tablet, drug_type_syrup
+                    subtitle: Text('drug_type_${drug.type}'.tr()),
+                    onTap: () => onSelect(drug),
+                  ),
                 );
               },
             ),

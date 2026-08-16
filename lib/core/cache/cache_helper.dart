@@ -53,7 +53,25 @@ class CacheHelper {
     await secureStorage.delete(key: key);
   }
 
-  /// Clears both normal and secure local storage.
+  /// Clears session-related data while preserving global settings like language/theme.
+  Future<void> clearSessionData() async {
+    // List of keys to preserve
+    final keysToKeep = ['app_theme_mode', 'app_language'];
+
+    // Get all current keys from SharedPreferences
+    final keys = sharedPreferences.getKeys();
+
+    for (final key in keys) {
+      if (!keysToKeep.contains(key)) {
+        await sharedPreferences.remove(key);
+      }
+    }
+
+    // Always clear all sensitive data from secure storage
+    await secureStorage.deleteAll();
+  }
+
+  /// Clears everything without exceptions.
   Future<void> clearAll() async {
     await sharedPreferences.clear();
     await secureStorage.deleteAll();

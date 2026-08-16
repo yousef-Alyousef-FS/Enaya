@@ -40,12 +40,12 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Theme.of(context).colorScheme.surface,
       surfaceTintColor: Theme.of(context).colorScheme.surface,
       elevation: 0,
-      titleSpacing: 20,
-      leading: showNotifications
-          ? _buildNotificationIcon(context)
-          : null, // أو يمكن وضع SizedBox() إذا أردت الاحتفاظ بالمسافة
-
-      actions: [if (showUserMenu) _buildUserMenu(context), const SizedBox(width: 8)],
+      titleSpacing: 8, // Reduced spacing for better alignment
+      leading: showNotifications ? _buildNotificationIcon(context) : null,
+      actions: [
+        if (showUserMenu) _buildUserMenu(context),
+        const SizedBox(width: 12),
+      ],
     );
   }
 
@@ -58,7 +58,9 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           tooltip: 'notifications'.tr(),
           icon: const Icon(Icons.notifications_none_outlined),
-          onPressed: onNotificationsTap ?? () => _showComingSoon(context, 'notifications'.tr()),
+          onPressed:
+              onNotificationsTap ??
+              () => _showComingSoon(context, 'notifications'.tr()),
         ),
         if (notificationCount > 0)
           Positioned(
@@ -106,11 +108,16 @@ class DashboardAppBar extends StatelessWidget implements PreferredSizeWidget {
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant, width: 1),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            width: 1,
+          ),
         ),
         child: const CircleAvatar(
           radius: 17,
-          backgroundImage: NetworkImage('https://i.pravatar.cc/150?u=reception'),
+          backgroundImage: NetworkImage(
+            'https://i.pravatar.cc/150?u=reception',
+          ),
           backgroundColor: Colors.grey,
         ),
       ),

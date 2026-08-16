@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/di/injection.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/services/auth_status_service.dart';
 import '../../../../core/services/session_manager.dart';
 import '../../../../core/services/token_manager.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -91,14 +92,15 @@ class _SplashScreenState extends State<SplashScreen>
 
     final tokenManager = getIt<TokenManager>();
     final sessionManager = getIt<SessionManager>();
+    final authStatusService = getIt<AuthStatusService>();
 
     final token = await tokenManager.getToken();
     final roleId = sessionManager.currentRoleId;
 
     if (token != null && token.isNotEmpty && roleId != null) {
+      authStatusService.setAuthenticated();
       final role = UserRole.fromId(roleId);
-      final userData = sessionManager.currentUser;
-      final bool profileCompleted = userData?['profile_completed'] ?? true;
+      final bool profileCompleted = sessionManager.isProfileCompleted;
 
       final route = switch (role) {
         UserRole.receptionist => AppRouter.receptionistHome,
@@ -110,6 +112,7 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
 
+    authStatusService.setUnauthenticated();
     if (mounted) {
       context.go(AppRouter.login);
     }

@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+
 import '../../../domain/entities/appointment_entity.dart';
 import '../../../domain/entities/appointment_status.dart';
 
@@ -22,10 +23,12 @@ class AppointmentsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading && appointments.isEmpty) {
-      return const Center(child: Padding(
-        padding: EdgeInsets.all(20),
-        child: CircularProgressIndicator(),
-      ));
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: CircularProgressIndicator(),
+        ),
+      );
     }
 
     if (appointments.isEmpty) {
@@ -54,7 +57,9 @@ class AppointmentsList extends StatelessWidget {
             Text(
               isWeekMode
                   ? '${DateFormat.yMMMd(context.locale.toString()).format(selectedDate)} (${'week'.tr()})'
-                  : DateFormat.yMMMd(context.locale.toString()).format(selectedDate),
+                  : DateFormat.yMMMd(
+                      context.locale.toString(),
+                    ).format(selectedDate),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -66,11 +71,14 @@ class AppointmentsList extends StatelessWidget {
           itemCount: appointments.length,
           itemBuilder: (context, index) {
             final app = appointments[index];
-            final hasConflict = conflictChecker != null && !conflictChecker!(app.dateTime);
+            final hasConflict =
+                conflictChecker != null && !conflictChecker!(app.dateTime);
 
             return _AppointmentTile(
               patientName: app.patientName,
-              time: DateFormat.jm(context.locale.toString()).format(app.dateTime),
+              time: DateFormat.jm(
+                context.locale.toString(),
+              ).format(app.dateTime),
               status: app.status.displayName,
               color: hasConflict ? Colors.red : app.status.color,
               hasConflict: hasConflict,
@@ -99,20 +107,36 @@ class _AppointmentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      contentPadding: EdgeInsets.zero,
-      leading: hasConflict ? const Icon(Icons.warning_amber_rounded, color: Colors.red) : null,
-      title: Text(patientName, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: hasConflict ? Colors.red : null)),
-      subtitle: Text(time, style: const TextStyle(fontSize: 12)),
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: hasConflict
+            ? const Icon(Icons.warning_amber_rounded, color: Colors.red)
+            : null,
+        title: Text(
+          patientName,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+            color: hasConflict ? Colors.red : null,
+          ),
         ),
-        child: Text(
-          status,
-          style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
+        subtitle: Text(time, style: const TextStyle(fontSize: 12)),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            status,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
     );

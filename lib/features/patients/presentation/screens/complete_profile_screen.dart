@@ -24,11 +24,11 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   final _firstNameController = TextEditingController();
   final _fatherNameController = TextEditingController();
   final _lastNameController = TextEditingController();
-  final _phoneController = TextEditingController();
   final _dobController = TextEditingController();
   final _addressController = TextEditingController();
   final _jobController = TextEditingController();
   final _emergencyController = TextEditingController();
+  final _phoneController = TextEditingController(); // Added back for safety
 
   String _gender = 'male';
   DateTime? _selectedDate;
@@ -36,11 +36,8 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
   @override
   void initState() {
     super.initState();
-    // Pre-fill phone number from session if available
-    final sessionPhone = PatientSession().patientPhone;
-    if (sessionPhone != null && sessionPhone.isNotEmpty) {
-      _phoneController.text = sessionPhone;
-    }
+    // Pre-fill phone if exists
+    _phoneController.text = PatientSession().patientPhone ?? '';
   }
 
   @override
@@ -48,11 +45,11 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
     _firstNameController.dispose();
     _fatherNameController.dispose();
     _lastNameController.dispose();
-    _phoneController.dispose();
     _dobController.dispose();
     _addressController.dispose();
     _jobController.dispose();
     _emergencyController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -105,10 +102,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       final fullName =
           '${_firstNameController.text.trim()} ${_fatherNameController.text.trim()} ${_lastNameController.text.trim()}';
 
+      // Use controller value which is pre-filled
+      final phone = _phoneController.text.trim();
+
       context.read<PatientProfileCubit>().completeProfile(
         CompleteProfileParams(
           fullName: fullName,
-          phone: _phoneController.text.trim(),
+          phone: phone,
           dateOfBirth: _dobController.text.trim(),
           gender: _gender,
           address: _addressController.text.trim(),

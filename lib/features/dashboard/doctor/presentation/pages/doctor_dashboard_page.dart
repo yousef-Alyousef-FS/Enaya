@@ -7,8 +7,10 @@ import 'package:enaya/features/appointments/data/models/appointments_overview_vi
 import 'package:enaya/features/dashboard/shared/presentation/models/dashboard_nav_item.dart';
 import 'package:enaya/features/dashboard/shared/presentation/pages/base_dashboard_page.dart';
 import 'package:enaya/features/dashboard/shared/presentation/widgets/dashboard_overview_builder.dart';
+import 'package:enaya/features/patients/domain/entities/patients_overview_mode.dart';
 import 'package:enaya/features/patients/presentation/screens/patients_list_screen.dart';
 import 'package:enaya/features/patients/presentation/state/patients_cubit.dart';
+import 'package:enaya/features/profile/presentation/screens/profile_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -74,6 +76,7 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
         return BlocProvider(
           create: (context) => getIt<PatientsCubit>(),
           child: PatientsListScreen(
+            role: PatientsOverviewMode.doctor,
             readOnly: true,
             doctorId: doctorId,
             embedded: true,
@@ -92,11 +95,7 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
           onBack: () => _onNavigationSelected(0),
         );
       case 5:
-        return FeatureComingSoonState(
-          titleKey: 'nav_profile',
-          icon: Icons.person_outline,
-          onBack: () => _onNavigationSelected(0),
-        );
+        return const ProfileScreen(showAppBar: false);
       case 6:
         return const SettingsScreen(showAppBar: false);
       default:
@@ -112,7 +111,10 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
       return Center(child: Text(state.errorMessage!));
     }
 
+    final doctorName = getIt<SessionManager>().currentUserName ?? 'Doctor';
+
     return DashboardOverviewBuilder(
+      header: _buildGreeting(doctorName),
       stats: _buildStatsGrid(state),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -147,11 +149,79 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
                 context.push('${AppRouter.doctorSession}/${current.id}');
               },
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24), // Consistent with Builder rhythm
           ],
           _buildSectionHeader('upcoming_appointments'),
           const SizedBox(height: 12),
           _buildUpcomingList(context, state, doctorId),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGreeting(String name) {
+    final theme = Theme.of(context);
+    final primaryColor = theme.colorScheme.primary;
+    const whiteColor = Color(0xFFFFFFFF);
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [primaryColor.withAlpha(230), primaryColor.withAlpha(150)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: primaryColor.withValues(alpha: 0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: whiteColor.withAlpha(30),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.medical_services_rounded,
+              color: whiteColor,
+              size: 28,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${'welcome_doctor'.tr()} $name',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: whiteColor,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'doctor_overview_subtitle'.tr(),
+                  style: TextStyle(
+                    color: whiteColor.withAlpha(200),
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

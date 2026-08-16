@@ -15,14 +15,27 @@ class PrescriptionModel extends PrescriptionEntity {
   /// JSON → Model
   factory PrescriptionModel.fromJson(Map<String, dynamic> json) {
     return PrescriptionModel(
-      id: json['id'] as int,
-      sessionId: (json['appointment_session_id'] ?? json['session_id']) as int,
-      medicationName: json['medication_name'] as String,
-      dosage: json['dosage'] as String,
-      frequency: json['frequency'] as String,
-      durationDays: (json['duration_days'] ?? json['duration']) as int,
-      instructions: (json['instructions'] ?? json['notes'] ?? '') as String,
-      createdAt: DateTime.parse(json['created_at']),
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      sessionId:
+          int.tryParse(
+            (json['appointment_session_id'] ?? json['session_id'])
+                    ?.toString() ??
+                '',
+          ) ??
+          0,
+      medicationName: json['medication_name']?.toString() ?? 'N/A',
+      dosage: json['dosage']?.toString() ?? '',
+      frequency: json['frequency']?.toString() ?? '',
+      durationDays:
+          int.tryParse(
+            (json['duration_days'] ?? json['duration'])?.toString() ?? '',
+          ) ??
+          0,
+      instructions:
+          (json['instructions'] ?? json['notes'] ?? '')?.toString() ?? '',
+      createdAt:
+          DateTime.tryParse(json['created_at']?.toString() ?? '') ??
+          DateTime.now(),
     );
   }
 

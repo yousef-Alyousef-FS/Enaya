@@ -1,5 +1,6 @@
 import 'package:dartz/dartz.dart';
 import 'package:enaya/core/di/injection.dart';
+import 'package:enaya/core/services/auth_status_service.dart';
 import 'package:enaya/features/auth/domain/entities/user_entity.dart';
 import 'package:enaya/features/auth/domain/usecases/change_password_usecase.dart';
 import 'package:enaya/features/auth/domain/usecases/forgot_password_usecase.dart';
@@ -39,6 +40,8 @@ class MockLogoutUseCase extends Mock implements LogoutUseCase {}
 class MockGetPatientProfileUseCase extends Mock
     implements GetPatientProfileUseCase {}
 
+class MockAuthStatusService extends Mock implements AuthStatusService {}
+
 class FakeLoginParams extends Fake implements LoginParams {}
 
 void main() {
@@ -51,6 +54,7 @@ void main() {
   late MockVerifyEmailUseCase mockVerifyEmailUseCase;
   late MockLogoutUseCase mockLogoutUseCase;
   late MockGetPatientProfileUseCase mockGetPatientProfileUseCase;
+  late MockAuthStatusService mockAuthStatusService;
 
   setUpAll(() {
     registerFallbackValue(FakeLoginParams());
@@ -68,6 +72,7 @@ void main() {
     mockVerifyEmailUseCase = MockVerifyEmailUseCase();
     mockLogoutUseCase = MockLogoutUseCase();
     mockGetPatientProfileUseCase = MockGetPatientProfileUseCase();
+    mockAuthStatusService = MockAuthStatusService();
 
     getIt.registerLazySingleton<LoginUseCase>(() => mockLoginUseCase);
     getIt.registerLazySingleton<SignupUsecase>(() => mockSignupUseCase);
@@ -90,6 +95,7 @@ void main() {
     getIt.registerLazySingleton<GetPatientProfileUseCase>(
       () => mockGetPatientProfileUseCase,
     );
+    getIt.registerLazySingleton<AuthStatusService>(() => mockAuthStatusService);
 
     getIt.registerFactory(
       () => AuthCubit(
@@ -102,6 +108,7 @@ void main() {
         verifyEmailUseCase: getIt(),
         logoutUseCase: getIt(),
         getPatientProfileUseCase: getIt(),
+        authStatusService: getIt(),
       ),
     );
   });

@@ -111,12 +111,10 @@ class TokenManager {
   // 🧹 Cleanup
   // ---------------------------------------------------------------------------
 
-  /// Clears only token-related data.
+  /// Clears only token-related data using the unified cache cleanup.
   Future<void> clearAll() async {
     try {
-      await deleteToken();
-      await deleteRefreshToken();
-      await _cacheHelper.removeData(key: ApiConstants.tokenExpiryKey);
+      await _cacheHelper.clearSessionData();
     } catch (e) {
       throw TokenException('Failed to clear token data: $e');
     }

@@ -24,7 +24,8 @@ class DashboardShell extends StatefulWidget {
     required this.selectedIndex,
     required this.onItemSelected,
     this.autoCenterBottomNav = true,
-    this.bottomNavAnimationDuration = DashboardConstants.bottomNavAnimationDuration,
+    this.bottomNavAnimationDuration =
+        DashboardConstants.bottomNavAnimationDuration,
     this.bottomNavAnimationCurve = DashboardConstants.bottomNavAnimationCurve,
   });
 
@@ -77,7 +78,8 @@ class _DashboardShellState extends State<DashboardShell> {
 
     final isMobile = width < LayoutBreakpoints.mobileMaxWidth;
     final isTablet =
-        width >= LayoutBreakpoints.mobileMaxWidth && width < LayoutBreakpoints.desktopMinWidth;
+        width >= LayoutBreakpoints.mobileMaxWidth &&
+        width < LayoutBreakpoints.desktopMinWidth;
 
     final isCompactLandscape =
         orientation == Orientation.landscape &&
@@ -108,8 +110,13 @@ class _DashboardShellState extends State<DashboardShell> {
                 ),
                 Expanded(
                   child: SafeArea(
+                    top:
+                        false, // [UI_FIX]: Disable top safe area because Scaffold AppBar already handles it.
                     child: Padding(
-                      padding: const EdgeInsetsDirectional.only(end: 16, bottom: 16),
+                      padding: const EdgeInsetsDirectional.only(
+                        end: 0,
+                        bottom: 0,
+                      ),
                       child: widget.body,
                     ),
                   ),
@@ -128,11 +135,15 @@ class _DashboardShellState extends State<DashboardShell> {
       child: Padding(
         padding: DashboardConstants.bottomNavOuterPaddingEdgeInsets,
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(DashboardConstants.bottomNavBorderRadius),
+          borderRadius: BorderRadius.circular(
+            DashboardConstants.bottomNavBorderRadius,
+          ),
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: color.surface,
-              borderRadius: BorderRadius.circular(DashboardConstants.bottomNavBorderRadius),
+              borderRadius: BorderRadius.circular(
+                DashboardConstants.bottomNavBorderRadius,
+              ),
               gradient: LinearGradient(
                 begin: AlignmentDirectional.topStart,
                 end: AlignmentDirectional.bottomEnd,
@@ -140,9 +151,14 @@ class _DashboardShellState extends State<DashboardShell> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: DashboardConstants.bottomNavShadowOpacity),
+                  color: Colors.black.withValues(
+                    alpha: DashboardConstants.bottomNavShadowOpacity,
+                  ),
                   blurRadius: DashboardConstants.bottomNavShadowBlurRadius,
-                  offset: const Offset(0, DashboardConstants.bottomNavShadowOffsetY),
+                  offset: const Offset(
+                    0,
+                    DashboardConstants.bottomNavShadowOffsetY,
+                  ),
                 ),
               ],
               border: Border.all(
@@ -169,7 +185,9 @@ class _DashboardShellState extends State<DashboardShell> {
                       compact: compact,
                     ),
                     if (i != widget.navigationItems.length - 1)
-                      const SizedBox(width: DashboardConstants.bottomNavTileSpacing),
+                      const SizedBox(
+                        width: DashboardConstants.bottomNavTileSpacing,
+                      ),
                   ],
                 ],
               ),
@@ -205,7 +223,10 @@ class _DesktopNavigationRail extends StatelessWidget {
 
     for (final item in items) {
       final painter = TextPainter(
-        text: TextSpan(text: item.labelKey.tr(), style: theme.textTheme.titleSmall),
+        text: TextSpan(
+          text: item.labelKey.tr(),
+          style: theme.textTheme.titleSmall,
+        ),
         maxLines: 1,
         textDirection: TextDirection.ltr,
       )..layout();
@@ -219,7 +240,9 @@ class _DesktopNavigationRail extends StatelessWidget {
 
     final screenWidth = MediaQuery.of(context).size.width;
 
-    return calculated.clamp(minWidth, screenWidth * 0.28).clamp(minWidth, maxWidth);
+    return calculated
+        .clamp(minWidth, screenWidth * 0.28)
+        .clamp(minWidth, maxWidth);
   }
 
   @override
@@ -251,16 +274,20 @@ class _DesktopNavigationRail extends StatelessWidget {
                         if (items[i].showDividerAfter && i != items.length - 1)
                           Padding(
                             padding: const EdgeInsets.symmetric(
-                              vertical: DashboardConstants.railDividerVerticalSpace,
+                              vertical:
+                                  DashboardConstants.railDividerVerticalSpace,
                             ),
                             child: Divider(
                               color: color.outlineVariant.withValues(
-                                alpha: DashboardConstants.outlineVariantBorderOpacity,
+                                alpha: DashboardConstants
+                                    .outlineVariantBorderOpacity,
                               ),
                             ),
                           ),
                         if (i != items.length - 1 && !items[i].showDividerAfter)
-                          const SizedBox(height: DashboardConstants.railTileSpacing),
+                          const SizedBox(
+                            height: DashboardConstants.railTileSpacing,
+                          ),
                       ],
                     ],
                   ),
@@ -281,7 +308,11 @@ class _RailNavigationTile extends StatefulWidget {
   final bool selected;
   final VoidCallback onTap;
 
-  const _RailNavigationTile({required this.item, required this.selected, required this.onTap});
+  const _RailNavigationTile({
+    required this.item,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   State<_RailNavigationTile> createState() => _RailNavigationTileState();
@@ -308,7 +339,9 @@ class _RailNavigationTileState extends State<_RailNavigationTile> {
         child: AnimatedContainer(
           duration: DashboardConstants.railTileAnimationDuration,
           curve: DashboardConstants.railTileAnimationCurve,
-          margin: const EdgeInsets.symmetric(vertical: DashboardConstants.railTileVerticalMargin),
+          margin: const EdgeInsets.symmetric(
+            vertical: DashboardConstants.railTileVerticalMargin,
+          ),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.horizontal(
               left: Radius.circular(DashboardConstants.railTileBorderRadius),
@@ -320,7 +353,10 @@ class _RailNavigationTileState extends State<_RailNavigationTile> {
                         alpha: DashboardConstants.railTileShadowOpacity,
                       ),
                       blurRadius: DashboardConstants.railTileShadowBlurRadius,
-                      offset: const Offset(0, DashboardConstants.railTileShadowOffsetY),
+                      offset: const Offset(
+                        0,
+                        DashboardConstants.railTileShadowOffsetY,
+                      ),
                     ),
                   ]
                 : [],
@@ -339,7 +375,8 @@ class _RailNavigationTileState extends State<_RailNavigationTile> {
               child: Stack(
                 children: [
                   AnimatedPositionedDirectional(
-                    duration: DashboardConstants.railTileSelectionIndicatorDuration,
+                    duration:
+                        DashboardConstants.railTileSelectionIndicatorDuration,
                     curve: DashboardConstants.railTileAnimationCurve,
                     start: widget.selected ? 0 : -6,
                     top: 6,
@@ -352,7 +389,9 @@ class _RailNavigationTileState extends State<_RailNavigationTile> {
                         decoration: BoxDecoration(
                           color: color.primary,
                           borderRadius: BorderRadius.horizontal(
-                            left: Radius.circular(DashboardConstants.railTileBorderRadius),
+                            left: Radius.circular(
+                              DashboardConstants.railTileBorderRadius,
+                            ),
                           ),
                         ),
                       ),
@@ -360,24 +399,32 @@ class _RailNavigationTileState extends State<_RailNavigationTile> {
                   ),
                   AnimatedContainer(
                     duration: DashboardConstants.railTileAnimationDuration,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     decoration: BoxDecoration(
                       color: widget.selected
                           ? color.primary.withValues(
-                              alpha: DashboardConstants.railTileSelectedBackgroundOpacity,
+                              alpha: DashboardConstants
+                                  .railTileSelectedBackgroundOpacity,
                             )
                           : _hover
                           ? color.primary.withValues(
-                              alpha: DashboardConstants.railTileHoverBackgroundOpacity,
+                              alpha: DashboardConstants
+                                  .railTileHoverBackgroundOpacity,
                             )
                           : Colors.transparent,
                       borderRadius: BorderRadius.horizontal(
-                        left: Radius.circular(DashboardConstants.railTileBorderRadius),
+                        left: Radius.circular(
+                          DashboardConstants.railTileBorderRadius,
+                        ),
                       ),
                       border: Border.all(
                         color: widget.selected
                             ? color.primary.withValues(
-                                alpha: DashboardConstants.railTileSelectedBorderOpacity,
+                                alpha: DashboardConstants
+                                    .railTileSelectedBorderOpacity,
                               )
                             : Colors.transparent,
                       ),
@@ -388,29 +435,40 @@ class _RailNavigationTileState extends State<_RailNavigationTile> {
                           clipBehavior: Clip.none,
                           children: [
                             AnimatedContainer(
-                              duration: DashboardConstants.railTileAnimationDuration,
+                              duration:
+                                  DashboardConstants.railTileAnimationDuration,
                               width: DashboardConstants.railIconContainerSize,
                               height: DashboardConstants.railIconContainerSize,
                               decoration: BoxDecoration(
                                 color: widget.selected
                                     ? color.primary
                                     : color.surfaceContainerHighest.withValues(
-                                        alpha:
-                                            DashboardConstants.railIconContainerBackgroundOpacity,
+                                        alpha: DashboardConstants
+                                            .railIconContainerBackgroundOpacity,
                                       ),
                                 borderRadius: BorderRadius.circular(
                                   DashboardConstants.railTileIconBorderRadius,
                                 ),
                               ),
                               child: AnimatedSwitcher(
-                                duration: DashboardConstants.railTileAnimationDuration,
+                                duration: DashboardConstants
+                                    .railTileAnimationDuration,
                                 transitionBuilder: (child, animation) =>
-                                    ScaleTransition(scale: animation, child: child),
+                                    ScaleTransition(
+                                      scale: animation,
+                                      child: child,
+                                    ),
                                 child: Icon(
-                                  widget.selected ? widget.item.selectedIcon : widget.item.icon,
-                                  key: ValueKey('${widget.item.labelKey}-${widget.selected}'),
+                                  widget.selected
+                                      ? widget.item.selectedIcon
+                                      : widget.item.icon,
+                                  key: ValueKey(
+                                    '${widget.item.labelKey}-${widget.selected}',
+                                  ),
                                   size: DashboardConstants.railIconInnerSize,
-                                  color: widget.selected ? color.onPrimary : color.onSurfaceVariant,
+                                  color: widget.selected
+                                      ? color.onPrimary
+                                      : color.onSurfaceVariant,
                                 ),
                               ),
                             ),
@@ -424,7 +482,10 @@ class _RailNavigationTileState extends State<_RailNavigationTile> {
                                   decoration: BoxDecoration(
                                     color: Colors.red.shade600,
                                     borderRadius: BorderRadius.circular(999),
-                                    border: Border.all(color: color.surface, width: 1.5),
+                                    border: Border.all(
+                                      color: color.surface,
+                                      width: 1.5,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -433,10 +494,15 @@ class _RailNavigationTileState extends State<_RailNavigationTile> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: AnimatedDefaultTextStyle(
-                            duration: DashboardConstants.railTileAnimationDuration,
+                            duration:
+                                DashboardConstants.railTileAnimationDuration,
                             style: theme.textTheme.titleSmall!.copyWith(
-                              color: widget.selected ? color.primary : color.onSurface,
-                              fontWeight: widget.selected ? FontWeight.w800 : FontWeight.w500,
+                              color: widget.selected
+                                  ? color.primary
+                                  : color.onSurface,
+                              fontWeight: widget.selected
+                                  ? FontWeight.w800
+                                  : FontWeight.w500,
                             ),
                             child: Text(
                               widget.item.labelKey.tr(),
@@ -487,7 +553,9 @@ class _BottomNavigationTile extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(DashboardConstants.bottomNavTileBorderRadius),
+      borderRadius: BorderRadius.circular(
+        DashboardConstants.bottomNavTileBorderRadius,
+      ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: DashboardConstants.bottomNavTilePaddingHorizontal,
@@ -503,14 +571,18 @@ class _BottomNavigationTile extends StatelessWidget {
           decoration: BoxDecoration(
             color: selected
                 ? color.primary.withValues(
-                    alpha: DashboardConstants.bottomNavTileSelectedBackgroundOpacity,
+                    alpha: DashboardConstants
+                        .bottomNavTileSelectedBackgroundOpacity,
                   )
                 : Colors.transparent,
-            borderRadius: BorderRadius.circular(DashboardConstants.bottomNavTileBorderRadius),
+            borderRadius: BorderRadius.circular(
+              DashboardConstants.bottomNavTileBorderRadius,
+            ),
             border: Border.all(
               color: selected
                   ? color.primary.withValues(
-                      alpha: DashboardConstants.bottomNavTileSelectedBorderOpacity,
+                      alpha:
+                          DashboardConstants.bottomNavTileSelectedBorderOpacity,
                     )
                   : Colors.transparent,
             ),
@@ -528,7 +600,9 @@ class _BottomNavigationTile extends StatelessWidget {
                       children: [
                         Icon(
                           selected ? item.selectedIcon : item.icon,
-                          color: selected ? color.primary : color.onSurfaceVariant,
+                          color: selected
+                              ? color.primary
+                              : color.onSurfaceVariant,
                           size: selected
                               ? DashboardConstants.bottomNavIconSizeSelected
                               : DashboardConstants.bottomNavIconSize,
@@ -537,14 +611,20 @@ class _BottomNavigationTile extends StatelessWidget {
                         ConstrainedBox(
                           constraints: BoxConstraints(
                             maxWidth: selected
-                                ? DashboardConstants.bottomNavTileTextMaxWidthSelected
-                                : DashboardConstants.bottomNavTileTextMaxWidthUnselected,
+                                ? DashboardConstants
+                                      .bottomNavTileTextMaxWidthSelected
+                                : DashboardConstants
+                                      .bottomNavTileTextMaxWidthUnselected,
                           ),
                           child: Text(
                             item.labelKey.tr(),
                             style: TextStyle(
-                              color: selected ? color.primary : color.onSurfaceVariant,
-                              fontWeight: selected ? FontWeight.w800 : FontWeight.w500,
+                              color: selected
+                                  ? color.primary
+                                  : color.onSurfaceVariant,
+                              fontWeight: selected
+                                  ? FontWeight.w800
+                                  : FontWeight.w500,
                             ),
                           ),
                         ),
@@ -560,7 +640,10 @@ class _BottomNavigationTile extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: Colors.red.shade600,
                             borderRadius: BorderRadius.circular(999),
-                            border: Border.all(color: color.surface, width: 1.5),
+                            border: Border.all(
+                              color: color.surface,
+                              width: 1.5,
+                            ),
                           ),
                         ),
                       ),
@@ -570,7 +653,9 @@ class _BottomNavigationTile extends StatelessWidget {
                 AnimatedContainer(
                   duration: DashboardConstants.railTileAnimationDuration,
                   height: DashboardConstants.bottomNavIndicatorHeight,
-                  width: selected ? DashboardConstants.bottomNavIndicatorSelectedWidth : 0,
+                  width: selected
+                      ? DashboardConstants.bottomNavIndicatorSelectedWidth
+                      : 0,
                   decoration: BoxDecoration(
                     color: color.primary,
                     borderRadius: BorderRadius.circular(10),

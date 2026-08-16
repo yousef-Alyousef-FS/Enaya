@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../domain/entities/base_profile_entity.dart';
 
 class ProfileHeader extends StatelessWidget {
@@ -15,7 +16,7 @@ class ProfileHeader extends StatelessWidget {
         /// Avatar
         CircleAvatar(
           radius: 45,
-          backgroundColor: theme.colorScheme.primary.withOpacity(0.15),
+          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
           child: Text(
             profile.name.isNotEmpty ? profile.name[0].toUpperCase() : "?",
             style: theme.textTheme.headlineMedium?.copyWith(
@@ -41,7 +42,7 @@ class ProfileHeader extends StatelessWidget {
         Text(
           profile.email,
           style: theme.textTheme.bodyMedium?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.6),
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
       ],

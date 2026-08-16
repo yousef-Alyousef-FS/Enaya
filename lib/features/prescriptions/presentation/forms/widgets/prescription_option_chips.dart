@@ -1,6 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:flutter/material.dart';
 import 'package:enaya/core/theme/app_colors.dart';
+import 'package:flutter/material.dart';
 
 /// Reusable chip list widget used for dosage, frequency, and instruction suggestions.
 /// Keeps UI clean and separated from the main form.
@@ -45,9 +45,10 @@ class PrescriptionOptionChips extends StatelessWidget {
               selected: false,
               onSelected: (_) => onSelected(option),
 
-              backgroundColor:
-                  isDark ? AppColors.darkSurfaceSoft : AppColors.gray50,
-              selectedColor: AppColors.primary.withOpacity(0.15),
+              backgroundColor: isDark
+                  ? AppColors.darkSurfaceSoft
+                  : AppColors.gray50,
+              selectedColor: AppColors.primary.withValues(alpha: 0.15),
 
               labelStyle: TextStyle(
                 color: isDark ? Colors.white : AppColors.gray800,

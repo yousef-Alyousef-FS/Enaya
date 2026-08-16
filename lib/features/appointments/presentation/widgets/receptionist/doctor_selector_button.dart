@@ -181,46 +181,50 @@ class DoctorSelectorButton extends StatelessWidget {
                                     final isSelected =
                                         doctor.name == selectedDoctorName;
 
-                                    return ListTile(
-                                      contentPadding: EdgeInsets.zero,
-                                      leading: CircleAvatar(
-                                        backgroundColor: theme
-                                            .colorScheme
-                                            .primary
-                                            .withValues(alpha: 0.12),
-                                        child: Icon(
-                                          Icons.medical_services_rounded,
-                                          color: theme.colorScheme.primary,
-                                          size: 20,
+                                    return Material(
+                                      color: Colors.transparent,
+                                      child: ListTile(
+                                        contentPadding: EdgeInsets.zero,
+                                        leading: CircleAvatar(
+                                          backgroundColor: theme
+                                              .colorScheme
+                                              .primary
+                                              .withValues(alpha: 0.12),
+                                          child: Icon(
+                                            Icons.medical_services_rounded,
+                                            color: theme.colorScheme.primary,
+                                            size: 20,
+                                          ),
                                         ),
-                                      ),
-                                      title: Text(
-                                        doctor.name,
-                                        style: const TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                        title: Text(
+                                          doctor.name,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
                                         ),
-                                      ),
-                                      subtitle: doctor.specialty != null
-                                          ? Text(
-                                              doctor.specialty!,
-                                              style: TextStyle(
+                                        subtitle: doctor.specialty != null
+                                            ? Text(
+                                                doctor.specialty!,
+                                                style: TextStyle(
+                                                  color:
+                                                      theme.colorScheme.primary,
+                                                  fontSize: 12,
+                                                ),
+                                              )
+                                            : null,
+                                        trailing: isSelected
+                                            ? Icon(
+                                                Icons.check_circle,
                                                 color:
                                                     theme.colorScheme.primary,
-                                                fontSize: 12,
-                                              ),
-                                            )
-                                          : null,
-                                      trailing: isSelected
-                                          ? Icon(
-                                              Icons.check_circle,
-                                              color: theme.colorScheme.primary,
-                                              size: 22,
-                                            )
-                                          : null,
-                                      onTap: () {
-                                        onSelected(doctor);
-                                        Navigator.pop(context);
-                                      },
+                                                size: 22,
+                                              )
+                                            : null,
+                                        onTap: () {
+                                          onSelected(doctor);
+                                          Navigator.pop(context);
+                                        },
+                                      ),
                                     );
                                   },
                                 ),

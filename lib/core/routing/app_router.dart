@@ -30,6 +30,7 @@ import '../../features/notifications/data/repositories/notifications_repository.
 import '../../features/notifications/presentation/cubit/notifications_cubit.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/patients/domain/entities/patient_entity.dart';
+import '../../features/patients/domain/entities/patients_overview_mode.dart';
 import '../../features/patients/presentation/screens/complete_profile_screen.dart';
 import '../../features/patients/presentation/screens/edit_patient_screen.dart';
 import '../../features/patients/presentation/screens/patient_details_screen.dart';
@@ -47,6 +48,7 @@ import '../constants/dev_config.dart';
 import '../di/injection.dart';
 import '../screens/developer_screen.dart';
 import '../screens/no_internet_screen.dart';
+import '../services/auth_status_service.dart';
 import '../services/patient_session.dart';
 import '../services/session_manager.dart';
 
@@ -95,12 +97,23 @@ class AppRouter {
 
   static final router = GoRouter(
     initialLocation: DevConfig.isDevMode ? devMenu : splash,
+    refreshListenable: getIt<AuthStatusService>(),
+    redirect: (context, state) {
+      final authStatus = getIt<AuthStatusService>().status;
+      final isLoggingIn =
+          state.matchedLocation == login ||
+          state.matchedLocation == signup ||
+          state.matchedLocation == splash;
+
+      if (authStatus == AuthStatus.unauthenticated) {
+        return isLoggingIn ? null : login;
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(path: splash, builder: (context, state) => const SplashScreen()),
-      GoRoute(
-        path: devMenu,
-        builder: (context, state) => const DeveloperScreen(),
-      ),
+      GoRoute(path: devMenu, builder: (context, state) => const DeveloperScreen()),
       GoRoute(
         path: noInternet,
         builder: (context, state) {
@@ -119,10 +132,7 @@ class AppRouter {
           return VerifyEmailScreen(email: email);
         },
       ),
-      GoRoute(
-        path: forgotPassword,
-        builder: (context, state) => const ForgotPasswordScreen(),
-      ),
+      GoRoute(path: forgotPassword, builder: (context, state) => const ForgotPasswordScreen()),
       GoRoute(
         path: resetPassword,
         builder: (context, state) {
@@ -130,43 +140,30 @@ class AppRouter {
           return ResetPasswordScreen(initialEmail: email);
         },
       ),
-      GoRoute(
-        path: changePassword,
-        builder: (context, state) => const ChangePasswordScreen(),
-      ),
+      GoRoute(path: changePassword, builder: (context, state) => const ChangePasswordScreen()),
       GoRoute(
         path: appointmentsOverview,
         builder: (context, state) {
           final requestedMode = state.uri.queryParameters['mode'];
           final roleId = getIt<SessionManager>().currentRoleId;
 
-          final mode = AppointmentsPage.resolveMode(
-            requestedMode: requestedMode,
-            roleId: roleId,
-          );
+          final mode = AppointmentsPage.resolveMode(requestedMode: requestedMode, roleId: roleId);
           return AppointmentsPage(mode: mode);
         },
       ),
-      GoRoute(
-        path: doctorHome,
-        builder: (context, state) => const DoctorDashboardPage(),
-      ),
+      GoRoute(path: doctorHome, builder: (context, state) => const DoctorDashboardPage()),
       GoRoute(
         path: doctorSchedule,
         builder: (context, state) {
           final doctorId =
-              state.uri.queryParameters['doctorId'] ??
-              getIt<SessionManager>().currentRoleId;
+              state.uri.queryParameters['doctorId'] ?? getIt<SessionManager>().currentRoleId;
           return BlocProvider(
             create: (context) => getIt<DoctorAvailabilityCubit>(),
             child: DoctorWorkScheduleScreen(doctorId: doctorId.toString()),
           );
         },
       ),
-      GoRoute(
-        path: patientHome,
-        builder: (context, state) => const PatientDashboardPage(),
-      ),
+      GoRoute(path: patientHome, builder: (context, state) => const PatientDashboardPage()),
       GoRoute(
         path: receptionistHome,
         builder: (context, state) => const ReceptionistDashboardPage(),
@@ -175,7 +172,7 @@ class AppRouter {
         path: patients,
         builder: (context, state) => BlocProvider(
           create: (context) => getIt<PatientsCubit>(),
-          child: const PatientsListScreen(),
+          child: const PatientsListScreen(role: PatientsOverviewMode.receptionist),
         ),
       ),
       GoRoute(
@@ -183,9 +180,7 @@ class AppRouter {
         builder: (context, state) {
           final extra = state.extra;
           if (extra is! Map<String, dynamic>) {
-            return const _InvalidRouteDataScreen(
-              title: 'Missing patient details',
-            );
+            return const _InvalidRouteDataScreen(title: 'Missing patient details');
           }
 
           final patient = extra['patient'];
@@ -195,8 +190,11 @@ class AppRouter {
 
           final readOnly = extra['readOnly'] as bool? ?? false;
 
-          return BlocProvider(
-            create: (context) => getIt<PatientsCubit>(),
+          return MultiBlocProvider(
+            providers: [
+              BlocProvider(create: (context) => getIt<PatientsCubit>()),
+              BlocProvider(create: (context) => getIt<MedicalHistoryCubit>()),
+            ],
             child: PatientDetailsScreen(patient: patient, readOnly: readOnly),
           );
         },
@@ -232,37 +230,24 @@ class AppRouter {
       GoRoute(
         path: notifications,
         builder: (context, state) => BlocProvider(
-          create: (context) =>
-              NotificationsCubit(FakeNotificationsRepository())..load(),
+          create: (context) => NotificationsCubit(FakeNotificationsRepository())..load(),
           child: const NotificationsScreen(),
         ),
       ),
-      GoRoute(
-        path: settings,
-        builder: (context, state) => const SettingsScreen(),
-      ),
+      GoRoute(path: settings, builder: (context, state) => const SettingsScreen()),
       GoRoute(
         path: appointmentDetails,
         builder: (context, state) {
           final extra = state.extra;
           if (extra is! Map<String, dynamic>) {
-            return Scaffold(
-              body: Center(
-                child: Text('missing_appointment_details_data'.tr()),
-              ),
-            );
+            return Scaffold(body: Center(child: Text('missing_appointment_details_data'.tr())));
           }
 
           final appointment = extra['appointment'];
           final role = extra['role'];
 
-          if (appointment is! AppointmentEntity ||
-              role is! AppointmentsOverviewMode) {
-            return Scaffold(
-              body: Center(
-                child: Text('invalid_appointment_details_data'.tr()),
-              ),
-            );
+          if (appointment is! AppointmentEntity || role is! AppointmentsOverviewMode) {
+            return Scaffold(body: Center(child: Text('invalid_appointment_details_data'.tr())));
           }
 
           return AppointmentDetailsScreen(
@@ -277,16 +262,12 @@ class AppRouter {
         builder: (context, state) {
           final extra = state.extra;
           if (extra is! Map<String, dynamic>) {
-            return Scaffold(
-              body: Center(child: Text('missing_appointment_edit_data'.tr())),
-            );
+            return Scaffold(body: Center(child: Text('missing_appointment_edit_data'.tr())));
           }
 
           final appointment = extra['appointment'];
           if (appointment is! AppointmentEntity) {
-            return Scaffold(
-              body: Center(child: Text('invalid_appointment_edit_data'.tr())),
-            );
+            return Scaffold(body: Center(child: Text('invalid_appointment_edit_data'.tr())));
           }
 
           return EditAppointmentScreen(appointment: appointment);
@@ -322,8 +303,7 @@ class AppRouter {
         builder: (context, state) {
           final patientId = PatientSession().patientId ?? 'p1';
           return BlocProvider(
-            create: (context) =>
-                getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
+            create: (context) => getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
             child: const PatientAppointmentHistoryScreen(),
           );
         },
@@ -331,24 +311,17 @@ class AppRouter {
       GoRoute(
         path: '$doctorSession/:appointmentId',
         builder: (context, state) {
-          final appointmentId = int.tryParse(
-            state.pathParameters['appointmentId'] ?? '',
-          );
+          final appointmentId = int.tryParse(state.pathParameters['appointmentId'] ?? '');
           if (appointmentId == null) {
-            return const _InvalidRouteDataScreen(
-              title: 'Invalid appointment ID',
-            );
+            return const _InvalidRouteDataScreen(title: 'Invalid appointment ID');
           }
           return MultiBlocProvider(
             providers: [
               BlocProvider(
-                create: (context) =>
-                    getIt<SessionCubit>()..loadOrStartSession(appointmentId),
+                create: (context) => getIt<SessionCubit>()..loadOrStartSession(appointmentId),
               ),
               BlocProvider(
-                create: (context) =>
-                    getIt<PrescriptionCubit>()
-                      ..loadPrescriptions(appointmentId),
+                create: (context) => getIt<PrescriptionCubit>()..loadPrescriptions(appointmentId),
               ),
             ],
             child: SessionScreen(appointmentId: appointmentId),
@@ -358,21 +331,14 @@ class AppRouter {
       GoRoute(
         path: '$addPrescription/:appointmentId/:sessionId',
         builder: (context, state) {
-          final appointmentId = int.tryParse(
-            state.pathParameters['appointmentId'] ?? '',
-          );
-          final sessionId = int.tryParse(
-            state.pathParameters['sessionId'] ?? '',
-          );
+          final appointmentId = int.tryParse(state.pathParameters['appointmentId'] ?? '');
+          final sessionId = int.tryParse(state.pathParameters['sessionId'] ?? '');
           if (appointmentId == null || sessionId == null) {
             return const _InvalidRouteDataScreen(title: 'Invalid IDs');
           }
           return BlocProvider(
             create: (context) => getIt<PrescriptionCubit>(),
-            child: AddPrescriptionScreen(
-              appointmentId: appointmentId,
-              sessionId: sessionId,
-            ),
+            child: AddPrescriptionScreen(appointmentId: appointmentId, sessionId: sessionId),
           );
         },
       ),

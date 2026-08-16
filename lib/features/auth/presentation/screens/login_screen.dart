@@ -14,6 +14,8 @@ import '../widgets/auth_card_container.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/logo.dart';
 import '../widgets/portrait_only_scope.dart';
+import '../../../../core/services/auth_status_service.dart';
+import '../../../../core/di/injection.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -50,6 +52,17 @@ class _LoginScreenState extends State<LoginScreen>
       parent: _fadeController,
       curve: Curves.easeOut,
     );
+
+    // Check for expired session message
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authStatusService = getIt<AuthStatusService>();
+      if (authStatusService.sessionExpiredMessage != null) {
+        setState(() {
+          errorMessage = authStatusService.sessionExpiredMessage;
+        });
+        _fadeController.forward();
+      }
+    });
   }
 
   void _clearError() {

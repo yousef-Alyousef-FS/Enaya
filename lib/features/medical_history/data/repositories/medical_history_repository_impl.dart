@@ -12,10 +12,17 @@ class MedicalHistoryRepositoryImpl implements MedicalHistoryRepository {
   MedicalHistoryRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<Either<Failure, List<SessionEntity>>>
-  getPatientMedicalHistory() async {
+  Future<Either<Failure, List<SessionEntity>>> getPatientMedicalHistory({
+    String? patientId,
+    String? doctorId,
+    String? role,
+  }) async {
     try {
-      final result = await remoteDataSource.getPatientMedicalHistory();
+      final result = await remoteDataSource.getPatientMedicalHistory(
+        patientId: patientId,
+        doctorId: doctorId,
+        role: role,
+      );
       return Right(result);
     } catch (e) {
       return Left(ApiErrorHandler.handle(e));

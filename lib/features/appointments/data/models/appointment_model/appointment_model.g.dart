@@ -12,14 +12,16 @@ _$AppointmentModelImpl _$$AppointmentModelImplFromJson(
   id: json['id'],
   patientId: json['patient_id'],
   doctorId: json['doctor_id'],
-  scheduledAt: DateTime.parse(json['scheduled_at'] as String),
+  scheduledAt: json['scheduled_at'] == null
+      ? null
+      : DateTime.parse(json['scheduled_at'] as String),
   status: $enumDecode(_$AppointmentStatusEnumMap, json['status']),
   visitReason: json['visit_reason'] as String?,
   notes: json['notes'] as String?,
-  patientName: json['patientName'] as String?,
-  doctorName: json['doctorName'] as String?,
-  patientPhone: json['patientPhone'] as String?,
-  queueNumber: (json['queueNumber'] as num?)?.toInt(),
+  patientName: json['patient_name'] as String?,
+  doctorName: json['doctor_name'] as String?,
+  patientPhone: json['patient_phone'] as String?,
+  queueNumber: (json['queue_number'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$$AppointmentModelImplToJson(
@@ -28,14 +30,14 @@ Map<String, dynamic> _$$AppointmentModelImplToJson(
   'id': instance.id,
   'patient_id': instance.patientId,
   'doctor_id': instance.doctorId,
-  'scheduled_at': instance.scheduledAt.toIso8601String(),
+  'scheduled_at': instance.scheduledAt?.toIso8601String(),
   'status': _$AppointmentStatusEnumMap[instance.status]!,
   'visit_reason': instance.visitReason,
   'notes': instance.notes,
-  'patientName': instance.patientName,
-  'doctorName': instance.doctorName,
-  'patientPhone': instance.patientPhone,
-  'queueNumber': instance.queueNumber,
+  'patient_name': instance.patientName,
+  'doctor_name': instance.doctorName,
+  'patient_phone': instance.patientPhone,
+  'queue_number': instance.queueNumber,
 };
 
 const _$AppointmentStatusEnumMap = {
@@ -44,7 +46,7 @@ const _$AppointmentStatusEnumMap = {
   AppointmentStatus.arrived: 'arrived',
   AppointmentStatus.inProgress: 'inProgress',
   AppointmentStatus.completed: 'completed',
-  AppointmentStatus.cancelled: 'cancelled',
+  AppointmentStatus.cancelled: 'canceled',
   AppointmentStatus.noShow: 'noShow',
   AppointmentStatus.rescheduled: 'rescheduled',
 };

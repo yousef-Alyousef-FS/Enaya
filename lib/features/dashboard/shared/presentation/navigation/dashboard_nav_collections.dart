@@ -98,12 +98,12 @@ const List<DashboardNavItem> patientNavigationItems = [
     icon: Icons.calendar_today_outlined,
     selectedIcon: Icons.calendar_today,
     labelKey: 'nav_appointments',
-    showDividerAfter: true,
   ),
   DashboardNavItem(
     icon: Icons.description_outlined,
     selectedIcon: Icons.description,
     labelKey: 'nav_records',
+    showDividerAfter: true,
   ),
   DashboardNavItem(
     icon: Icons.receipt_outlined,

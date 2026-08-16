@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:enaya/features/prescriptions/domain/entities/prescription_entity.dart';
 import 'package:enaya/core/theme/app_colors.dart';
+import 'package:enaya/features/prescriptions/domain/entities/prescription_entity.dart';
+import 'package:flutter/material.dart';
 
 class PrescriptionItemCard extends StatelessWidget {
   final PrescriptionEntity prescription;
@@ -37,7 +37,7 @@ class PrescriptionItemCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
+                  color: AppColors.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -54,16 +54,16 @@ class PrescriptionItemCard extends StatelessWidget {
                     Text(
                       prescription.medicationName,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white : AppColors.gray900,
-                          ),
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : AppColors.gray900,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       '${prescription.dosage} • ${prescription.frequency}',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.gray500,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: AppColors.gray500),
                     ),
                   ],
                 ),

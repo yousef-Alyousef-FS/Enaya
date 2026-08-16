@@ -1,10 +1,18 @@
 import 'package:dio/dio.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 
 import '../error/failures.dart';
 
 class ApiErrorHandler {
   static Failure handle(dynamic error) {
+    if (kDebugMode) {
+      print('>>> ApiErrorHandler: Caught error: $error');
+      if (error is Error) {
+        print('>>> StackTrace: ${error.stackTrace}');
+      }
+    }
+
     if (error is DioException) {
       switch (error.type) {
         case DioExceptionType.connectionTimeout:

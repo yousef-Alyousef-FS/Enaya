@@ -1,7 +1,5 @@
 class ApiConstants {
-  static const String baseUrl =
-      "https://congenial-reexamine-regretful.ngrok-free.dev/api/";
-
+  static const String baseUrl = "https://enaya-backend.vercel.app/api/";
   // Auth
   static const String login = "auth/login";
   static const String logout = "auth/logout";

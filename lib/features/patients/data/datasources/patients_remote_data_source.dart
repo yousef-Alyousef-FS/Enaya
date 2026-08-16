@@ -1,12 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../../core/constants/api_constants.dart';
 import '../models/patient_model.dart';
 
 abstract class PatientsRemoteDataSource {
-  Future<List<PatientModel>> getPatients({String? doctorId});
-  Future<List<PatientModel>> searchPatients(String query, {String? doctorId});
-  Future<PatientModel> getPatientById(String id, {String? doctorId});
+  Future<List<PatientModel>> getPatients({String? doctorId, String? role});
+  Future<List<PatientModel>> searchPatients(String query, {String? doctorId, String? role});
+  Future<PatientModel> getPatientById(String id, {String? doctorId, String? role});
   Future<PatientModel> getProfile();
   Future<PatientModel> completeProfile({
     required String fullName,
@@ -28,6 +29,27 @@ class PatientsRemoteDataSourceImpl implements PatientsRemoteDataSource {
 
   PatientsRemoteDataSourceImpl(this.dio);
 
+  static String resolvePatientListUrl({String? doctorId, String? role}) {
+    final normalizedRole = (role ?? '').trim().toLowerCase();
+    final hasDoctorScope =
+        (doctorId != null && doctorId.trim().isNotEmpty) || normalizedRole == 'doctor';
+
+    if (hasDoctorScope) {
+      final safeDoctorId = (doctorId ?? '').trim();
+      if (safeDoctorId.isEmpty) {
+        throw ArgumentError('Doctor id is required when resolving doctor patients.');
+      }
+      return ApiConstants.doctorPatients.replaceFirst('{doctor}', safeDoctorId);
+    }
+
+    return ApiConstants.receptionPatients;
+  }
+
+  static String resolvePatientDetailUrl(String id, {String? doctorId, String? role}) {
+    final baseUrl = resolvePatientListUrl(doctorId: doctorId, role: role);
+    return '$baseUrl/$id';
+  }
+
   Map<String, dynamic> _validateResponse(Response response) {
     final data = response.data;
     if (data is Map<String, dynamic> && data['success'] == true) {
@@ -41,24 +63,28 @@ class PatientsRemoteDataSourceImpl implements PatientsRemoteDataSource {
   }
 
   @override
-  Future<List<PatientModel>> getPatients({String? doctorId}) async {
-    final url = doctorId != null
-        ? ApiConstants.doctorPatients.replaceFirst('{doctor}', doctorId)
-        : ApiConstants.receptionPatients;
-    final response = await dio.get(url);
-    final responseData = _validateResponse(response);
-    final List data = responseData['data'] ?? [];
-    return data.map((json) => PatientModel.fromJson(json)).toList();
+  Future<List<PatientModel>> getPatients({String? doctorId, String? role}) async {
+    final url = resolvePatientListUrl(doctorId: doctorId, role: role);
+
+    try {
+      if (kDebugMode) {
+        print('>>> PatientsRemoteDataSource: Fetching patients from: $url');
+      }
+      final response = await dio.get(url);
+      final responseData = _validateResponse(response);
+      final List data = responseData['data'] ?? [];
+      return data.map((json) => PatientModel.fromJson(json)).toList();
+    } catch (e) {
+      if (kDebugMode) {
+        print('>>> PatientsRemoteDataSource: Error fetching patients: $e');
+      }
+      rethrow;
+    }
   }
 
   @override
-  Future<List<PatientModel>> searchPatients(
-    String query, {
-    String? doctorId,
-  }) async {
-    final url = doctorId != null
-        ? ApiConstants.doctorPatients.replaceFirst('{doctor}', doctorId)
-        : ApiConstants.receptionPatients;
+  Future<List<PatientModel>> searchPatients(String query, {String? doctorId, String? role}) async {
+    final url = resolvePatientListUrl(doctorId: doctorId, role: role);
     final response = await dio.get(url, queryParameters: {'search': query});
     final responseData = _validateResponse(response);
     final List data = responseData['data'] ?? [];
@@ -66,10 +92,8 @@ class PatientsRemoteDataSourceImpl implements PatientsRemoteDataSource {
   }
 
   @override
-  Future<PatientModel> getPatientById(String id, {String? doctorId}) async {
-    final url = doctorId != null
-        ? '${ApiConstants.doctorPatients.replaceFirst('{doctor}', doctorId)}/$id'
-        : '${ApiConstants.receptionPatients}/$id';
+  Future<PatientModel> getPatientById(String id, {String? doctorId, String? role}) async {
+    final url = resolvePatientDetailUrl(id, doctorId: doctorId, role: role);
     final response = await dio.get(url);
     final responseData = _validateResponse(response);
     return PatientModel.fromJson(responseData['data']);
@@ -129,10 +153,7 @@ class PatientsRemoteDataSourceImpl implements PatientsRemoteDataSource {
 
   @override
   Future<PatientModel> createPatient(PatientModel patient) async {
-    final response = await dio.post(
-      ApiConstants.receptionPatients,
-      data: patient.toJson(),
-    );
+    final response = await dio.post(ApiConstants.receptionPatients, data: patient.toJson());
     final responseData = _validateResponse(response);
     return PatientModel.fromJson(responseData['data']);
   }

@@ -1,0 +1,1 @@
+enum PatientsOverviewMode { receptionist, doctor }

@@ -36,7 +36,7 @@ class PatientsCubit extends Cubit<PatientsState> {
        _getPatientByIdUseCase = getPatientByIdUseCase,
        super(const PatientsState.initial());
 
-  Future<void> loadPatients({String? doctorId}) async {
+  Future<void> loadPatients({String? doctorId, String? role}) async {
     _doctorId = doctorId;
     emit(state.copyWith(isLoading: true, clearError: true));
     final result = await _getPatientsUseCase(_doctorId);
@@ -59,12 +59,9 @@ class PatientsCubit extends Cubit<PatientsState> {
     emit(state.copyWith(isLoading: true, clearError: true));
     final result = await _createPatientUseCase(patient);
     result.fold(
-      (failure) => emit(
-        state.copyWith(isLoading: false, errorMessage: failure.toString()),
-      ),
+      (failure) => emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
       (newPatient) {
-        final newList = List<PatientEntity>.from(state.patients)
-          ..add(newPatient);
+        final newList = List<PatientEntity>.from(state.patients)..add(newPatient);
         emit(
           state.copyWith(
             isLoading: false,
@@ -80,13 +77,9 @@ class PatientsCubit extends Cubit<PatientsState> {
     emit(state.copyWith(isLoading: true, clearError: true));
     final result = await _deletePatientUseCase(id);
     result.fold(
-      (failure) => emit(
-        state.copyWith(isLoading: false, errorMessage: failure.toString()),
-      ),
+      (failure) => emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
       (_) {
-        final newList = state.patients
-            .where((p) => p.id.toString() != id)
-            .toList();
+        final newList = state.patients.where((p) => p.id.toString() != id).toList();
         emit(
           state.copyWith(
             isLoading: false,
@@ -102,9 +95,7 @@ class PatientsCubit extends Cubit<PatientsState> {
     emit(state.copyWith(isLoading: true, clearError: true));
     final result = await _updatePatientUseCase(patient);
     result.fold(
-      (failure) => emit(
-        state.copyWith(isLoading: false, errorMessage: failure.toString()),
-      ),
+      (failure) => emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
       (updatedPatient) {
         final newList = state.patients
             .map((p) => p.id == updatedPatient.id ? updatedPatient : p)
@@ -122,22 +113,16 @@ class PatientsCubit extends Cubit<PatientsState> {
 
   Future<void> fetchPatientById(String id) async {
     emit(state.copyWith(isLoading: true, clearError: true));
-    final result = await _getPatientByIdUseCase(
-      GetPatientByIdParams(id: id, doctorId: _doctorId),
-    );
+    final result = await _getPatientByIdUseCase(GetPatientByIdParams(id: id, doctorId: _doctorId));
     result.fold(
-      (failure) => emit(
-        state.copyWith(isLoading: false, errorMessage: failure.toString()),
-      ),
+      (failure) => emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
       (patient) => emit(state.copyWith(isLoading: false, patients: [patient])),
     );
   }
 
   void _handleResult(Either<Failure, List<PatientEntity>> result) {
     result.fold(
-      (failure) => emit(
-        state.copyWith(isLoading: false, errorMessage: failure.toString()),
-      ),
+      (failure) => emit(state.copyWith(isLoading: false, errorMessage: failure.message)),
       (patients) => emit(state.copyWith(isLoading: false, patients: patients)),
     );
   }

@@ -87,7 +87,7 @@ class MedicalSessionDetailScreen extends StatelessWidget {
         border: Border.all(
           color: isDark
               ? AppColors.gray800
-              : AppColors.primary.withOpacity(0.1),
+              : AppColors.primary.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -140,7 +140,7 @@ class MedicalSessionDetailScreen extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.05),
+            color: color.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(content, style: const TextStyle(height: 1.5)),

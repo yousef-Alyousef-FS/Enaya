@@ -1,11 +1,13 @@
 import 'dart:ui';
 
 import 'package:dio/dio.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:enaya/core/constants/api_constants.dart';
 import 'package:enaya/core/services/settings_service.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../di/injection.dart';
+import '../services/auth_status_service.dart';
 import '../services/token_manager.dart';
 
 const String applicationJson = "application/json";
@@ -37,6 +39,7 @@ class DioFactory {
   static void addDioInterceptor(Dio dio) {
     final tokenManager = getIt<TokenManager>();
     final settingsService = getIt<SettingsService>();
+    final authStatusService = getIt<AuthStatusService>();
 
     dio.interceptors.add(
       InterceptorsWrapper(
@@ -108,7 +111,16 @@ class DioFactory {
               } catch (e) {
                 // Refresh failed: clear auth state so upper layers can re-login.
                 await tokenManager.clearAll();
+                authStatusService.setUnauthenticated(
+                  message: 'session_expired'.tr(),
+                );
               }
+            } else {
+              // No refresh token: clear everything and redirect.
+              await tokenManager.clearAll();
+              authStatusService.setUnauthenticated(
+                message: 'session_expired'.tr(),
+              );
             }
           }
 

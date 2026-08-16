@@ -9,8 +9,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/di/injection.dart';
 import '../../../../../core/widgets/feature_coming_soon_state.dart';
 import '../../../../appointments/presentation/appointments_page.dart';
+import '../../../../patients/domain/entities/patients_overview_mode.dart';
 import '../../../../patients/presentation/screens/patients_list_screen.dart';
 import '../../../../patients/presentation/state/patients_cubit.dart';
+import '../../../../profile/presentation/screens/profile_screen.dart';
 import '../../../../settings/presentation/screens/settings_screen.dart';
 import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
 import '../cubit/receptionist_dashboard_cubit.dart';
@@ -57,7 +59,10 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
       case 1:
         return BlocProvider(
           create: (context) => getIt<PatientsCubit>(),
-          child: const PatientsListScreen(embedded: true),
+          child: const PatientsListScreen(
+            role: PatientsOverviewMode.receptionist,
+            embedded: true,
+          ),
         );
       case 2:
         return const AppointmentsPage(
@@ -83,11 +88,7 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
           onBack: () => _onNavigationSelected(0),
         );
       case 6:
-        return FeatureComingSoonState(
-          titleKey: 'nav_profile',
-          icon: Icons.person_outline,
-          onBack: () => _onNavigationSelected(0),
-        );
+        return const ProfileScreen(showAppBar: false);
       case 7:
         return const SettingsScreen(showAppBar: false);
       default:
@@ -102,20 +103,27 @@ class _ReceptionistDashboardPageState extends State<ReceptionistDashboardPage> {
 
     return DashboardOverviewBuilder(
       header: _buildGreeting(state),
-      body: Column(
+      stats: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionTitle('stats'.tr()),
+          const SizedBox(height: 12),
+          _buildStatsGrid(state),
+        ],
+      ),
+      actions: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildSectionTitle('quick_actions'.tr()),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           const QuickActions(),
-          const SizedBox(height: 30),
-
-          _buildSectionTitle('stats'.tr()),
-          const SizedBox(height: 10),
-          _buildStatsGrid(state),
-          const SizedBox(height: 30),
+        ],
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           _buildSectionTitle('today_appointments'.tr()),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           const AppointmentsPage(
             mode: AppointmentsOverviewMode.receptionist,
             provideCubit: true,

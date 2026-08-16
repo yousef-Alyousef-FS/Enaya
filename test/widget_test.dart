@@ -4,6 +4,7 @@ import 'package:enaya/main.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:enaya/core/di/injection.dart';
+import 'package:enaya/core/theme/app_theme.dart';
 import 'package:enaya/features/auth/presentation/screens/splash_screen.dart';
 import 'package:enaya/core/screens/developer_screen.dart';
 import 'package:get_it/get_it.dart';
@@ -38,10 +39,17 @@ void main() {
     final splashScreenFound = find.byType(SplashScreen);
     final devScreenFound = find.byType(DeveloperScreen);
 
+    expect(splashScreenFound.evaluate().isNotEmpty || devScreenFound.evaluate().isNotEmpty, true);
+  });
+
+  testWidgets('Dark theme uses consistent button styling', (tester) async {
+    final style = AppTheme.darkTheme.elevatedButtonTheme.style;
+
+    expect(style, isNotNull);
+    expect(style!.minimumSize!.resolve({}), const Size(double.infinity, 54));
     expect(
-      splashScreenFound.evaluate().isNotEmpty ||
-          devScreenFound.evaluate().isNotEmpty,
-      true,
+      (style.shape!.resolve({}) as RoundedRectangleBorder).borderRadius,
+      BorderRadius.circular(12),
     );
   });
 }

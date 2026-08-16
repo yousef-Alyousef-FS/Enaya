@@ -2,6 +2,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failures.dart';
+import '../../../../core/services/auth_status_service.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../../patients/domain/usecases/get_patient_profile_usecase.dart';
 import '../../domain/entities/user_entity.dart';
@@ -25,6 +26,7 @@ class AuthCubit extends Cubit<AuthState> {
   final VerifyEmailUseCase _verifyEmailUseCase;
   final LogoutUseCase _logoutUseCase;
   final GetPatientProfileUseCase _getPatientProfileUseCase;
+  final AuthStatusService _authStatusService;
 
   AuthCubit({
     required LoginUseCase loginUseCase,
@@ -36,6 +38,7 @@ class AuthCubit extends Cubit<AuthState> {
     required VerifyEmailUseCase verifyEmailUseCase,
     required LogoutUseCase logoutUseCase,
     required GetPatientProfileUseCase getPatientProfileUseCase,
+    required AuthStatusService authStatusService,
   }) : _loginUseCase = loginUseCase,
        _signupUseCase = signupUseCase,
        _forgotPasswordUseCase = forgotPasswordUseCase,
@@ -45,6 +48,7 @@ class AuthCubit extends Cubit<AuthState> {
        _verifyEmailUseCase = verifyEmailUseCase,
        _logoutUseCase = logoutUseCase,
        _getPatientProfileUseCase = getPatientProfileUseCase,
+       _authStatusService = authStatusService,
        super(const AuthState.initial());
 
   Future<void> login(String usernameOrEmail, String password) async {
@@ -65,6 +69,7 @@ class AuthCubit extends Cubit<AuthState> {
         emit(state.copyWith(isLoading: false, errorMessage: failure.message));
       },
       (user) async {
+        _authStatusService.setAuthenticated();
         if (user.roleId == 3) {
           final profileResult = await _getPatientProfileUseCase(NoParams());
           profileResult.fold(
@@ -118,14 +123,17 @@ class AuthCubit extends Cubit<AuthState> {
           phone: phone,
         ),
       ),
-      onSuccess: (user) => emit(
-        state.copyWith(
-          isLoading: false,
-          clearErrorMessage: true,
-          isSuccess: true,
-          currentUser: user,
-        ),
-      ),
+      onSuccess: (user) {
+        _authStatusService.setAuthenticated();
+        emit(
+          state.copyWith(
+            isLoading: false,
+            clearErrorMessage: true,
+            isSuccess: true,
+            currentUser: user,
+          ),
+        );
+      },
     );
   }
 
@@ -220,14 +228,17 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> logout() async {
     await _handleResult<void>(
       _logoutUseCase(NoParams()),
-      onSuccess: (_) => emit(
-        state.copyWith(
-          isLoading: false,
-          clearErrorMessage: true,
-          isSuccess: true,
-          clearCurrentUser: true,
-        ),
-      ),
+      onSuccess: (_) {
+        _authStatusService.setUnauthenticated();
+        emit(
+          state.copyWith(
+            isLoading: false,
+            clearErrorMessage: true,
+            isSuccess: true,
+            clearCurrentUser: true,
+          ),
+        );
+      },
     );
   }
 

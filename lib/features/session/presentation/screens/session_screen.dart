@@ -119,7 +119,7 @@ class _SessionScreenState extends State<SessionScreen> {
                   unselectedLabelColor: AppColors.gray500,
                   indicatorSize: TabBarIndicatorSize.tab,
                   indicator: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.12),
+                    color: AppColors.primary.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   indicatorPadding: const EdgeInsets.symmetric(
@@ -132,7 +132,7 @@ class _SessionScreenState extends State<SessionScreen> {
                   ),
                   splashFactory: InkRipple.splashFactory,
                   overlayColor: WidgetStatePropertyAll(
-                    AppColors.primary.withOpacity(0.06),
+                    AppColors.primary.withValues(alpha: 0.06),
                   ),
                   tabs: [
                     Tab(text: "complaint_notes".tr()),
@@ -170,7 +170,7 @@ class _SessionScreenState extends State<SessionScreen> {
                         color: isDark ? AppColors.darkSurface : Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 10,
                             offset: const Offset(0, -4),
                           ),

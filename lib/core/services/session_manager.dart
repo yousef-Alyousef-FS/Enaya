@@ -61,7 +61,8 @@ class SessionManager {
 
   String? get currentUserEmail => readStringValue(['email']);
 
-  String? get currentUserPhone => readStringValue(['phone', 'mobile']);
+  String? get currentUserPhone =>
+      readStringValue(['phone', 'mobile', 'phone_number', 'phoneNumber']);
 
   int? get currentRoleId {
     final data = currentUser;
@@ -83,6 +84,14 @@ class SessionManager {
       default:
         return int.tryParse(rawString);
     }
+  }
+
+  bool get isProfileCompleted {
+    final data = currentUser;
+    if (data == null) return false;
+    return data['profile_completed'] as bool? ??
+        data['profileCompleted'] as bool? ??
+        false;
   }
 
   /// Updates existing user data with new values.

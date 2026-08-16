@@ -18,22 +18,30 @@ class SessionModel extends SessionEntity {
     final prescriptionsJson = json['prescriptions'] as List? ?? [];
 
     return SessionModel(
-      id: json['id'],
-      appointmentId: (json['appointment_id'] ?? json['appointmentId']) as int,
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      appointmentId:
+          int.tryParse(
+            (json['appointment_id'] ?? json['appointmentId'])?.toString() ?? '',
+          ) ??
+          0,
       startedAt: json['started_at'] != null
-          ? DateTime.parse(json['started_at'])
+          ? DateTime.tryParse(json['started_at'].toString())
           : (json['startedAt'] != null
-                ? DateTime.parse(json['startedAt'])
+                ? DateTime.tryParse(json['startedAt'].toString())
                 : null),
       endedAt: json['ended_at'] != null
-          ? DateTime.parse(json['ended_at'])
-          : (json['endedAt'] != null ? DateTime.parse(json['endedAt']) : null),
-      notes: json['notes'],
-      patientComplaint: json['patient_complaint'] ?? json['patientComplaint'],
-      diagnosis: json['diagnosis'],
-      status: json['status'],
+          ? DateTime.tryParse(json['ended_at'].toString())
+          : (json['endedAt'] != null
+                ? DateTime.tryParse(json['endedAt'].toString())
+                : null),
+      notes: json['notes']?.toString(),
+      patientComplaint: (json['patient_complaint'] ?? json['patientComplaint'])
+          ?.toString(),
+      diagnosis: json['diagnosis']?.toString(),
+      status: json['status']?.toString() ?? 'pending',
       prescriptions: prescriptionsJson
-          .map((p) => PrescriptionModel.fromJson(p as Map<String, dynamic>))
+          .whereType<Map<String, dynamic>>()
+          .map((p) => PrescriptionModel.fromJson(p))
           .toList(),
     );
   }

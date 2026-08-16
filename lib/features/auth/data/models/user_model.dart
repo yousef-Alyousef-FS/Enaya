@@ -11,8 +11,6 @@ class UserModel extends UserEntity {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
-    // Note: profileCompleted is returned in the 'data' root of the signup response,
-    // but we might want to store it inside the user object for convenience.
     return UserModel(
       id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
       email: json['email'] as String? ?? '',
@@ -23,7 +21,10 @@ class UserModel extends UserEntity {
             json['roleId']?.toString() ?? json['role_id']?.toString() ?? '3',
           ) ??
           3,
-      profileCompleted: json['profileCompleted'] as bool?,
+      profileCompleted:
+          json['profile_completed'] as bool? ??
+          json['profileCompleted'] as bool? ??
+          false,
     );
   }
 
@@ -34,7 +35,7 @@ class UserModel extends UserEntity {
       'username': userName,
       'phone': phone,
       'roleId': roleId,
-      'profileCompleted': profileCompleted,
+      'profile_completed': profileCompleted,
     };
   }
 }
