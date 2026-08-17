@@ -10,6 +10,9 @@ set(BINARY_NAME "enaya")
 # versions of CMake.
 cmake_policy(VERSION 3.14...3.25)
 
+# [FIX]: Avoid CMake 3.10 compatibility issues with Firebase SDK
+set(CMAKE_POLICY_VERSION_MINIMUM 3.10)
+
 # Define build configuration option.
 get_property(IS_MULTICONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(IS_MULTICONFIG)

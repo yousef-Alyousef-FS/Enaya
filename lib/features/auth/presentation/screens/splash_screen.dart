@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -98,18 +99,51 @@ class _SplashScreenState extends State<SplashScreen>
     final roleId = sessionManager.currentRoleId;
 
     if (token != null && token.isNotEmpty && roleId != null) {
-      authStatusService.setAuthenticated();
-      final role = UserRole.fromId(roleId);
-      final bool profileCompleted = sessionManager.isProfileCompleted;
+      // ⭐ Professional Check: Validate Token with Backend
+      try {
+        final dio = getIt<Dio>();
+        final response = await dio.get('/auth/me');
 
-      final route = switch (role) {
-        UserRole.receptionist => AppRouter.receptionistHome,
-        UserRole.doctor => AppRouter.doctorHome,
-        UserRole.patient =>
-          profileCompleted ? AppRouter.patientHome : AppRouter.completeProfile,
-      };
-      if (mounted) context.go(route);
-      return;
+        if (response.statusCode == 200) {
+          authStatusService.setAuthenticated();
+          final role = UserRole.fromId(roleId);
+
+          // ⭐ Professional Check: Verify Patient profile status from Server, not Cache
+          bool profileCompleted = sessionManager.isProfileCompleted;
+
+          if (role == UserRole.patient) {
+            try {
+              // Try fetching profile to get REAL status
+              final profileResponse = await dio.get('/patients/profile');
+              if (profileResponse.statusCode == 200) {
+                final patientData = profileResponse.data['data'];
+                profileCompleted = patientData['profile_completed'] ?? false;
+                // Sync cache
+                await sessionManager.updateUserData({
+                  'profile_completed': profileCompleted,
+                });
+              }
+            } catch (_) {
+              // If profile fetch fails but token is valid, we trust the last known cache or stay safe
+            }
+          }
+
+          final route = switch (role) {
+            UserRole.receptionist => AppRouter.receptionistHome,
+            UserRole.doctor => AppRouter.doctorHome,
+            UserRole.patient =>
+              profileCompleted
+                  ? AppRouter.patientHome
+                  : AppRouter.completeProfile,
+          };
+          if (mounted) context.go(route);
+          return;
+        }
+      } catch (e) {
+        // If 401 Unauthorized or any server error, clear and go to login
+        await tokenManager.deleteToken();
+        await sessionManager.clearSession();
+      }
     }
 
     authStatusService.setUnauthenticated();

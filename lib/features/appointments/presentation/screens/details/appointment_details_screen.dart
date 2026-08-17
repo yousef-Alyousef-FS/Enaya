@@ -15,13 +15,15 @@ import 'appointment_status_dialog.dart';
 import 'cancellation_reason_dialog.dart';
 
 class AppointmentDetailsScreen extends StatefulWidget {
-  final AppointmentEntity appointment;
+  final AppointmentEntity? appointment;
+  final String? appointmentId;
   final AppointmentsOverviewMode role;
   final VoidCallback? onDataChanged;
 
   const AppointmentDetailsScreen({
     super.key,
-    required this.appointment,
+    this.appointment,
+    this.appointmentId,
     this.role = AppointmentsOverviewMode.generic,
     this.onDataChanged,
   });
@@ -33,21 +35,51 @@ class AppointmentDetailsScreen extends StatefulWidget {
 
 class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+  void initState() {
+    super.initState();
+    // سيتم التحميل في الـ bloc provider عند إنشائه
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          getIt<AppointmentDetailsCubit>()..setAppointment(widget.appointment),
+      create: (_) {
+        final cubit = getIt<AppointmentDetailsCubit>();
+        if (widget.appointment != null) {
+          cubit.setAppointment(widget.appointment!);
+        } else if (widget.appointmentId != null) {
+          cubit.loadAppointmentById(widget.appointmentId!);
+        }
+        return cubit;
+      },
       child: BlocConsumer<AppointmentDetailsCubit, AppointmentDetailsState>(
         listener: _handleStateChanges,
         builder: (context, state) {
+          // حالة التحميل
+          if (state.isLoading) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+
           final appointment = state.appointment ?? widget.appointment;
-          final locale = context.locale
-              .toString(); // [FIX]: Dynamic localization
+
+          if (appointment == null) {
+            return Scaffold(
+              appBar: AppBar(title: Text('appointment_details'.tr())),
+              body: Center(
+                child: Text(
+                  'appointment_not_found'.tr(),
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+            );
+          }
+
+          final theme = Theme.of(context);
+          final locale = context.locale.toString();
 
           return Scaffold(
-            backgroundColor: theme.colorScheme.surface,
             appBar: AppBar(
               title: Text(
                 'appointment_details'.tr(),
@@ -85,6 +117,8 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
       ),
     );
   }
+
+  // باقي الدوال كما هي مع بعض التعديلات في استخدام appointment
 
   Widget _buildHeader(ThemeData theme, AppointmentEntity appointment) {
     final isPatient = widget.role == AppointmentsOverviewMode.patient;
@@ -259,7 +293,6 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
         const SizedBox(height: 16),
         _buildPreparationCard(theme),
         const SizedBox(height: 32),
-
         _buildSectionHeader(
           theme,
           'visit_details'.tr(),
@@ -506,22 +539,28 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     AppointmentEntity appointment,
   ) {
     if (widget.role == AppointmentsOverviewMode.patient) {
-      _rescheduleAppointment(context);
+      _rescheduleAppointment(context, appointment);
     } else {
-      _showStatusDialog(context);
+      _showStatusDialog(context, appointment);
     }
   }
 
-  void _showStatusDialog(BuildContext context) {
+  void _showStatusDialog(BuildContext context, AppointmentEntity appointment) {
     showAppointmentStatusDialog(
       context: context,
-      currentStatus: widget.appointment.status,
+      currentStatus: appointment.status, // استخدام appointment الحالي
       onStatusSelected: (status) =>
           context.read<AppointmentDetailsCubit>().updateStatus(status),
     );
   }
 
   void _showCancelConfirmation(BuildContext context) async {
+    final appointment = context
+        .read<AppointmentDetailsCubit>()
+        .state
+        .appointment;
+    if (appointment == null) return;
+
     final String? reason = await showCancellationReasonDialog(context);
     if (reason != null && context.mounted) {
       final String cancelledBy = widget.role == AppointmentsOverviewMode.patient
@@ -534,11 +573,14 @@ class _AppointmentDetailsScreenState extends State<AppointmentDetailsScreen> {
     }
   }
 
-  Future<void> _rescheduleAppointment(BuildContext context) async {
+  Future<void> _rescheduleAppointment(
+    BuildContext context,
+    AppointmentEntity appointment,
+  ) async {
     final result = await context.push(
       AppRouter.scheduleAppointment,
       extra: {
-        'appointment': widget.appointment,
+        'appointment': appointment,
         'mode': AppointmentScreenMode.reschedule,
       },
     );

@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 
+import '../routing/app_router.dart';
 import 'token_manager.dart';
 
 /// Central service to manage FCM lifecycle and interaction with Laravel backend.
@@ -97,15 +98,27 @@ class NotificationService {
   /// Central routing logic based on notification data payload.
   void _handleNotificationTap(RemoteMessage message) {
     final data = message.data;
-    final String? type = data['type'];
+    final String? type = data['type']?.toString();
+    final String? id = (data['id'] ?? data['appointment_id'])?.toString();
 
     if (type == null) return;
 
-    // Use router to navigate
-    if (type.contains('appointment')) {
-      // context.push(AppRouter.appointmentsOverview);
+    if (kDebugMode) {
+      print('>>> FCM Tap Action: Type=$type, ID=$id');
+    }
+
+    // ⭐ Navigation Strategy based on Notification Type
+    if (type.contains('appointment') || type.contains('reminder')) {
+      if (id != null) {
+        AppRouter.router.push(
+          AppRouter.appointmentDetails,
+          extra: {'appointmentId': id, 'fromNotification': true},
+        );
+      } else {
+        AppRouter.router.push('/appointments');
+      }
     } else if (type.contains('prescription')) {
-      // context.push(AppRouter.medicalHistory);
+      AppRouter.router.push('/medical-history');
     }
   }
 }

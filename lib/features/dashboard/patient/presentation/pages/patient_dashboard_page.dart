@@ -20,7 +20,8 @@ import '../../../../appointments/presentation/cubit/list/patient_appointments_st
 import '../../../../appointments/presentation/widgets/shared/appointment_card.dart';
 import '../../../../medical_history/presentation/cubit/medical_history_cubit.dart';
 import '../../../../medical_history/presentation/screens/medical_history_screen.dart';
-import '../../../../profile/presentation/screens/profile_screen.dart';
+import '../../../../patients/presentation/screens/patient_profile_screen.dart';
+import '../../../../patients/presentation/state/patient_profile_cubit.dart';
 import '../../../../settings/presentation/screens/settings_screen.dart';
 import '../../../shared/presentation/navigation/dashboard_nav_collections.dart';
 
@@ -48,6 +49,7 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
           create: (_) =>
               getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
         ),
+        BlocProvider(create: (_) => getIt<PatientProfileCubit>()),
       ],
       child: Builder(
         builder: (context) {
@@ -89,7 +91,10 @@ class _PatientDashboardPageState extends State<PatientDashboardPage> {
           onBack: () => _onNavigationSelected(context, 0),
         );
       case 4:
-        return const ProfileScreen(showAppBar: false);
+        return BlocProvider(
+          create: (context) => getIt<PatientProfileCubit>(),
+          child: const PatientProfileScreen(showAppBar: false),
+        );
       case 5:
         return const SettingsScreen(showAppBar: false);
       default:
@@ -318,14 +323,6 @@ class PatientDashboardGreetingCard extends StatelessWidget {
                           ),
                         ),
                     ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'patient_overview_subtitle'.tr(),
-                    style: TextStyle(
-                      color: whiteColor.withAlpha(220),
-                      fontSize: 13,
-                    ),
                   ),
                 ],
               ),

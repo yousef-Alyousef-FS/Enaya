@@ -24,8 +24,18 @@ class AppointmentModel with _$AppointmentModel {
     @JsonKey(name: 'queue_number') int? queueNumber,
   }) = _AppointmentModel;
 
-  factory AppointmentModel.fromJson(Map<String, dynamic> json) =>
-      _$AppointmentModelFromJson(json);
+  factory AppointmentModel.fromJson(Map<String, dynamic> json) {
+    // [UI_ADAPT]: Extract data from nested Laravel objects if present
+    final patientData = json['patient'] as Map<String, dynamic>?;
+    final doctorData = json['doctor'] as Map<String, dynamic>?;
+
+    return _$AppointmentModelFromJson({
+      ...json,
+      'patient_name': json['patient_name'] ?? patientData?['full_name'],
+      'patient_phone': json['patient_phone'] ?? patientData?['phone'],
+      'doctor_name': json['doctor_name'] ?? doctorData?['full_name'],
+    });
+  }
 }
 
 extension AppointmentModelMapper on AppointmentModel {

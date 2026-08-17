@@ -16,22 +16,16 @@ class ApiErrorHandler {
     if (error is DioException) {
       switch (error.type) {
         case DioExceptionType.connectionTimeout:
-          return ServerFailure("error_connection_timeout".tr());
-
         case DioExceptionType.sendTimeout:
-          return ServerFailure("error_send_timeout".tr());
-
         case DioExceptionType.receiveTimeout:
-          return ServerFailure("error_receive_timeout".tr());
+        case DioExceptionType.connectionError:
+          return NetworkFailure();
 
         case DioExceptionType.badResponse:
           return _handleBadResponse(error.response);
 
         case DioExceptionType.cancel:
           return ServerFailure("error_request_cancelled".tr());
-
-        case DioExceptionType.connectionError:
-          return NetworkFailure();
 
         case DioExceptionType.badCertificate:
           return ServerFailure("error_bad_certificate".tr());

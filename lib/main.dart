@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:enaya/core/di/injection.dart';
 import 'package:enaya/core/language/language_manager.dart';
@@ -6,14 +8,15 @@ import 'package:enaya/core/services/settings_service.dart';
 import 'package:enaya/core/theme/app_theme.dart';
 import 'package:enaya/core/theme/cubit/theme_cubit.dart';
 import 'package:enaya/features/auth/presentation/cubit/auth_cubit.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-// import 'package:firebase_core/firebase_core.dart';
-// import 'package:enaya/core/services/notification_service.dart';
-// import 'package:firebase_messaging/firebase_messaging.dart';
-// import 'firebase_options.dart'; // ⭐ Uncomment this after running 'flutterfire configure'
+import 'core/services/notification_service.dart';
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,14 +25,14 @@ void main() async {
   // Initialize Dependency Injection
   await initGetIt();
 
-  // ⭐ Firebase Initialization (Requires 'firebase_options.dart')
-  /* 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-  await getIt<NotificationService>().initialize();
-  */
+  // ⭐ Firebase Initialization (Mobile/Web only)
+  if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    await getIt<NotificationService>().initialize();
+  }
 
   final settingsService = getIt<SettingsService>();
   final savedLanguage = settingsService.getLanguage();

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "795376685783",
+    "project_id": "enaya-94656",
+    "storage_bucket": "enaya-94656.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795376685783:android:5bb1a57fc3d363e41a9692",
+        "android_client_info": {
+          "package_name": "com.example.enaya"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQxJ7GToAbq39sgzXld2cYd9xuWqY9kGA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -21,10 +21,6 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String usernameOrEmail,
     required String password,
   }) async {
-    if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure());
-    }
-
     try {
       final user = await remoteDataSource.login(
         usernameOrEmail: usernameOrEmail,
@@ -43,10 +39,8 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String username,
     required String phone,
   }) async {
-    if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure());
-    }
-
+    // [TECH_DEBT]: Don't block request based on local check if it's giving false negatives.
+    // Instead, let Dio attempt the request and catch connection errors in ApiErrorHandler.
     try {
       final user = await remoteDataSource.signup(
         email: email,
@@ -62,10 +56,6 @@ class AuthRepositoryImpl implements IAuthRepository {
 
   @override
   Future<Either<Failure, Unit>> forgotPassword({required String email}) async {
-    if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure());
-    }
-
     try {
       await remoteDataSource.forgotPassword(email: email);
       return const Right(unit);
@@ -80,10 +70,6 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String verificationCode,
     required String newPassword,
   }) async {
-    if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure());
-    }
-
     try {
       await remoteDataSource.resetPassword(
         email: email,
@@ -101,10 +87,6 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String currentPassword,
     required String newPassword,
   }) async {
-    if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure());
-    }
-
     try {
       await remoteDataSource.changePassword(
         currentPassword: currentPassword,
@@ -120,10 +102,6 @@ class AuthRepositoryImpl implements IAuthRepository {
   Future<Either<Failure, Unit>> sendEmailVerification({
     required String email,
   }) async {
-    if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure());
-    }
-
     try {
       await remoteDataSource.sendEmailVerification(email: email);
       return const Right(unit);
@@ -137,10 +115,6 @@ class AuthRepositoryImpl implements IAuthRepository {
     required String email,
     required String verificationCode,
   }) async {
-    if (!await networkInfo.isConnected) {
-      return Left(NetworkFailure());
-    }
-
     try {
       await remoteDataSource.verifyEmail(
         email: email,

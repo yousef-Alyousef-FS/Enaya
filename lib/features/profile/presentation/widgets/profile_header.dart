@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+
 import '../../domain/entities/base_profile_entity.dart';
 
 class ProfileHeader extends StatelessWidget {

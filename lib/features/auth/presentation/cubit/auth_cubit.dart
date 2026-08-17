@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:enaya/features/auth/domain/entities/user_entity.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/error/failures.dart';
@@ -6,7 +7,6 @@ import '../../../../core/services/auth_status_service.dart';
 import '../../../../core/services/notification_service.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../../patients/domain/usecases/get_patient_profile_usecase.dart';
-import '../../domain/entities/user_entity.dart';
 import '../../domain/usecases/change_password_usecase.dart';
 import '../../domain/usecases/forgot_password_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
@@ -61,6 +61,7 @@ class AuthCubit extends Cubit<AuthState> {
         isLoading: true,
         clearErrorMessage: true,
         isSuccess: false,
+        isNetworkError: false,
       ),
     );
 
@@ -70,7 +71,13 @@ class AuthCubit extends Cubit<AuthState> {
 
     await result.fold(
       (failure) async {
-        emit(state.copyWith(isLoading: false, errorMessage: failure.message));
+        emit(
+          state.copyWith(
+            isLoading: false,
+            errorMessage: failure.message,
+            isNetworkError: failure is NetworkFailure,
+          ),
+        );
       },
       (user) async {
         _authStatusService.setAuthenticated();
@@ -140,6 +147,7 @@ class AuthCubit extends Cubit<AuthState> {
             clearErrorMessage: true,
             isSuccess: true,
             currentUser: user,
+            isNetworkError: false,
           ),
         );
       },
@@ -254,7 +262,13 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   void clearStatus() {
-    emit(state.copyWith(clearErrorMessage: true, isSuccess: false));
+    emit(
+      state.copyWith(
+        clearErrorMessage: true,
+        isSuccess: false,
+        isNetworkError: false,
+      ),
+    );
   }
 
   Future<void> _handleResult<T>(
@@ -266,6 +280,7 @@ class AuthCubit extends Cubit<AuthState> {
         isLoading: true,
         clearErrorMessage: true,
         isSuccess: false,
+        isNetworkError: false,
       ),
     );
 
@@ -277,6 +292,7 @@ class AuthCubit extends Cubit<AuthState> {
           isLoading: false,
           errorMessage: failure.message,
           isSuccess: false,
+          isNetworkError: failure is NetworkFailure,
         ),
       ),
       onSuccess,

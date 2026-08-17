@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../core/di/injection.dart';
 import '../../../../core/layout/responsive_layout.dart';
 import '../../../../core/routing/app_router.dart';
+import '../../../../core/services/auth_status_service.dart';
 import '../../../../core/widgets/loaders/app_loaders.dart';
 import '../../domain/entities/user_role.dart';
 import '../cubit/auth_cubit.dart';
@@ -14,8 +16,6 @@ import '../widgets/auth_card_container.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/logo.dart';
 import '../widgets/portrait_only_scope.dart';
-import '../../../../core/services/auth_status_service.dart';
-import '../../../../core/di/injection.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -235,6 +235,12 @@ class _LoginScreenState extends State<LoginScreen>
 
         // Only handle errors if this screen is the current active screen
         if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+
+        if (state.isNetworkError) {
+          context.go('${AppRouter.noInternet}?next=${AppRouter.login}');
+          cubit.clearStatus();
+          return;
+        }
 
         if (state.isError) {
           setState(

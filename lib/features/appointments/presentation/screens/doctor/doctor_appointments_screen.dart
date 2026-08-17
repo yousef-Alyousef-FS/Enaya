@@ -99,136 +99,148 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
           state.filteredAppointments,
         ).length;
 
-        final content = Align(
-          alignment: Alignment
-              .topCenter, // [UI_FIX]: Prevents vertical jumping during loading
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1300),
-            child: RefreshIndicator(
-              onRefresh: () async => _reloadCurrentRange(state),
-              child: ListView(
-                controller: widget.isEmbedded ? null : _scrollController,
-                padding: widget.isEmbedded
-                    ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4)
-                    : const EdgeInsets.fromLTRB(
-                        24,
-                        8,
-                        24,
-                        16,
-                      ), // [UI_FIX]: Consistent top/bottom padding
-                shrinkWrap: widget.isEmbedded,
-                physics: widget.isEmbedded
-                    ? const NeverScrollableScrollPhysics()
-                    : const AlwaysScrollableScrollPhysics(
-                        parent: BouncingScrollPhysics(),
-                      ),
-                children: [
-                  if (!widget.isEmbedded) ...[
-                    DoctorAppointmentsHeader(
-                      isLoading:
-                          state.status == DoctorAppointmentsStatus.loading,
-                      onManageSchedule: () => context.push(
-                        Uri(
-                          path: AppRouter.doctorSchedule,
-                          queryParameters: {'doctorId': widget.doctorId},
-                        ).toString(),
-                      ),
+        final contentList = [
+          if (!widget.isEmbedded) ...[
+            DoctorAppointmentsHeader(
+              isLoading: state.status == DoctorAppointmentsStatus.loading,
+              onManageSchedule: () => context.push(
+                Uri(
+                  path: AppRouter.doctorSchedule,
+                  queryParameters: {'doctorId': widget.doctorId},
+                ).toString(),
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          DoctorAppointmentsFilterBar(
+            searchQuery: state.searchQuery,
+            selectedDate: state.selectedDate,
+            selectedEndDate: state.selectedEndDate,
+            onSearchChanged: (query) => context
+                .read<DoctorAppointmentsCubit>()
+                .updateSearchQuery(query),
+            onPickRange: () => _pickRange(state),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              AppointmentStatusCard(
+                status: AppointmentStatus.completed,
+                label: 'status_completed'.tr(),
+                count: completedCount,
+                isSelected:
+                    _selectedView == _DoctorAppointmentsQuickView.completed,
+                onTap: () {
+                  setState(() {
+                    _selectedView = _DoctorAppointmentsQuickView.completed;
+                  });
+                },
+              ),
+              AppointmentStatusCard(
+                status: AppointmentStatus.confirmed,
+                label: 'today_appointments'.tr(),
+                count: todayCount,
+                isSelected: _selectedView == _DoctorAppointmentsQuickView.today,
+                onTap: () async {
+                  await _loadTodayAppointments();
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          AppSectionHeader(
+            title: _selectedView == _DoctorAppointmentsQuickView.completed
+                ? 'status_completed'.tr()
+                : 'today_appointments'.tr(),
+            isLoading: state.status == DoctorAppointmentsStatus.loading,
+          ),
+          const SizedBox(height: 12),
+          if (state.status == DoctorAppointmentsStatus.failure &&
+              state.errorMessage != null) ...[
+            AppointmentsInlineError(
+              message: state.errorMessage,
+              onRetry: () => _reloadCurrentRange(state),
+            ),
+            const SizedBox(height: 12),
+          ],
+          if (state.status == DoctorAppointmentsStatus.loading &&
+              state.appointments.isEmpty)
+            const AppointmentTableSkeleton()
+          else if (visibleAppointments.isEmpty)
+            AppointmentsInlineEmpty(
+              title: 'no_appointments_found'.tr(),
+              subtitle: 'adjust_filters_to_find_appointments'.tr(),
+            )
+          else
+            GenericTableShell<AppointmentEntity>(
+              data: visibleAppointments,
+              isLoading: state.status == DoctorAppointmentsStatus.loading,
+              isPageLoading: state.isPageLoading,
+              onRowTap: (appointment) => _openDetails(context, appointment),
+              onLoadMore: widget.isEmbedded
+                  ? null
+                  : () => context.read<DoctorAppointmentsCubit>().loadNextPage(
+                      widget.doctorId,
                     ),
-                    const SizedBox(height: 12),
-                  ],
-                  DoctorAppointmentsFilterBar(
-                    searchQuery: state.searchQuery,
-                    selectedDate: state.selectedDate,
-                    selectedEndDate: state.selectedEndDate,
-                    onSearchChanged: (query) => context
-                        .read<DoctorAppointmentsCubit>()
-                        .updateSearchQuery(query),
-                    onPickRange: () => _pickRange(state),
+              columns: [
+                TableColumn(
+                  label: 'patient'.tr(),
+                  cell: (app) => Text(
+                    app.patientName,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 12), // توحيد المسافة
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [
-                      AppointmentStatusCard(
-                        status: AppointmentStatus.completed,
-                        label: 'status_completed'.tr(),
-                        count: completedCount,
-                        isSelected:
-                            _selectedView ==
-                            _DoctorAppointmentsQuickView.completed,
-                        onTap: () {
-                          setState(() {
-                            _selectedView =
-                                _DoctorAppointmentsQuickView.completed;
-                          });
-                        },
-                      ),
-                      AppointmentStatusCard(
-                        status: AppointmentStatus.confirmed,
-                        label: 'today_appointments'.tr(),
-                        count: todayCount,
-                        isSelected:
-                            _selectedView == _DoctorAppointmentsQuickView.today,
-                        onTap: () async {
-                          await _loadTodayAppointments();
-                        },
-                      ),
-                    ],
+                ),
+                TableColumn(
+                  label: 'time'.tr(),
+                  cell: (app) => Text(DateFormat.jm().format(app.dateTime)),
+                ),
+                TableColumn(
+                  label: 'reason'.tr(),
+                  cell: (app) => Text(
+                    app.reason ?? '--',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 16), // مسافة مناسبة قبل الـ Header
-                  AppSectionHeader(
-                    title:
-                        _selectedView == _DoctorAppointmentsQuickView.completed
-                        ? 'status_completed'.tr()
-                        : 'today_appointments'.tr(),
-                    isLoading: state.status == DoctorAppointmentsStatus.loading,
-                  ),
-                  const SizedBox(height: 12), // تقليل المسافة
-                  if (state.status == DoctorAppointmentsStatus.failure &&
-                      state.errorMessage != null) ...[
-                    AppointmentsInlineError(
-                      message: state.errorMessage,
-                      onRetry: () => _reloadCurrentRange(state),
+                ),
+                TableColumn(
+                  label: 'status'.tr(),
+                  cell: (app) => _buildStatusChip(app.status),
+                ),
+              ],
+            ),
+          const SizedBox(height: 8),
+        ];
+
+        if (widget.isEmbedded) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: contentList,
+          );
+        }
+
+        return Scaffold(
+          body: SafeArea(
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1300),
+                child: RefreshIndicator(
+                  onRefresh: () async => _reloadCurrentRange(state),
+                  child: ListView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
                     ),
-                    const SizedBox(height: 12),
-                  ],
-                  if (state.status == DoctorAppointmentsStatus.loading &&
-                      state.appointments.isEmpty)
-                    const AppointmentTableSkeleton()
-                  else if (visibleAppointments.isEmpty)
-                    AppointmentsInlineEmpty(
-                      title: 'no_appointments_found'.tr(),
-                      subtitle: 'adjust_filters_to_find_appointments'.tr(),
-                    )
-                  else
-                    GenericTableShell<AppointmentEntity>(
-                      data: visibleAppointments,
-                      isLoading:
-                          state.status == DoctorAppointmentsStatus.loading,
-                      isPageLoading: state.isPageLoading,
-                      onRowTap: (appointment) =>
-                          _openDetails(context, appointment),
-                      onLoadMore: widget.isEmbedded
-                          ? null
-                          : () => context
-                                .read<DoctorAppointmentsCubit>()
-                                .loadNextPage(widget.doctorId),
-                      columns: [
-                        // ... (الأعمدة كما هي)
-                      ],
-                    ),
-                  const SizedBox(height: 8), // مسافة نهائية صغيرة
-                ],
+                    children: contentList,
+                  ),
+                ),
               ),
             ),
           ),
         );
-        if (widget.isEmbedded) {
-          return content;
-        }
-
-        return Scaffold(body: SafeArea(child: content));
       },
     );
   }
@@ -335,6 +347,25 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
 
   bool _isSameDay(DateTime a, DateTime b) {
     return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  Widget _buildStatusChip(AppointmentStatus status) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: status.color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: status.color.withValues(alpha: 0.2)),
+      ),
+      child: Text(
+        status.displayName,
+        style: TextStyle(
+          color: status.color,
+          fontSize: 12,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
   }
 
   void _openDetails(BuildContext context, AppointmentEntity appointment) {

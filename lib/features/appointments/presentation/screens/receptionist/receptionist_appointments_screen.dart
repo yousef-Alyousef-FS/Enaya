@@ -40,37 +40,31 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
       builder: (context, state) {
         final theme = Theme.of(context);
 
+        final contentList = [
+          _buildStatsSection(state),
+          const SizedBox(height: 16),
+          _buildErrorSection(context, state),
+          _buildFilterSection(state),
+          _buildTableSection(context, state),
+          const SizedBox(height: 10),
+        ];
+
         final content = Align(
-          alignment: Alignment
-              .topCenter, // [UI_FIX]: Prevents vertical jumping during loading
+          alignment: Alignment.topCenter,
           child: Container(
             constraints: isEmbedded
                 ? null
-                : const BoxConstraints(
-                    maxWidth: 1300,
-                  ), // [UI_FIX]: Consistent max-width with Builder
-            child: ListView(
-              padding: isEmbedded
-                  ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4)
-                  : const EdgeInsets.fromLTRB(
-                      20,
-                      8,
-                      20,
-                      16,
-                    ), // [UI_FIX]: Consistent padding
-              shrinkWrap: isEmbedded,
-              physics: isEmbedded
-                  ? const NeverScrollableScrollPhysics()
-                  : const BouncingScrollPhysics(),
-              children: [
-                _buildStatsSection(state),
-                const SizedBox(height: 16),
-                _buildErrorSection(context, state),
-                _buildFilterSection(state),
-                _buildTableSection(context, state),
-                const SizedBox(height: 10),
-              ],
-            ),
+                : const BoxConstraints(maxWidth: 1300),
+            child: isEmbedded
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: contentList,
+                  )
+                : ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+                    physics: const BouncingScrollPhysics(),
+                    children: contentList,
+                  ),
           ),
         );
 

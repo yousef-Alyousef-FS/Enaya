@@ -245,6 +245,13 @@ class _SignupScreenState extends State<SignupScreen>
         // Only handle errors if this screen is the current active screen
         if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
 
+        if (state.isNetworkError) {
+          if (!mounted) return;
+          context.go('${AppRouter.noInternet}?next=${AppRouter.signup}');
+          cubit.clearStatus();
+          return;
+        }
+
         if (state.isError) {
           if (!mounted) return;
           setState(
