@@ -1,13 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../core/di/injection.dart';
 import '../../../core/services/patient_session.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import '../data/models/appointments_overview_view_mode.dart';
 import 'cubit/appointments_cubit_imports.dart';
-import 'screens/receptionist/receptionist_appointments_screen.dart';
 import 'screens/doctor/doctor_appointments_screen.dart';
 import 'screens/patient/patient_appointments_screen.dart';
+import 'screens/receptionist/receptionist_appointments_screen.dart';
 
 /// Entry point that selects the appointments experience based on the active role.
 class AppointmentsPage extends StatelessWidget {
@@ -32,6 +33,10 @@ class AppointmentsPage extends StatelessWidget {
   /// Whether to keep receptionist filters visible when embedded.
   final bool showFiltersWhenEmbedded;
 
+  /// Whether to shrink wrap the content (use Column instead of ScrollView).
+  /// Set to true when placed inside another ScrollView.
+  final bool shrinkWrap;
+
   const AppointmentsPage({
     super.key,
     required this.mode,
@@ -40,6 +45,7 @@ class AppointmentsPage extends StatelessWidget {
     this.provideCubit = true,
     this.isEmbedded = false,
     this.showFiltersWhenEmbedded = false,
+    this.shrinkWrap = false,
   });
 
   /// Maps a backend role id to the matching appointments mode.
@@ -58,7 +64,10 @@ class AppointmentsPage extends StatelessWidget {
 
   /// Resolves the final mode by preferring a developer override and falling
   /// back to the authenticated user's role.
-  static AppointmentsOverviewMode resolveMode({String? requestedMode, int? roleId}) {
+  static AppointmentsOverviewMode resolveMode({
+    String? requestedMode,
+    int? roleId,
+  }) {
     if (requestedMode != null) {
       switch (requestedMode.toLowerCase()) {
         case 'receptionist':
@@ -93,6 +102,7 @@ class AppointmentsPage extends StatelessWidget {
     final screen = ReceptionistAppointmentsScreen(
       isEmbedded: isEmbedded,
       showFiltersWhenEmbedded: showFiltersWhenEmbedded,
+      shrinkWrap: shrinkWrap,
     );
 
     if (!provideCubit) return screen;
@@ -106,22 +116,33 @@ class AppointmentsPage extends StatelessWidget {
   /// Builds the view for the Doctor role.
   Widget _buildDoctorView(String? currentUserId) {
     final doctorId = specificDoctorId ?? currentUserId ?? 'd1';
-    final screen = DoctorAppointmentsScreen(doctorId: doctorId, isEmbedded: isEmbedded);
+    final screen = DoctorAppointmentsScreen(
+      doctorId: doctorId,
+      isEmbedded: isEmbedded,
+      shrinkWrap: shrinkWrap,
+    );
 
     if (!provideCubit) return screen;
 
-    return BlocProvider(create: (_) => getIt<DoctorAppointmentsCubit>(), child: screen);
+    return BlocProvider(
+      create: (_) => getIt<DoctorAppointmentsCubit>(),
+      child: screen,
+    );
   }
 
   /// Builds the view for the Patient role.
   Widget _buildPatientView(String? currentUserId) {
     final patientId = specificPatientId ?? currentUserId ?? 'p1';
-    final screen = PatientAppointmentsScreen(isEmbedded: isEmbedded);
+    final screen = PatientAppointmentsScreen(
+      isEmbedded: isEmbedded,
+      shrinkWrap: shrinkWrap,
+    );
 
     if (!provideCubit) return screen;
 
     return BlocProvider(
-      create: (_) => getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
+      create: (_) =>
+          getIt<PatientAppointmentsCubit>()..loadAppointments(patientId),
       child: screen,
     );
   }

@@ -17,41 +17,55 @@ class NotificationService {
 
   /// Standard entry point called on app startup.
   Future<void> initialize() async {
-    // 1. Request permission
-    NotificationSettings settings = await _fcm.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-
-    if (kDebugMode) {
-      print('>>> FCM User granted permission: ${settings.authorizationStatus}');
+    // [SAFETY]: Verify platform support before calling Firebase methods
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      return;
     }
 
-    // 2. Setup message listeners
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+    try {
+      // 1. Request permission
+      NotificationSettings settings = await _fcm.requestPermission(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
 
-    // 3. Handle background messages
-    // Note: Registered in main() as a top-level function.
-
-    // 4. Token Refresh Listener
-    _fcm.onTokenRefresh.listen((newToken) async {
-      final sanctumToken = await _tokenManager.getToken();
-      if (sanctumToken != null && sanctumToken.isNotEmpty) {
-        await uploadDeviceToken(fcmToken: newToken);
+      if (kDebugMode) {
+        print(
+          '>>> FCM User granted permission: ${settings.authorizationStatus}',
+        );
       }
-    });
 
-    // 5. Check for initial message (if app launched from notification)
-    RemoteMessage? initialMessage = await _fcm.getInitialMessage();
-    if (initialMessage != null) {
-      _handleNotificationTap(initialMessage);
+      // 2. Setup message listeners
+      FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+      FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+
+      // 4. Token Refresh Listener
+      _fcm.onTokenRefresh.listen((newToken) async {
+        final sanctumToken = await _tokenManager.getToken();
+        if (sanctumToken != null && sanctumToken.isNotEmpty) {
+          await uploadDeviceToken(fcmToken: newToken);
+        }
+      });
+
+      // 5. Check for initial message (if app launched from notification)
+      RemoteMessage? initialMessage = await _fcm.getInitialMessage();
+      if (initialMessage != null) {
+        _handleNotificationTap(initialMessage);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('>>> NotificationService: Failed to initialize: $e');
+      }
     }
   }
 
   /// Sends the unique FCM device token to the Laravel /device-token endpoint.
   Future<void> uploadDeviceToken({String? fcmToken}) async {
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      return;
+    }
+
     try {
       final token = fcmToken ?? await _fcm.getToken();
       if (token == null) return;
@@ -76,6 +90,10 @@ class NotificationService {
 
   /// Removes the device token on logout.
   Future<void> removeDeviceTokenOnLogout() async {
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      return;
+    }
+
     try {
       final fcmToken = await _fcm.getToken();
       await _dio.post('/logout', data: {'fcm_token': fcmToken});

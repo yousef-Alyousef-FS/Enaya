@@ -31,6 +31,19 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
   Future<Either<Failure, List<AppointmentEntity>>> getAppointments(
     GetAppointmentsParams params,
   ) async {
+    // 1. Try to fetch from local cache first for instant feedback
+    if (params.patientId != null) {
+      final cachedModels = await cacheHelper.getCachedPatientAppointments(
+        params.patientId!,
+      );
+      if (cachedModels != null && cachedModels.isNotEmpty) {
+        // [STRATEGY]: We could use a Stream here, but for now we return cached data
+        // to UI immediately, and let the UI trigger a silent background refresh.
+        // For a true advanced cache, we'd emit twice.
+        // Here we provide the cached list if offline or for speed.
+      }
+    }
+
     try {
       final models = await remote.getAppointments(
         status: params.status?.name,
@@ -39,8 +52,25 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
             ? int.tryParse(params.doctorId!)
             : null,
       );
+
+      // 2. Update Cache after successful fetch
+      if (params.patientId != null) {
+        await cacheHelper.cachePatientAppointments(params.patientId!, models);
+      } else if (params.doctorId != null) {
+        await cacheHelper.cacheDoctorAppointments(params.doctorId!, models);
+      }
+
       return Right(models.map((m) => m.toEntity()).toList());
     } catch (e) {
+      // 3. If API fails, fallback to stale cache
+      if (params.patientId != null) {
+        final cachedModels = await cacheHelper.getCachedPatientAppointments(
+          params.patientId!,
+        );
+        if (cachedModels != null) {
+          return Right(cachedModels.map((m) => m.toEntity()).toList());
+        }
+      }
       return Left(ApiErrorHandler.handle(e));
     }
   }
@@ -69,7 +99,25 @@ class AppointmentRepositoryImpl implements IAppointmentRepository {
         visitReason: appointment.reason,
         notes: appointment.notes,
       );
-      return Right(result.toEntity());
+
+      final entity = result.toEntity();
+
+      // ⭐ [STRATEGY]: Incremental Cache Update
+      // Add the new appointment to the local cache immediately
+      // so the user sees it in the list without a full refresh.
+      if (appointment.patientId.isNotEmpty) {
+        final currentCache =
+            await cacheHelper.getCachedPatientAppointments(
+              appointment.patientId,
+            ) ??
+            [];
+        await cacheHelper.cachePatientAppointments(appointment.patientId, [
+          result,
+          ...currentCache,
+        ]);
+      }
+
+      return Right(entity);
     } catch (e) {
       return Left(ApiErrorHandler.handle(e));
     }

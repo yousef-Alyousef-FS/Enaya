@@ -71,6 +71,7 @@ class _DoctorDashboardPageState extends State<DoctorDashboardPage> {
           mode: AppointmentsOverviewMode.doctor,
           specificDoctorId: doctorId,
           isEmbedded: true,
+          shrinkWrap: false, // [FIX]: Full tab needs scroll
         );
       case 2:
         return BlocProvider(

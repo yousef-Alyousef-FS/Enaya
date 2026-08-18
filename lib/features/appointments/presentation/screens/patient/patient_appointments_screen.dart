@@ -15,7 +15,13 @@ import '../form/schedule_appointment_screen.dart';
 
 class PatientAppointmentsScreen extends StatelessWidget {
   final bool isEmbedded;
-  const PatientAppointmentsScreen({super.key, this.isEmbedded = true});
+  final bool shrinkWrap;
+
+  const PatientAppointmentsScreen({
+    super.key,
+    this.isEmbedded = true,
+    this.shrinkWrap = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,27 +29,30 @@ class PatientAppointmentsScreen extends StatelessWidget {
 
     return BlocBuilder<PatientAppointmentsCubit, PatientAppointmentsState>(
       builder: (context, state) {
-        // [ROOT_FIX]: When embedded, strictly return a Column to avoid Scrolling Conflicts
-        if (isEmbedded) {
+        final content = _buildBodyContent(context, state, patientId);
+
+        // [ROOT_FIX]: If shrinkWrap is true, we must NOT use a ScrollView
+        // to prevent 'Vertical viewport was given unbounded height' inside Dashboard.
+        if (shrinkWrap) {
           return Padding(
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-            child: _buildBodyContent(context, state, patientId),
+            child: content,
           );
         }
 
+        // Inside a Tab or Full Screen: Use SingleChildScrollView for scrolling.
         return Scaffold(
-          body: SafeArea(
-            child: RefreshIndicator(
-              onRefresh: () => context
-                  .read<PatientAppointmentsCubit>()
-                  .loadAppointments(patientId),
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
-                physics: const AlwaysScrollableScrollPhysics(
-                  parent: BouncingScrollPhysics(),
-                ),
-                children: [_buildBodyContent(context, state, patientId)],
+          backgroundColor: Colors.transparent,
+          body: RefreshIndicator(
+            onRefresh: () => context
+                .read<PatientAppointmentsCubit>()
+                .loadAppointments(patientId),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
               ),
+              child: content,
             ),
           ),
         );
@@ -73,7 +82,28 @@ class PatientAppointmentsScreen extends StatelessWidget {
         else ...[
           _buildTimelineHeader(context, upcoming.length),
           const SizedBox(height: 16),
-          ..._buildUpcomingList(context, upcoming, patientId),
+          // [ROOT_FIX]: Using a simple Column here because the parent (SingleChildScrollView or Dashboard)
+          // already manages the primary scroll area.
+          Column(
+            children: upcoming.asMap().entries.map((entry) {
+              final index = entry.key;
+              final app = entry.value;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: AppointmentCard(
+                  appointment: app,
+                  mode: AppointmentsOverviewMode.patient,
+                  layout: index == 0
+                      ? AppointmentCardLayout.featured
+                      : AppointmentCardLayout.simple,
+                  onSecondaryAction: () =>
+                      _rescheduleAppointment(context, app, patientId),
+                  onAction: () => _openDetails(context, app, patientId),
+                  onTap: () => _openDetails(context, app, patientId),
+                ),
+              );
+            }).toList(),
+          ),
         ],
         if (state.isPageLoading)
           const Padding(
@@ -189,31 +219,6 @@ class PatientAppointmentsScreen extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  List<Widget> _buildUpcomingList(
-    BuildContext context,
-    List<AppointmentEntity> upcoming,
-    String patientId,
-  ) {
-    return upcoming.asMap().entries.map((entry) {
-      final index = entry.key;
-      final app = entry.value;
-      return Padding(
-        padding: const EdgeInsets.only(bottom: 16),
-        child: AppointmentCard(
-          appointment: app,
-          mode: AppointmentsOverviewMode.patient,
-          layout: index == 0
-              ? AppointmentCardLayout.featured
-              : AppointmentCardLayout.simple,
-          onSecondaryAction: () =>
-              _rescheduleAppointment(context, app, patientId),
-          onAction: () => _openDetails(context, app, patientId),
-          onTap: () => _openDetails(context, app, patientId),
-        ),
-      );
-    }).toList();
   }
 
   Widget _buildEmptyState(BuildContext context, String patientId) {

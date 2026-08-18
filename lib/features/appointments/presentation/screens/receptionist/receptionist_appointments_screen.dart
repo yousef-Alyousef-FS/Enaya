@@ -25,10 +25,14 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
   /// Keeps the search/filter row visible inside embedded dashboard content.
   final bool showFiltersWhenEmbedded;
 
+  /// Whether to shrink wrap the content (use Column instead of ScrollView).
+  final bool shrinkWrap;
+
   const ReceptionistAppointmentsScreen({
     super.key,
     this.isEmbedded = false,
     this.showFiltersWhenEmbedded = false,
+    this.shrinkWrap = false,
   });
 
   @override
@@ -48,6 +52,14 @@ class ReceptionistAppointmentsScreen extends StatelessWidget {
           _buildTableSection(context, state),
           const SizedBox(height: 10),
         ];
+
+        if (shrinkWrap) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: contentList,
+          );
+        }
 
         final content = Align(
           alignment: Alignment.topCenter,

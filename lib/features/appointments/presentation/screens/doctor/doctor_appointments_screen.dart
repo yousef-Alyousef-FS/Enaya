@@ -24,11 +24,13 @@ enum _DoctorAppointmentsQuickView { today, completed }
 class DoctorAppointmentsScreen extends StatefulWidget {
   final String doctorId;
   final bool isEmbedded;
+  final bool shrinkWrap;
 
   const DoctorAppointmentsScreen({
     super.key,
     required this.doctorId,
     this.isEmbedded = false,
+    this.shrinkWrap = false,
   });
 
   @override
@@ -213,9 +215,10 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
           const SizedBox(height: 8),
         ];
 
-        if (widget.isEmbedded) {
+        if (widget.shrinkWrap) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
             children: contentList,
           );
         }
@@ -230,7 +233,9 @@ class _DoctorAppointmentsScreenState extends State<DoctorAppointmentsScreen> {
                   onRefresh: () async => _reloadCurrentRange(state),
                   child: ListView(
                     controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                    padding: widget.isEmbedded
+                        ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4)
+                        : const EdgeInsets.fromLTRB(24, 8, 24, 16),
                     physics: const AlwaysScrollableScrollPhysics(
                       parent: BouncingScrollPhysics(),
                     ),

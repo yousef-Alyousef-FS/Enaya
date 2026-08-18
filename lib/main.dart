@@ -25,13 +25,19 @@ void main() async {
   // Initialize Dependency Injection
   await initGetIt();
 
-  // ⭐ Firebase Initialization (Mobile/Web only)
+  // ⭐ Firebase Initialization (Strictly Mobile Only)
   if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-    await getIt<NotificationService>().initialize();
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+      await getIt<NotificationService>().initialize();
+    } catch (e) {
+      if (kDebugMode) {
+        print('>>> Firebase Initialization skipped or failed: $e');
+      }
+    }
   }
 
   final settingsService = getIt<SettingsService>();
