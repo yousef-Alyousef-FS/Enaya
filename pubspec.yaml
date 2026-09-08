@@ -22,6 +22,7 @@ dependencies:
 
   # State Management
   provider: ^6.1.1
+  flutter_bloc: ^8.1.6
 
   # Dependency Injection
   get_it: ^7.6.6
@@ -41,6 +42,10 @@ dependencies:
   # Responsive Design
   flutter_screenutil: ^5.9.0
 
+  # Firebase & Notifications
+  firebase_core: ^3.0.0
+  firebase_messaging: ^15.0.0
+
   # UI Effects
   shimmer: ^3.0.0
   awesome_dialog: ^3.2.1
@@ -54,6 +59,8 @@ dependencies:
   # Utilities
   intl: ^0.20.2
   logger: ^2.0.2
+  pretty_dio_logger: ^1.4.0
+  easy_stepper: ^0.8.3
 
 dev_dependencies:
   flutter_test:
@@ -74,22 +81,24 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/images/icon.png"
-  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_background: "#172236"
   min_sdk_android: 21
 
 flutter_native_splash:
-  color: "#242442"
-  image: assets/images/logo.png
+  color: "#172236"
+  image: assets/images/enaya_icon.png
   android: true
   ios: true
+  fullscreen: true
 
   android_12:
-    color: "#242442"
-    image: assets/images/logo.png
+    color: "#172236"
+    image: assets/images/enaya_icon.png
+    fullscreen: true
 
 flutter:
   uses-material-design: true
   assets:
     - assets/translations/
     - assets/images/
-    - assets/mock_data/
+    - assets/mock_data/drugs_dictionary.json

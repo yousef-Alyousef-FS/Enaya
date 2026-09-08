@@ -1,14 +1,21 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../../core/view_models/base_view_model.dart';
-
+/// Shared form helpers for auth screens.
+///
+/// Provides a success animation controller and common error message rendering.
 mixin AuthFormMixin<T extends StatefulWidget>
-  on State<T>, TickerProviderStateMixin<T> {
+    on State<T>, TickerProviderStateMixin<T> {
+  /// Controller for subtle success transition effects.
   late AnimationController successAnimationController;
+
+  /// Scale animation used after successful actions.
   late Animation<double> successAnimation;
+
+  /// Last validation or server error message.
   String? errorMessage;
+
+  /// Prevents duplicate navigation while async auth actions complete.
+  bool isNavigating = false;
 
   @override
   void initState() {
@@ -16,48 +23,29 @@ mixin AuthFormMixin<T extends StatefulWidget>
     _initializeSuccessAnimation();
   }
 
+  /// Initializes success feedback animation.
   void _initializeSuccessAnimation() {
     successAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 150),
       vsync: this,
     );
-    successAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(
-        parent: successAnimationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-  }
-
-  void handleAuthStateChange(BaseViewModel viewModel, VoidCallback onSuccess) {
-    if (viewModel.state == ViewState.error) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(
-          () => errorMessage = viewModel.errorMessage ?? 'error_occurred'.tr(),
+    successAnimation =
+        Tween<double>(
+          begin: 1.0,
+          end: 1.0, // Disabled scale effect for better "Standard" feel
+        ).animate(
+          CurvedAnimation(
+            parent: successAnimationController,
+            curve: Curves.easeInOut,
+          ),
         );
-        viewModel.resetState();
-      });
-    }
-    if (viewModel.state == ViewState.success) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        // نغير الحالة فوراً لمنع التكرار (Race Condition)
-        viewModel.resetState();
-        setState(() => errorMessage = null);
-        successAnimationController.forward().then((_) {
-          if (mounted) {
-            onSuccess();
-            // نعيد الأنيميشن لوضعه الطبيعي للمرة القادمة
-            successAnimationController.reverse();
-          }
-        });
-      });
-    }
   }
 
+  /// Builds a compact error label when [errorMessage] is present.
   Widget buildErrorMessage() {
     return errorMessage != null
         ? Padding(
-            padding: EdgeInsets.only(top: 8.h),
+            padding: const EdgeInsets.only(top: 8),
             child: Text(
               errorMessage!,
               style: TextStyle(

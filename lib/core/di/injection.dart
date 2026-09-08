@@ -1,72 +1,27 @@
 import 'package:get_it/get_it.dart';
-import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../../features/auth/data/datasources/auth_mock_data_source.dart';
-import '../../features/auth/data/datasources/auth_remote_data_source.dart';
-import '../../features/auth/data/repositories/auth_repository_impl.dart';
-import '../../features/auth/domain/repositories/auth_repository.dart';
-import '../../features/auth/domain/usecases/login_usecase.dart';
-import '../../features/auth/domain/usecases/signup_usecase.dart';
-import '../../features/auth/domain/usecases/forgot_password_usecase.dart';
-import '../../features/auth/domain/usecases/logout_usecase.dart';
-import '../../features/auth/presentation/state/auth_view_model.dart';
-import '../cache/cache_helper.dart';
-import '../network/dio_factory.dart';
-import '../network/network_info.dart';
-import '../services/token_manager.dart';
-import '../services/mock_data_service.dart';
+
+import 'injection_container_appointments.dart';
+import 'injection_container_auth.dart';
+import 'injection_container_core.dart';
+import 'injection_container_dashboards.dart';
+import 'injection_container_doctor_session.dart';
+import 'injection_container_medical_history.dart';
+import 'injection_container_notifications.dart';
+import 'injection_container_patients.dart';
+import 'injection_container_profile.dart';
 
 final getIt = GetIt.instance;
 
+/// Central entry point for dependency injection.
+/// [ARCH_FLAG]: Split into feature-specific containers to avoid a massive God File.
 Future<void> initGetIt() async {
-  // 1. External & Core
-  final sharedPrefs = await SharedPreferences.getInstance();
-  const secureStorage = FlutterSecureStorage();
-
-  getIt.registerLazySingleton<CacheHelper>(
-    () => CacheHelper(
-      sharedPreferences: sharedPrefs,
-      secureStorage: secureStorage,
-    ),
-  );
-
-  getIt.registerLazySingleton(() => InternetConnection());
-  getIt.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(getIt()));
-
-  // 2. Services
-  getIt.registerLazySingleton(
-    () => TokenManager(secureStorage: secureStorage, cacheHelper: getIt()),
-  );
-
-  getIt.registerLazySingleton(() => MockDataService());
-
-  // 3. Dio Factory
-  final dio = DioFactory.getDio();
-  getIt.registerLazySingleton(() => dio);
-
-  // 4. Auth Feature
-  // التبديل هنا: نستخدم AuthMockDataSourceImpl مع الخدمات الجديدة
-  getIt.registerLazySingleton<AuthRemoteDataSource>(
-    () =>
-        AuthMockDataSourceImpl(mockDataService: getIt(), tokenManager: getIt()),
-  );
-
-  getIt.registerLazySingleton<IAuthRepository>(
-    () => AuthRepositoryImpl(remoteDataSource: getIt(), networkInfo: getIt()),
-  );
-
-  getIt.registerLazySingleton(() => LoginUseCase(getIt()));
-  getIt.registerLazySingleton(() => SignupUsecase(getIt()));
-  getIt.registerLazySingleton(() => ForgotPasswordUseCase(getIt()));
-  getIt.registerLazySingleton(() => LogoutUseCase(getIt()));
-
-  getIt.registerFactory(
-    () => AuthViewModel(
-      loginUseCase: getIt(),
-      signupUseCase: getIt(),
-      forgotPasswordUseCase: getIt(),
-      logoutUseCase: getIt(),
-    ),
-  );
+  await initCoreInjection();
+  await initAuthInjection();
+  await initPatientsInjection();
+  await initAppointmentsInjection();
+  await initDashboardsInjection();
+  await initDoctorSessionInjection();
+  await initProfileInjection();
+  await initMedicalHistoryInjection();
+  await initNotificationsInjection();
 }

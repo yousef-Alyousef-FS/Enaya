@@ -1,31 +1,41 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../domain/entities/user_entity.dart';
 
-part 'user_model.freezed.dart';
-part 'user_model.g.dart';
+class UserModel extends UserEntity {
+  const UserModel({
+    required super.id,
+    required super.email,
+    required super.userName,
+    required super.phone,
+    required super.roleId,
+    super.profileCompleted,
+  });
 
-@freezed
-class UserModel with _$UserModel {
-  const UserModel._(); // ضروري لاستخدام الـ extensions أو الـ methods
-
-  const factory UserModel({
-    required int id,
-    required String email,
-    required String userName,
-    required String phone,
-    required int roleId,
-  }) = _UserModel;
-
-  factory UserModel.fromJson(Map<String, dynamic> json) =>
-      _$UserModelFromJson(json);
-
-  User toEntity() {
-    return User(
-      id: id,
-      email: email,
-      userName: userName,
-      phone: phone,
-      roleId: roleId,
+  factory UserModel.fromJson(Map<String, dynamic> json) {
+    return UserModel(
+      id: int.tryParse(json['id']?.toString() ?? '') ?? 0,
+      email: json['email'] as String? ?? '',
+      userName: (json['username'] ?? json['userName'] ?? 'User') as String,
+      phone: json['phone'] as String? ?? '',
+      roleId:
+          int.tryParse(
+            json['roleId']?.toString() ?? json['role_id']?.toString() ?? '3',
+          ) ??
+          3,
+      profileCompleted:
+          json['profile_completed'] as bool? ??
+          json['profileCompleted'] as bool? ??
+          false,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'email': email,
+      'username': userName,
+      'phone': phone,
+      'roleId': roleId,
+      'profile_completed': profileCompleted,
+    };
   }
 }

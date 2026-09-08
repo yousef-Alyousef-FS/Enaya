@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Push Notifications Guide — Flutter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/nord.min.css">
+<style>
+:root{
+  --navy-950:#0b1224;
+  --navy-900:#101a33;
+  --navy-line: rgba(160, 190, 255, 0.10);
+  --blue:#4f8cff;
+  --blue-soft:#a9c6ff;
+  --flutter:#27c2a0;
+  --paper:#fbfaf7;
+  --paper-dim:#f1efe7;
+  --ink:#161c2b;
+  --ink-soft:#4d5570;
+  --ink-faint:#8b93ab;
+  --line:#e5e2d6;
+  --code-bg:#0d1526;
+  --radius:10px;
+  --sidebar-w:296px;
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  font-family:'Manrope',system-ui,-apple-system,sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  font-size:15px;
+  line-height:1.65;
+}
+code, pre, .mono{ font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace; }
+
+/* topbar */
+.topbar{
+  position:fixed; top:0; left:0; right:0; height:58px;
+  background:var(--navy-950); border-bottom:1px solid var(--navy-line);
+  display:flex; align-items:center; padding:0 20px; z-index:60; gap:14px;
+}
+.topbar .brand{
+  display:flex; align-items:center; gap:10px; color:#f4f7ff; font-weight:800;
+  font-size:15px; text-decoration:none; white-space:nowrap;
+}
+.brand .mark{
+  width:26px;height:26px;border-radius:7px;
+  background:linear-gradient(135deg, var(--flutter), var(--blue));
+  display:flex;align-items:center;justify-content:center; color:#0b1224; font-weight:800; font-size:13px;
+}
+.brand .tag{
+  font-size:10.5px; font-weight:700; color:#0b1224;
+  background:var(--blue-soft); padding:2px 7px; border-radius:20px; letter-spacing:.3px;
+}
+.topbar .spacer{flex:1;}
+.menu-toggle{
+  display:none; background:none;border:1px solid var(--navy-line); color:#dbe6ff;
+  width:36px;height:36px;border-radius:8px; cursor:pointer; font-size:16px;
+  align-items:center; justify-content:center;
+}
+.searchbox{ position:relative; width:min(340px, 40vw); }
+.searchbox input{
+  width:100%; background:rgba(255,255,255,0.06); border:1px solid var(--navy-line);
+  color:#eaf0ff; padding:8px 12px 8px 32px; border-radius:8px; font-size:13.5px;
+  font-family:inherit; outline:none;
+}
+.searchbox input::placeholder{color:#7c88ab;}
+.searchbox input:focus{border-color:var(--blue); background:rgba(255,255,255,0.09);}
+.searchbox svg{position:absolute; left:10px; top:50%; transform:translateY(-50%); width:14px;height:14px; color:#7c88ab;}
+
+/* layout */
+.layout{ display:flex; padding-top:58px; min-height:100vh; }
+.sidebar{
+  position:fixed; top:58px; left:0; bottom:0; width:var(--sidebar-w);
+  background:var(--navy-950); border-right:1px solid var(--navy-line);
+  overflow-y:auto; padding:18px 10px 60px; z-index:50;
+}
+.sidebar::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb{background:#22305a; border-radius:8px;}
+.nav-overview{
+  display:block; color:#eaf0ff; font-weight:700; text-decoration:none;
+  padding:8px 12px; border-radius:7px; font-size:13.5px; margin-bottom:10px;
+}
+.nav-overview:hover{background:rgba(255,255,255,0.06);}
+.nav-category{
+  font-size:10.5px; letter-spacing:1.4px; text-transform:uppercase; color:#5c6b93;
+  font-weight:700; margin:14px 12px 6px;
+}
+.nav-group{ margin-bottom:1px; }
+.nav-group summary{ list-style:none; cursor:pointer; display:flex; align-items:center; border-radius:7px; padding:1px 4px 1px 2px;}
+.nav-group summary::-webkit-details-marker{display:none;}
+.nav-group summary::before{
+  content:""; width:7px; height:7px; margin:0 6px 0 10px;
+  border-right:2px solid #5c6b93; border-bottom:2px solid #5c6b93;
+  transform:rotate(-45deg); transition:transform .18s ease; flex-shrink:0;
+}
+.nav-group[open] summary::before{ transform:rotate(45deg); margin-top:-3px;}
+.nav-section-link{
+  flex:1; display:flex; align-items:center; gap:8px; color:#d7e1fb; text-decoration:none;
+  font-size:13.5px; font-weight:600; padding:7px 8px 7px 2px; border-radius:6px;
+}
+summary:hover .nav-section-link, .nav-flat:hover{ color:#fff; }
+summary:hover{ background:rgba(255,255,255,0.045); }
+.nav-flat{
+  display:flex; align-items:center; gap:8px; color:#d7e1fb; text-decoration:none; font-size:13.5px;
+  font-weight:600; padding:7px 12px 7px 12px; border-radius:6px; margin:0 0 1px 0;
+}
+.nav-flat:hover{background:rgba(255,255,255,0.045);}
+.nav-num{
+  font-size:10.5px; font-weight:800; color:#0b1224; background:var(--flutter);
+  width:18px; height:18px; border-radius:5px; display:inline-flex; align-items:center; justify-content:center;
+  flex-shrink:0;
+}
+.nav-items{ padding:1px 0 6px 21px; border-left:1px solid var(--navy-line); margin-left:22px;}
+.nav-item{
+  display:flex; align-items:center; gap:8px; color:#9fb0d6; text-decoration:none; font-size:12.8px;
+  padding:5px 10px; border-radius:6px; margin:1px 4px; transition:background .12s, color .12s;
+}
+.nav-item:hover{ background:rgba(79,140,255,0.14); color:#eaf0ff; }
+.nav-item.active{ background:rgba(79,140,255,0.20); color:#eaf0ff; }
+.nav-item.js-hidden, .nav-group.js-hidden, .nav-flat.js-hidden{ display:none !important; }
+.nav-empty-msg{ display:none; color:#5c6b93; font-size:12.5px; padding:10px 14px; }
+
+/* main */
+.main{ margin-left:var(--sidebar-w); flex:1; min-width:0; padding:44px 48px 120px; max-width:840px; }
+.doc-title{ font-size:32px; font-weight:800; letter-spacing:-.5px; margin:0 0 10px; color:var(--navy-950); }
+.doc-section{ scroll-margin-top:76px; }
+#overview{ padding-bottom:22px; border-bottom:1px solid var(--line); margin-bottom:8px; }
+.section-eyebrow{
+  font-size:11px; font-weight:800; letter-spacing:1.4px; text-transform:uppercase;
+  color:var(--flutter); margin:56px 0 6px;
+}
+.doc-section:nth-of-type(2) .section-eyebrow{ margin-top:10px; }
+.section-title{
+  font-size:23px; font-weight:800; letter-spacing:-.3px; margin:0 0 6px;
+  color:var(--navy-950); scroll-margin-top:76px;
+}
+.prose p{ margin:10px 0; color:var(--ink); }
+.prose ul, .prose ol{ margin:10px 0; padding-left:22px; }
+.prose li{ margin:5px 0; }
+.prose strong{ color:var(--navy-950); font-weight:700;}
+.prose code{
+  background:var(--paper-dim); border:1px solid var(--line);
+  padding:1.5px 6px; border-radius:5px; font-size:12.8px; color:#0d3255;
+}
+.prose a{ color:var(--blue); }
+
+.substep{
+  border-left:3px solid var(--line); padding:4px 0 4px 18px; margin:22px 0;
+  scroll-margin-top:76px;
+}
+.substep-title{ font-size:16px; font-weight:700; margin:0 0 8px; color:var(--ink); }
+
+pre{
+  background:var(--code-bg) !important; border-radius:9px; padding:16px 18px;
+  overflow-x:auto; margin:14px 0 18px; font-size:12.6px; line-height:1.55; position:relative;
+}
+.code-wrap{ position:relative; margin:14px 0 18px; }
+.code-wrap pre{ margin:0; }
+.code-lang{
+  position:absolute; top:9px; right:44px; font-size:10px; font-weight:800; letter-spacing:.5px;
+  text-transform:uppercase; color:#7c9dd6; z-index:2;
+}
+.code-copy{
+  position:absolute; top:8px; right:8px; background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.12); color:#9fb0d6; font-size:10.5px; font-weight:700;
+  letter-spacing:.3px; padding:4px 9px; border-radius:5px; cursor:pointer; font-family:inherit;
+  text-transform:uppercase; z-index:2;
+}
+.code-copy:hover{ background:rgba(255,255,255,0.16); color:#fff; }
+.code-copy.copied{ background:var(--flutter); color:#0b1224; border-color:var(--flutter); }
+pre code.hljs{ background:none !important; padding:0; }
+
+.callout{
+  border-radius:9px; padding:14px 16px; margin:16px 0; font-size:13.8px;
+  border:1px solid; display:flex; gap:10px; align-items:flex-start;
+}
+.callout .ic{ font-size:15px; line-height:1.4; flex-shrink:0; }
+.callout.note{ background:#eef4ff; border-color:#cddcfb; color:#1c3a66; }
+.callout.warn{ background:#fff6ea; border-color:#f3ddb0; color:#6b4a10; }
+
+ol.build-order{ counter-reset:step; list-style:none; padding-left:0; margin:14px 0; }
+ol.build-order li{
+  position:relative; padding:9px 0 9px 40px; border-bottom:1px solid var(--line);
+  font-size:13.8px;
+}
+ol.build-order li:last-child{ border-bottom:none; }
+ol.build-order li::before{
+  counter-increment:step; content:counter(step);
+  position:absolute; left:0; top:8px; width:24px; height:24px; border-radius:50%;
+  background:var(--navy-950); color:var(--flutter); font-size:11px; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+}
+
+.gotcha-list{ list-style:none; padding:0; margin:14px 0; }
+.gotcha-list li{
+  background:var(--card, #fff); border:1px solid var(--line); border-left:3px solid #e8963c;
+  border-radius:8px; padding:12px 14px; margin-bottom:10px; font-size:13.8px;
+}
+.gotcha-list li strong{ color:var(--navy-950); }
+
+table{ border-collapse:collapse; width:100%; margin:14px 0 20px; font-size:13px; }
+th, td{ text-align:left; padding:8px 12px; border:1px solid var(--line); }
+th{ background:var(--paper-dim); font-weight:700; color:var(--navy-950); font-size:11.5px; text-transform:uppercase; }
+
+/* rail */
+.rail{ position:fixed; top:58px; right:0; bottom:0; width:220px; padding:32px 22px; overflow-y:auto; font-size:12.5px; display:none; }
+@media (min-width:1220px){ .rail{display:block;} .main{margin-right:220px;} }
+.rail-title{ font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.8px; font-size:10.5px; margin-bottom:10px;}
+.rail a{ display:block; color:var(--ink-soft); text-decoration:none; padding:4px 0 4px 10px; border-left:2px solid transparent; }
+.rail a:hover, .rail a.active{ color:var(--navy-950); border-left-color:var(--flutter); font-weight:600; }
+
+.top-btn{
+  position:fixed; bottom:24px; right:24px; width:42px; height:42px; border-radius:50%;
+  background:var(--navy-950); color:var(--blue-soft); border:none; cursor:pointer; font-size:16px;
+  display:none; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(11,18,36,.25); z-index:55;
+}
+.top-btn.show{ display:flex; }
+
+@media (max-width:1219px){ .rail{display:none;} .main{margin-right:0;} }
+@media (max-width:880px){
+  .menu-toggle{display:flex;}
+  .searchbox{width:44vw;}
+  .sidebar{ transform:translateX(-100%); transition:transform .22s ease; width:min(86vw,340px); }
+  .sidebar.open{ transform:translateX(0); box-shadow:20px 0 60px rgba(0,0,0,.35); }
+  .main{ margin-left:0; padding:32px 20px 100px; }
+  .doc-title{ font-size:26px; }
+}
+@media (max-width:520px){ .searchbox{width:auto; flex:1;} .brand span.txt{display:none;} }
+::selection{ background:rgba(79,140,255,.25); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
+  <a href="#overview" class="brand">
+    <span class="mark">🔔</span>
+    <span class="txt">Push Notifications</span>
+    <span class="tag">Flutter</span>
+  </a>
+  <div class="spacer"></div>
+  <div class="searchbox">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input id="navSearch" type="text" placeholder="Search sections…" autocomplete="off">
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar">
+<a href="#overview" class="nav-overview">Overview</a>
+<div class="nav-category">Guide Contents</div>
+<a href="#1-what-were-building-the-big-picture" class="nav-section-link nav-flat" data-search="1. what we&#x27;re building — the big picture"><span class="nav-num">1</span>What we&#x27;re building — the big picture</a>
+<a href="#2-firebase-project-setup-one-time-do-this-first" class="nav-section-link nav-flat" data-search="2. firebase project setup (one-time, do this first)"><span class="nav-num">2</span>Firebase project setup (one-time, do this first)</a>
+<a href="#3-add-the-required-packages" class="nav-section-link nav-flat" data-search="3. add the required packages"><span class="nav-num">3</span>Add the required packages</a>
+<a href="#4-initialize-firebase-on-app-startup" class="nav-section-link nav-flat" data-search="4. initialize firebase on app startup"><span class="nav-num">4</span>Initialize Firebase on app startup</a>
+<a href="#5-request-notification-permission" class="nav-section-link nav-flat" data-search="5. request notification permission"><span class="nav-num">5</span>Request notification permission</a>
+<a href="#6-backend-endpoint-youll-be-calling" class="nav-section-link nav-flat" data-search="6. backend endpoint you&#x27;ll be calling"><span class="nav-num">6</span>Backend endpoint you&#x27;ll be calling</a>
+<details class="nav-group" open data-title="7. when to register the token — the 3 required moments">
+<summary><a href="#7-when-to-register-the-token-the-3-required-moments" class="nav-section-link"><span class="nav-num">7</span>When to register the token — the 3 required moments</a></summary>
+<div class="nav-items">
+<a href="#7-when-to-register-the-token-the-3-required-moments--a-right-after-successful-login" class="nav-item" data-search="a. right after successful login"><span>A. Right after successful login</span></a>
+<a href="#7-when-to-register-the-token-the-3-required-moments--b-right-after-successful-signup" class="nav-item" data-search="b. right after successful signup"><span>B. Right after successful signup</span></a>
+<a href="#7-when-to-register-the-token-the-3-required-moments--c-whenever-the-token-refreshes" class="nav-item" data-search="c. whenever the token refreshes"><span>C. Whenever the token refreshes</span></a>
+</div></details>
+<a href="#8-logout-send-the-token-so-the-backend-can-remove-it" class="nav-section-link nav-flat" data-search="8. logout — send the token so the backend can remove it"><span class="nav-num">8</span>Logout — send the token so the backend can remove it</a>
+<details class="nav-group" open data-title="9. receiving and displaying notifications — the 3 app states">
+<summary><a href="#9-receiving-and-displaying-notifications-the-3-app-states" class="nav-section-link"><span class="nav-num">9</span>Receiving and displaying notifications — the 3 app states</a></summary>
+<div class="nav-items">
+<a href="#9-receiving-and-displaying-notifications-the-3-app-states--state-1-app-open-foreground" class="nav-item" data-search="state 1 — app open (foreground)"><span>State 1 — App open (foreground)</span></a>
+<a href="#9-receiving-and-displaying-notifications-the-3-app-states--state-2-app-in-background-minimized-not-closed" class="nav-item" data-search="state 2 — app in background (minimized, not closed)"><span>State 2 — App in background (minimized, not closed)</span></a>
+<a href="#9-receiving-and-displaying-notifications-the-3-app-states--state-3-app-fully-closed-terminated" class="nav-item" data-search="state 3 — app fully closed (terminated)"><span>State 3 — App fully closed (terminated)</span></a>
+</div></details>
+<a href="#10-tap-to-navigate-using-the-data-payload" class="nav-section-link nav-flat" data-search="10. tap-to-navigate using the data payload"><span class="nav-num">10</span>Tap-to-navigate using the data payload</a>
+<a href="#11-suggested-build-order" class="nav-section-link nav-flat" data-search="11. suggested build order"><span class="nav-num">11</span>Suggested build order</a>
+<a href="#12-common-gotchas" class="nav-section-link nav-flat" data-search="12. common gotchas"><span class="nav-num">12</span>Common gotchas</a>    <div class="nav-empty-msg" id="navEmptyMsg">No sections match your search.</div>
+  </nav>
+
+  <main class="main" id="mainContent">
+<section class="doc-section" id="overview"><h1 class="doc-title">Enaya — Push Notifications Implementation Guide (Flutter)</h1><div class="prose"><p>This document explains everything needed to add Firebase Cloud Messaging (FCM) push notifications to the Flutter app (shared codebase, 3 roles: Doctor, Receptionist, Patient).</p>
+<p>The backend is already fully built and working. This guide covers only the Flutter side.</p></div></section>
+<section class="doc-section" id="1-what-were-building-the-big-picture">
+<div class="section-eyebrow">Step 1</div>
+<h2 class="section-title">What we&#x27;re building — the big picture</h2>
+<div class="prose"><p>Our Laravel backend can already send push notifications for events like:</p>
+<ul>
+<li>New appointment created (notifies the doctor)</li>
+<li>Appointment cancelled / rescheduled</li>
+<li>New prescription issued</li>
+<li>Session started / completed</li>
+</ul>
+<p>For any of this to reach a phone, the backend needs to know which device belongs to which logged-in user. That's the only job of the Flutter side: get the phone's unique FCM token, tell the backend about it at the right moments, and handle displaying notifications when they arrive.</p>
+<p>Think of the FCM token as a "mailbox address" for that specific phone install. Firebase handles actually delivering messages to phones — our backend just tells Firebase "deliver to mailbox X," Firebase does the rest, even if the app is closed.</p>
+<div class="callout note"><span class="ic">ℹ️</span><span>Nothing here needs Supabase. Supabase is only used for our database/backend deployment — it has no role in push notifications. Only Firebase (FCM) delivers pushes.</span></div></div>
+</section>
+<section class="doc-section" id="2-firebase-project-setup-one-time-do-this-first">
+<div class="section-eyebrow">Step 2</div>
+<h2 class="section-title">Firebase project setup (one-time, do this first)</h2>
+<div class="prose"><p>Go to <a href="https://console.firebase.google.com">console.firebase.google.com</a> and create a new Firebase project (or ask whoever set up the backend — they may have already created one for the Laravel side; if so, reuse that same project instead of creating a second one).</p>
+<p>Install the FlutterFire CLI if not already installed:</p>
+<div class="code-wrap"><span class="code-lang">bash</span><button class="code-copy" data-copy="dart pub global activate flutterfire_cli
+">copy</button><pre><code class="language-bash">dart pub global activate flutterfire_cli
+</code></pre></div>
+<p>From the root of the Flutter project, run:</p>
+<div class="code-wrap"><span class="code-lang">bash</span><button class="code-copy" data-copy="flutterfire configure
+">copy</button><pre><code class="language-bash">flutterfire configure
+</code></pre></div>
+<p>This walks you through selecting your Firebase project and generates a <code>firebase_options.dart</code> file, plus registers the app with Firebase for each platform (Android/iOS) you select. Since it's one shared codebase for all 3 roles, you only need to run this once — it's one Flutter app registered with Firebase, not three.</p></div>
+</section>
+<section class="doc-section" id="3-add-the-required-packages">
+<div class="section-eyebrow">Step 3</div>
+<h2 class="section-title">Add the required packages</h2>
+<div class="prose"><p>In <code>pubspec.yaml</code>:</p>
+<div class="code-wrap"><span class="code-lang">yaml</span><button class="code-copy" data-copy="dependencies:
+  firebase_core: ^latest
+  firebase_messaging: ^latest
+">copy</button><pre><code class="language-yaml">dependencies:
+  firebase_core: ^latest
+  firebase_messaging: ^latest
+</code></pre></div>
+<p>Run <code>flutter pub get</code> after adding them. (Check current stable versions on pub.dev at the time you do this — don't hardcode a version here since it'll go stale.)</p></div>
+</section>
+<section class="doc-section" id="4-initialize-firebase-on-app-startup">
+<div class="section-eyebrow">Step 4</div>
+<h2 class="section-title">Initialize Firebase on app startup</h2>
+<div class="prose"><p>In <code>main.dart</code>:</p>
+<div class="code-wrap"><span class="code-lang">dart</span><button class="code-copy" data-copy="import &#x27;package:firebase_core/firebase_core.dart&#x27;;
+import &#x27;firebase_options.dart&#x27;;
+
+Future&lt;void&gt; main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const MyApp());
+}
+">copy</button><pre><code class="language-dart">import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+Future&lt;void&gt; main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const MyApp());
+}
+</code></pre></div></div>
+</section>
+<section class="doc-section" id="5-request-notification-permission">
+<div class="section-eyebrow">Step 5</div>
+<h2 class="section-title">Request notification permission</h2>
+<div class="prose"><p>Required on iOS, and on Android 13+. Call this once, early in the app lifecycle (e.g. right after Firebase initializes, or right before you register a token):</p>
+<div class="code-wrap"><span class="code-lang">dart</span><button class="code-copy" data-copy="FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+NotificationSettings settings = await messaging.requestPermission(
+  alert: true,
+  badge: true,
+  sound: true,
+);
+">copy</button><pre><code class="language-dart">FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+NotificationSettings settings = await messaging.requestPermission(
+  alert: true,
+  badge: true,
+  sound: true,
+);
+</code></pre></div>
+<div class="callout warn"><span class="ic">⚠️</span><span>If the user denies permission, <code>getToken()</code> will still technically work on some platforms but the phone won't display the notification — no special handling needed beyond this, just be aware denial is possible.</span></div></div>
+</section>
+<section class="doc-section" id="6-backend-endpoint-youll-be-calling">
+<div class="section-eyebrow">Step 6</div>
+<h2 class="section-title">Backend endpoint you&#x27;ll be calling</h2>
+<div class="prose"><p><code>POST /api/device-token</code></p>
+<p><strong>Auth:</strong> requires the Sanctum bearer token (same as any other authenticated request)</p>
+<p><strong>Body:</strong></p>
+<div class="code-wrap"><span class="code-lang">json</span><button class="code-copy" data-copy="{
+    &quot;fcm_token&quot;: &quot;the long token string from Firebase&quot;,
+    &quot;device_type&quot;: &quot;android&quot;
+}
+">copy</button><pre><code class="language-json">{
+    &quot;fcm_token&quot;: &quot;the long token string from Firebase&quot;,
+    &quot;device_type&quot;: &quot;android&quot;
+}
+</code></pre></div>
+<p><code>device_type</code> is optional (<code>"android"</code> or <code>"ios"</code>).</p>
+<p><strong>Response:</strong> standard envelope, <code>{ success, data, error, errorCode }</code></p>
+<div class="callout note"><span class="ic">✅</span><span>Calling this endpoint repeatedly with the same token is completely safe — the backend uses <code>updateOrCreate</code>, so there's no risk of duplicate rows from calling it more than once.</span></div>
+<p><strong>Base URL:</strong> use the production Vercel URL for the API — get the current URL from whoever manages the deployment, since it may differ between environments. Store it in whatever config/env setup the app already uses for its API base URL (don't hardcode it separately just for this feature).</p></div>
+</section>
+<section class="doc-section" id="7-when-to-register-the-token-the-3-required-moments">
+<div class="section-eyebrow">Step 7</div>
+<h2 class="section-title">When to register the token — the 3 required moments</h2>
+<div class="substep" id="7-when-to-register-the-token-the-3-required-moments--a-right-after-successful-login">
+<h3 class="substep-title">A. Right after successful login</h3>
+<div class="prose"><p>The moment <code>/login</code> returns a Sanctum token, immediately:</p>
+<div class="code-wrap"><span class="code-lang">dart</span><button class="code-copy" data-copy="Future&lt;void&gt; registerDeviceToken(String sanctumToken) async {
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+  if (fcmToken == null) return;
+
+  await dio.post(
+    &#x27;/device-token&#x27;,
+    data: {
+      &#x27;fcm_token&#x27;: fcmToken,
+      &#x27;device_type&#x27;: Platform.isAndroid ? &#x27;android&#x27; : &#x27;ios&#x27;,
+    },
+    options: Options(headers: {&#x27;Authorization&#x27;: &#x27;Bearer $sanctumToken&#x27;}),
+  );
+}
+">copy</button><pre><code class="language-dart">Future&lt;void&gt; registerDeviceToken(String sanctumToken) async {
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+  if (fcmToken == null) return;
+
+  await dio.post(
+    '/device-token',
+    data: {
+      'fcm_token': fcmToken,
+      'device_type': Platform.isAndroid ? 'android' : 'ios',
+    },
+    options: Options(headers: {'Authorization': 'Bearer $sanctumToken'}),
+  );
+}
+</code></pre></div>
+<p>Call this right after storing the Sanctum token from the login response.</p></div>
+</div>
+<div class="substep" id="7-when-to-register-the-token-the-3-required-moments--b-right-after-successful-signup">
+<h3 class="substep-title">B. Right after successful signup</h3>
+<div class="prose"><p>Exact same call, right after <code>/register</code> succeeds and you have a Sanctum token — whichever role is signing up (if patients self-register; doctors/receptionists are likely created by an admin instead, so this may only apply to the Patient role — confirm with the team which roles actually have a signup flow in the app).</p></div>
+</div>
+<div class="substep" id="7-when-to-register-the-token-the-3-required-moments--c-whenever-the-token-refreshes">
+<h3 class="substep-title">C. Whenever the token refreshes</h3>
+<div class="prose"><p>FCM tokens can rotate (reinstall, OS-level refresh, etc). Set up a listener once, anywhere central (e.g. in <code>main.dart</code> or an app-wide service):</p>
+<div class="code-wrap"><span class="code-lang">dart</span><button class="code-copy" data-copy="FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+  // only call this if the user is currently logged in —
+  // check your auth state before sending
+  registerDeviceToken(currentSanctumToken);
+});
+">copy</button><pre><code class="language-dart">FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+  // only call this if the user is currently logged in —
+  // check your auth state before sending
+  registerDeviceToken(currentSanctumToken);
+});
+</code></pre></div></div>
+</div>
+</section>
+<section class="doc-section" id="8-logout-send-the-token-so-the-backend-can-remove-it">
+<div class="section-eyebrow">Step 8</div>
+<h2 class="section-title">Logout — send the token so the backend can remove it</h2>
+<div class="prose"><p><code>POST /logout</code></p>
+<p>Now optionally accepts an <code>fcm_token</code> field. Before logging out, include the current token:</p>
+<div class="code-wrap"><span class="code-lang">dart</span><button class="code-copy" data-copy="Future&lt;void&gt; logout(String sanctumToken) async {
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+
+  await dio.post(
+    &#x27;/logout&#x27;,
+    data: {&#x27;fcm_token&#x27;: fcmToken},
+    options: Options(headers: {&#x27;Authorization&#x27;: &#x27;Bearer $sanctumToken&#x27;}),
+  );
+}
+">copy</button><pre><code class="language-dart">Future&lt;void&gt; logout(String sanctumToken) async {
+  final fcmToken = await FirebaseMessaging.instance.getToken();
+
+  await dio.post(
+    '/logout',
+    data: {'fcm_token': fcmToken},
+    options: Options(headers: {'Authorization': 'Bearer $sanctumToken'}),
+  );
+}
+</code></pre></div>
+<p>This removes just this device's registration — important because a user might be logged in on multiple devices at once, and logging out on one shouldn't kill push for the others.</p></div>
+</section>
+<section class="doc-section" id="9-receiving-and-displaying-notifications-the-3-app-states">
+<div class="section-eyebrow">Step 9</div>
+<h2 class="section-title">Receiving and displaying notifications — the 3 app states</h2>
+<div class="prose"><p>A push can arrive while the app is in any of these states, and each needs different handling.</p></div>
+<div class="substep" id="9-receiving-and-displaying-notifications-the-3-app-states--state-1-app-open-foreground">
+<h3 class="substep-title">State 1 — App open (foreground)</h3>
+<div class="prose"><p>Foreground messages do not auto-display as a system notification — you must show something yourself (snackbar, in-app banner, dialog, etc.):</p>
+<div class="code-wrap"><span class="code-lang">dart</span><button class="code-copy" data-copy="FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  final title = message.notification?.title ?? &#x27;&#x27;;
+  final body = message.notification?.body ?? &#x27;&#x27;;
+  // show your own UI here, e.g. a SnackBar or in-app banner
+  showInAppNotification(title, body);
+});
+">copy</button><pre><code class="language-dart">FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+  final title = message.notification?.title ?? '';
+  final body = message.notification?.body ?? '';
+  // show your own UI here, e.g. a SnackBar or in-app banner
+  showInAppNotification(title, body);
+});
+</code></pre></div></div>
+</div>
+<div class="substep" id="9-receiving-and-displaying-notifications-the-3-app-states--state-2-app-in-background-minimized-not-closed">
+<h3 class="substep-title">State 2 — App in background (minimized, not closed)</h3>
+<div class="prose"><p>The system shows the notification automatically. You only need a top-level function (outside any class) registered as the background handler, so Flutter can call it even when the app isn't actively running in the foreground:</p>
+<div class="code-wrap"><span class="code-lang">dart</span><button class="code-copy" data-copy="@pragma(&#x27;vm:entry-point&#x27;)
+Future&lt;void&gt; firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // any background processing needed can go here — usually nothing extra required,
+  // the system displays the notification on its own
+}
+">copy</button><pre><code class="language-dart">@pragma('vm:entry-point')
+Future&lt;void&gt; firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // any background processing needed can go here — usually nothing extra required,
+  // the system displays the notification on its own
+}
+</code></pre></div>
+<p>Register it in <code>main()</code>, before <code>runApp()</code>:</p>
+<div class="code-wrap"><span class="code-lang">dart</span><button class="code-copy" data-copy="FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+">copy</button><pre><code class="language-dart">FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+</code></pre></div></div>
+</div>
+<div class="substep" id="9-receiving-and-displaying-notifications-the-3-app-states--state-3-app-fully-closed-terminated">
+<h3 class="substep-title">State 3 — App fully closed (terminated)</h3>
+<div class="prose"><p>Same background handler above covers delivery. Additionally, check on startup whether the app was launched by tapping a notification:</p>
+<div class="code-wrap"><span class="code-lang">dart</span><button class="code-copy" data-copy="Future&lt;void&gt; checkInitialMessage() async {
+  RemoteMessage? initialMessage =
+      await FirebaseMessaging.instance.getInitialMessage();
+  if (initialMessage != null) {
+    handleNotificationTap(initialMessage);
+  }
+}
+">copy</button><pre><code class="language-dart">Future&lt;void&gt; checkInitialMessage() async {
+  RemoteMessage? initialMessage =
+      await FirebaseMessaging.instance.getInitialMessage();
+  if (initialMessage != null) {
+    handleNotificationTap(initialMessage);
+  }
+}
+</code></pre></div>
+<p>Call this once during app startup (e.g. in your splash/init screen).</p></div>
+</div>
+</section>
+<section class="doc-section" id="10-tap-to-navigate-using-the-data-payload">
+<div class="section-eyebrow">Step 10</div>
+<h2 class="section-title">Tap-to-navigate using the data payload</h2>
+<div class="prose"><p>Every notification the backend sends includes a data payload alongside the visible title/body, shaped like:</p>
+<div class="code-wrap"><span class="code-lang">json</span><button class="code-copy" data-copy="{ &quot;type&quot;: &quot;appointment&quot;, &quot;id&quot;: &quot;42&quot; }
+">copy</button><pre><code class="language-json">{ &quot;type&quot;: &quot;appointment&quot;, &quot;id&quot;: &quot;42&quot; }
+</code></pre></div>
+<p>(the exact type value varies — e.g. <code>appointment_cancelled</code>, <code>appointment_rescheduled</code>, <code>prescription</code>, <code>session_in_progress</code>, <code>session_completed</code>, <code>session_cancelled</code>)</p>
+<p>Use this to route the user to the right screen when they tap a notification:</p>
+<div class="code-wrap"><span class="code-lang">dart</span><button class="code-copy" data-copy="void handleNotificationTap(RemoteMessage message) {
+  final type = message.data[&#x27;type&#x27;];
+  final id = message.data[&#x27;id&#x27;];
+
+  switch (type) {
+    case &#x27;appointment&#x27;:
+    case &#x27;appointment_cancelled&#x27;:
+    case &#x27;appointment_rescheduled&#x27;:
+      navigatorKey.currentState?.pushNamed(&#x27;/appointment-details&#x27;, arguments: id);
+      break;
+    case &#x27;prescription&#x27;:
+      navigatorKey.currentState?.pushNamed(&#x27;/prescription-details&#x27;, arguments: id);
+      break;
+    case &#x27;session_in_progress&#x27;:
+    case &#x27;session_completed&#x27;:
+    case &#x27;session_cancelled&#x27;:
+      navigatorKey.currentState?.pushNamed(&#x27;/session-details&#x27;, arguments: id);
+      break;
+  }
+}
+">copy</button><pre><code class="language-dart">void handleNotificationTap(RemoteMessage message) {
+  final type = message.data['type'];
+  final id = message.data['id'];
+
+  switch (type) {
+    case 'appointment':
+    case 'appointment_cancelled':
+    case 'appointment_rescheduled':
+      navigatorKey.currentState?.pushNamed('/appointment-details', arguments: id);
+      break;
+    case 'prescription':
+      navigatorKey.currentState?.pushNamed('/prescription-details', arguments: id);
+      break;
+    case 'session_in_progress':
+    case 'session_completed':
+    case 'session_cancelled':
+      navigatorKey.currentState?.pushNamed('/session-details', arguments: id);
+      break;
+  }
+}
+</code></pre></div>
+<p>Wire this into both the foreground tap handler and the <code>getInitialMessage()</code> check from Section 9.</p>
+<p>Also listen for taps while the app is in the background (not terminated):</p>
+<div class="code-wrap"><span class="code-lang">dart</span><button class="code-copy" data-copy="FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  handleNotificationTap(message);
+});
+">copy</button><pre><code class="language-dart">FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+  handleNotificationTap(message);
+});
+</code></pre></div></div>
+</section>
+<section class="doc-section" id="11-suggested-build-order">
+<div class="section-eyebrow">Step 11</div>
+<h2 class="section-title">Suggested build order</h2>
+<div class="prose"><ol class="build-order">
+<li>Run <code>flutterfire configure</code>, add packages, initialize Firebase in <code>main.dart</code></li>
+<li>Request permission, confirm you can print a real token to console</li>
+<li>Wire up token registration after login (Section 7A)</li>
+<li>Manually confirm the token lands in the backend's <code>device_tokens</code> table</li>
+<li>Trigger a real event from the backend (e.g. create an appointment for that logged-in doctor) and confirm a push actually arrives on the physical device/emulator</li>
+<li>Add foreground handling (Section 9, State 1) so open-app notifications show something</li>
+<li>Add background handler + <code>getInitialMessage()</code> (Section 9, States 2 &amp; 3)</li>
+<li>Add tap-to-navigate (Section 10)</li>
+<li>Add signup registration (Section 7B) and logout token removal (Section 8)</li>
+<li>Repeat testing for the other 2 roles, since it's one shared codebase — confirm role-based navigation targets in Section 10 make sense per role</li>
+</ol></div>
+</section>
+<section class="doc-section" id="12-common-gotchas">
+<div class="section-eyebrow">Step 12</div>
+<h2 class="section-title">Common gotchas</h2>
+<div class="prose"><ul class="gotcha-list">
+<li><strong>iOS push testing requires a real device</strong> — the iOS simulator cannot receive real push notifications. Android emulators generally can, as long as they have Google Play services.</li>
+<li><strong>Foreground messages showing nothing is expected, not a bug</strong> — you must build the in-app display yourself (Section 9, State 1).</li>
+<li><strong><code>getToken()</code> returning null</strong> usually means permission wasn't granted yet, or Firebase hasn't finished initializing — make sure <code>requestPermission()</code> and <code>Firebase.initializeApp()</code> both complete before calling it.</li>
+<li><strong>Background handler not firing</strong> — it must be a top-level function (not inside a class/widget) and annotated with <code>@pragma('vm:entry-point')</code>, or Android can strip it during release builds.</li>
+</ul></div>
+</section>  </main>
+
+  <aside class="rail" id="rail">
+    <div class="rail-title">On this page</div>
+    <div id="railLinks"></div>
+  </aside>
+</div>
+
+<button class="top-btn" id="topBtn" aria-label="Back to top">↑</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/dart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/bash.min.js"></script>
+<script>
+document.querySelectorAll('pre code').forEach(el=>{
+  try{ hljs.highlightElement(el); }catch(e){}
+});
+
+document.querySelectorAll('.code-copy').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const val = btn.getAttribute('data-copy');
+    navigator.clipboard.writeText(val).then(()=>{
+      const orig = btn.textContent;
+      btn.textContent = 'copied';
+      btn.classList.add('copied');
+      setTimeout(()=>{ btn.textContent = orig; btn.classList.remove('copied'); }, 1400);
+    });
+  });
+});
+
+const sidebar = document.getElementById('sidebar');
+const menuToggle = document.getElementById('menuToggle');
+menuToggle.addEventListener('click', ()=> sidebar.classList.toggle('open'));
+document.addEventListener('click', (e)=>{
+  if(window.innerWidth<=880 && sidebar.classList.contains('open')){
+    if(!sidebar.contains(e.target) && !menuToggle.contains(e.target)){
+      sidebar.classList.remove('open');
+    }
+  }
+});
+sidebar.querySelectorAll('a').forEach(a=>{
+  a.addEventListener('click', ()=>{ if(window.innerWidth<=880) sidebar.classList.remove('open'); });
+});
+
+const searchInput = document.getElementById('navSearch');
+const navEmptyMsg = document.getElementById('navEmptyMsg');
+searchInput.addEventListener('input', ()=>{
+  const q = searchInput.value.trim().toLowerCase();
+  let anyVisible = false;
+  document.querySelectorAll('.nav-group').forEach(group=>{
+    const groupTitle = group.getAttribute('data-title') || '';
+    let groupMatch = groupTitle.includes(q);
+    let childMatch = false;
+    group.querySelectorAll('.nav-item').forEach(item=>{
+      const s = item.getAttribute('data-search') || '';
+      const match = q === '' || s.includes(q) || groupTitle.includes(q);
+      item.classList.toggle('js-hidden', !match);
+      if(match) childMatch = true;
+    });
+    const visible = q === '' || groupMatch || childMatch;
+    group.classList.toggle('js-hidden', !visible);
+    if(visible) anyVisible = true;
+    if(q !== '' && childMatch) group.open = true;
+  });
+  document.querySelectorAll('.nav-flat').forEach(flat=>{
+    const s = flat.getAttribute('data-search') || '';
+    const match = q === '' || s.includes(q);
+    flat.classList.toggle('js-hidden', !match);
+    if(match) anyVisible = true;
+  });
+  navEmptyMsg.style.display = anyVisible ? 'none' : 'block';
+});
+searchInput.addEventListener('keydown', (e)=>{ if(e.key==='Escape'){ searchInput.value=''; searchInput.dispatchEvent(new Event('input')); searchInput.blur(); }});
+
+const railLinks = document.getElementById('railLinks');
+const sectionEls = Array.from(document.querySelectorAll('.doc-section'));
+function buildRail(){
+  railLinks.innerHTML = '';
+  sectionEls.forEach(sec=>{
+    if(sec.id === 'overview') return;
+    const h2 = sec.querySelector('.section-title');
+    if(!h2) return;
+    const a = document.createElement('a');
+    a.href = '#'+sec.id;
+    a.textContent = h2.textContent;
+    a.dataset.target = sec.id;
+    railLinks.appendChild(a);
+  });
+}
+buildRail();
+
+const navItems = Array.from(document.querySelectorAll('.nav-item, .nav-flat'));
+const railAs = ()=>Array.from(railLinks.querySelectorAll('a'));
+const spyEls = Array.from(document.querySelectorAll('.doc-section[id], .substep[id]'));
+
+function onScroll(){
+  const y = window.scrollY + 90;
+  let activeSpy = null;
+  for(const el of spyEls){
+    if(el.offsetTop <= y) activeSpy = el; else break;
+  }
+  navItems.forEach(a=>a.classList.remove('active'));
+  if(activeSpy){
+    const match = navItems.find(a=>a.getAttribute('href') === '#'+activeSpy.id);
+    if(match){
+      match.classList.add('active');
+      if(match.closest('.nav-group')) match.closest('.nav-group').open = true;
+    }
+  }
+  let activeSection = null;
+  for(const el of sectionEls){
+    if(el.offsetTop <= y) activeSection = el; else break;
+  }
+  railAs().forEach(a=>a.classList.remove('active'));
+  if(activeSection){
+    const match = railAs().find(a=>a.dataset.target === activeSection.id);
+    if(match) match.classList.add('active');
+  }
+  document.getElementById('topBtn').classList.toggle('show', window.scrollY > 500);
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+document.getElementById('topBtn').addEventListener('click', ()=>{
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+</script>
+</body>
+</html>

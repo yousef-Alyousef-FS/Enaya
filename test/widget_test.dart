@@ -4,16 +4,19 @@ import 'package:enaya/main.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:enaya/core/di/injection.dart';
+import 'package:enaya/core/theme/app_theme.dart';
+import 'package:enaya/features/auth/presentation/screens/splash_screen.dart';
+import 'package:enaya/core/screens/developer_screen.dart';
 import 'package:get_it/get_it.dart';
 
 void main() {
   testWidgets('App initialization smoke test', (WidgetTester tester) async {
     // 1. Reset GetIt if it was already initialized
     await GetIt.instance.reset();
-    
+
     // 2. Mock SharedPreferences
     SharedPreferences.setMockInitialValues({});
-    
+
     // 3. Initialize DI
     await initGetIt();
 
@@ -31,7 +34,22 @@ void main() {
     // 5. Wait for the app to settle (GoRouter, ScreenUtil, etc)
     await tester.pumpAndSettle();
 
-    // 6. Verify that the initial screen text is found
-    expect(find.text('Splash / Initial Screen'), findsOneWidget);
+    // 6. Verify that either Splash or Developer Screen is visible
+    // (depends on DevConfig.isDevMode in debug mode)
+    final splashScreenFound = find.byType(SplashScreen);
+    final devScreenFound = find.byType(DeveloperScreen);
+
+    expect(splashScreenFound.evaluate().isNotEmpty || devScreenFound.evaluate().isNotEmpty, true);
+  });
+
+  testWidgets('Dark theme uses consistent button styling', (tester) async {
+    final style = AppTheme.darkTheme.elevatedButtonTheme.style;
+
+    expect(style, isNotNull);
+    expect(style!.minimumSize!.resolve({}), const Size(double.infinity, 54));
+    expect(
+      (style.shape!.resolve({}) as RoundedRectangleBorder).borderRadius,
+      BorderRadius.circular(12),
+    );
   });
 }

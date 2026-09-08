@@ -1,28 +1,33 @@
+import 'dart:ui';
+
 import 'package:dio/dio.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:enaya/core/constants/api_constants.dart';
+import 'package:enaya/core/services/settings_service.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+
 import '../di/injection.dart';
+import '../services/auth_status_service.dart';
 import '../services/token_manager.dart';
 
-const String APPLICATION_JSON = "application/json";
-const String CONTENT_TYPE = "content-type";
-const String ACCEPT = "accept";
-const String AUTHORIZATION = "authorization";
-const String DEFAULT_LANGUAGE = "language";
+const String applicationJson = "application/json";
+const String contentType = "content-type";
+const String accept = "accept";
+const String authorization = "authorization";
+const String defaultLanguage = "language";
 
+/// Creates and configures Dio clients used by repositories and remote data sources.
 class DioFactory {
+  /// Returns a fully configured Dio instance with base options and interceptors.
   static Dio getDio() {
-    Dio dio = Dio();
-
-    Duration timeOut = const Duration(minutes: 1);
-
+    final dio = Dio();
+    const timeout = Duration(seconds: 45);
     dio.options = BaseOptions(
-      baseUrl: "https://your-api-url.com/api", // استبدله برابط لارفيل لاحقاً
-      receiveTimeout: timeOut,
-      sendTimeout: timeOut,
-      headers: {
-        CONTENT_TYPE: APPLICATION_JSON,
-        ACCEPT: APPLICATION_JSON,
-      },
+      baseUrl: ApiConstants.baseUrl,
+      receiveTimeout: timeout,
+      sendTimeout: timeout,
+      connectTimeout: timeout,
+      headers: {contentType: applicationJson, accept: applicationJson},
     );
 
     addDioInterceptor(dio);
@@ -30,34 +35,112 @@ class DioFactory {
     return dio;
   }
 
+  /// Adds authentication, localization, refresh-token recovery, and logging interceptors.
   static void addDioInterceptor(Dio dio) {
     final tokenManager = getIt<TokenManager>();
+    final settingsService = getIt<SettingsService>();
+    final authStatusService = getIt<AuthStatusService>();
 
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          // 1. إضافة التوكن تلقائياً لكل الطلبات (Authorization: Bearer <token>)
+          // [API_REFINE]: Dynamically resolve language from settings or system on every request.
+          final languageCode =
+              settingsService.getLanguage() ??
+              PlatformDispatcher.instance.locale.languageCode;
+          options.headers[defaultLanguage] = languageCode;
+
+          // Attach the latest access token when available.
           final token = await tokenManager.getToken();
-          if (token != null) {
-            options.headers[AUTHORIZATION] = "Bearer $token";
+          if (token != null && token.isNotEmpty) {
+            options.headers[authorization] = "Bearer $token";
           }
+
           return handler.next(options);
         },
+
         onError: (DioException error, handler) async {
-          // 2. معالجة انتهاء صلاحية التوكن (401)
+          // Attempt transparent token refresh when the access token is expired.
           if (error.response?.statusCode == 401) {
-            // هنا سيتم إضافة منطق الـ Refresh Token لاحقاً
+            final refreshToken = await tokenManager.getRefreshToken();
+
+            if (refreshToken != null) {
+              try {
+                // Request a new access token using refresh token.
+                final refreshResponse = await dio.post(
+                  ApiConstants.refreshToken,
+                  data: {"refresh_token": refreshToken},
+                );
+
+                final responseData = refreshResponse.data;
+                if (responseData is! Map) {
+                  throw const FormatException(
+                    'Invalid refresh response format',
+                  );
+                }
+
+                final newToken =
+                    (responseData["token"] ?? responseData["data"]?["token"])
+                        ?.toString();
+                final newExpiry =
+                    (responseData["expiresAt"] ??
+                            responseData["data"]?["expiresAt"])
+                        ?.toString();
+
+                if (newToken == null || newToken.isEmpty) {
+                  throw const FormatException(
+                    'Missing token in refresh response',
+                  );
+                }
+
+                // Persist the new token and its expiry.
+                await tokenManager.saveToken(newToken);
+                if (newExpiry != null) {
+                  final expiryDate = DateTime.tryParse(newExpiry);
+                  if (expiryDate != null) {
+                    await tokenManager.saveTokenExpiry(expiryDate);
+                  }
+                }
+
+                // Replay the original request with refreshed credentials.
+                final retryRequest = error.requestOptions;
+                retryRequest.headers[authorization] = "Bearer $newToken";
+
+                final response = await dio.fetch(retryRequest);
+                return handler.resolve(response);
+              } catch (e) {
+                // Refresh failed: clear auth state so upper layers can re-login.
+                await tokenManager.clearAll();
+                authStatusService.setUnauthenticated(
+                  message: 'session_expired'.tr(),
+                );
+              }
+            } else {
+              // No refresh token: clear everything and redirect.
+              await tokenManager.clearAll();
+              authStatusService.setUnauthenticated(
+                message: 'session_expired'.tr(),
+              );
+            }
           }
+
+          // End error-recovery branch, continue with original Dio error chain.
           return handler.next(error);
         },
       ),
     );
 
-    // Logger لسهولة تتبع الطلبات في مرحلة التطوير
-    dio.interceptors.add(PrettyDioLogger(
-      requestHeader: true,
-      requestBody: true,
-      responseHeader: true,
-    ));
+    // Logger
+    dio.interceptors.add(
+      PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseHeader: false,
+        responseBody: true,
+        error: true,
+        compact: true,
+        maxWidth: 120,
+      ),
+    );
   }
 }

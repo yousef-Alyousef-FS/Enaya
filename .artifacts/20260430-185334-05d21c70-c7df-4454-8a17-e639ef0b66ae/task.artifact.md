@@ -1,0 +1,23 @@
+# Task List - Appointments Feature Implementation
+
+- [x] Consolidate Table Widgets
+- [x] Consolidate StatCard
+- [x] Clean up Mock Services
+- [x] Final Cleanup & Verification
+- [/] Appointments Feature Structure (Current)
+    - [ ] **Doctor Appointments Screen**
+        - [ ] Create layout with placeholders for Timeline/Calendar
+        - [ ] Add "Cancel Appointment" action with reason dialog placeholder
+        - [ ] Ensure responsive behavior (Desktop/Tablet/Mobile)
+    - [ ] **Patient Appointments Screen**
+        - [ ] Design mobile-first layout (usable on all screens)
+        - [ ] Create placeholders for "Doctor Selection" and "Available Slots"
+        - [ ] Create placeholder for "My Appointments List" (Upcoming/History)
+    - [ ] **Interactions & Navigation**
+        - [ ] Implement placeholders for "Schedule Appointment" flow
+        - [ ] Implement placeholders for "Appointment Details" screen (Role-aware)
+        - [ ] Implement placeholders for "Edit/Reschedule" flow
+- [ ] UI/UX Professional Polish (Future)
+    - [ ] Replace placeholders with high-fidelity widgets
+    - [ ] Add animations and transitions
+    - [ ] Final localization and theme check

@@ -1,10 +1,14 @@
+import 'package:easy_localization/easy_localization.dart';
+
 abstract class Failure {
   final String message;
-  Failure(this.message);
+  final int? code;
+
+  Failure(this.message, {this.code});
 }
 
 class ServerFailure extends Failure {
-  ServerFailure(super.message);
+  ServerFailure(super.message, {super.code});
 }
 
 class CacheFailure extends Failure {
@@ -12,5 +16,5 @@ class CacheFailure extends Failure {
 }
 
 class NetworkFailure extends Failure {
-  NetworkFailure() : super('No Internet Connection');
+  NetworkFailure() : super("no_internet_connection".tr());
 }

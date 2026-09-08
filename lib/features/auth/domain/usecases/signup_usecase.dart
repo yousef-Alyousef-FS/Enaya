@@ -18,12 +18,12 @@ class SignupParams {
   });
 }
 
-class SignupUsecase implements UseCase<User, SignupParams> {
+class SignupUsecase implements UseCase<UserEntity, SignupParams> {
   final IAuthRepository repository;
   SignupUsecase(this.repository);
 
   @override
-  Future<Either<Failure, User>> call(SignupParams params) {
+  Future<Either<Failure, UserEntity>> call(SignupParams params) {
     return repository.signup(
       email: params.email,
       password: params.password,
